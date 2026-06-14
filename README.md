@@ -1,62 +1,40 @@
 # root-index-panels
 
-A [Quartz 5](https://quartz.jzhao.xyz) component plugin that replaces the **root index page** with a responsive card grid (or list) of your first-level vault directories.
+A [Quartz 5](https://quartz.jzhao.xyz) plugin that replaces the root index page with a responsive card grid or list of first-level vault directories.
 
-Each card links to a subdirectory and shows the title, description, note count, and tags sourced from that directory's `index.md` frontmatter.
-
----
+Each panel links to a subdirectory and shows the title, description, note count, and tags sourced from that directory's `index.md` frontmatter.
 
 ## Installation
 
-```bash
-npm install @quartz-community/root-index-panels
-```
-
-Or with the Quartz plugin CLI:
+Install from GitHub with the Quartz plugin CLI:
 
 ```bash
-quartz plugin add @quartz-community/root-index-panels
+npx quartz plugin add github:VingGit/root-index-panels
 ```
 
----
+Or add it directly to `quartz.config.yaml`:
 
-## Quick start
-
-### 1. Import the component
-
-In `quartz.layout.ts`:
-
-```typescript
-import { RootIndexPanels } from "@quartz-community/root-index-panels/components"
+```yaml
+plugins:
+  - source: github:VingGit/root-index-panels
+    enabled: true
+    options:
+      layout: cards
+      showDescription: true
+      showDocCount: true
+      showTags: true
+      tagCount: 3
+      sort: alphabetical
+      excludeDirs: []
+      descriptionFallback: ""
+    order: 50
 ```
 
-### 2. Add it to your layout
+The plugin exports a high-priority Quartz page type that matches only the root `index.md` slug, so no manual layout import is required. It also exports the `RootIndexPanels` component from `@quartz-community/root-index-panels/components` for advanced manual layouts.
 
-Place `RootIndexPanels()` in the `center` array. The component only renders on the root index page (`index.md` → slug `"index"`) and returns an empty element everywhere else, so it is safe to include in the shared layout.
+## Directory Metadata
 
-```typescript
-import { PageLayout, SharedLayout } from "./quartz/cfg"
-import * as Component from "./quartz/components"
-import { RootIndexPanels } from "@quartz-community/root-index-panels/components"
-
-export const defaultContentPageLayout: PageLayout = {
-  center: [
-    RootIndexPanels({
-      layout: "cards",
-      sort: "alphabetical",
-      showDescription: true,
-      showDocCount: true,
-      showTags: true,
-      tagCount: 3,
-    }),
-    Component.Content(),
-  ],
-}
-```
-
-### 3. Annotate your directory index files
-
-In each first-level directory, create an `index.md` with a `description` in the frontmatter:
+In each first-level directory, create an `index.md` with frontmatter:
 
 ```yaml
 ---
@@ -88,16 +66,15 @@ tags:
 
 ## How it works
 
-`RootIndexPanels` is a **Quartz component** — it requires no transformer or emitter. At build time, Quartz passes the full `allFiles` array (all published pages). The component:
+`RootIndexPanelsPage` is a Quartz page-type plugin. It has priority `100`, matches only slug `"index"`, and uses `RootIndexPanels` as the page body. At build time, Quartz passes the full `allFiles` array to the component. The component:
 
-1. Collects unique first-level path segments from `allFiles` (e.g., `"java"`, `"linux"`, `"docker"`).
+1. Collects unique first-level directory segments from `allFiles` (for example, `"java"`, `"linux"`, `"docker"`). Root-level notes are ignored.
 2. Finds each segment's `index.md` (slug `<seg>/index`) to read frontmatter: `title`, `description`, `tags`.
 3. Counts the notes under each segment (all files matching `<seg>/*`, excluding the index).
-4. Sorts and renders a `<ul class="rip-grid">` card list — one `<li class="rip-card">` per directory.
+4. Sorts by title, note count, or newest known date from Quartz file data/frontmatter.
+5. Renders a `<ul class="rip-grid">` card list or `<ul class="rip-list">` list.
 
-All styles use Quartz's CSS custom properties (`--light`, `--lightgray`, `--secondary`, `--dark`, etc.) and automatically respect the active colour theme and dark-mode toggle.
-
----
+All styles use Quartz's CSS custom properties (`--light`, `--lightgray`, `--secondary`, `--dark`, etc.) and automatically respect the active color theme and dark-mode toggle.
 
 ## Keyboard navigation
 
@@ -110,18 +87,13 @@ All styles use Quartz's CSS custom properties (`--light`, `--lightgray`, `--seco
 
 All event listeners are registered with `window.addCleanup` so Quartz's SPA router removes them cleanly before each navigation.
 
----
-
 ## Development
 
 ```bash
 npm install
-npm run dev       # watch mode
 npm run check     # typecheck + lint + format + test
 npm run build     # emit dist/
 ```
-
----
 
 ## License
 

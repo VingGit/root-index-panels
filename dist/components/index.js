@@ -37,6 +37,42 @@ function relativeBase(slug) {
   if (parts[parts.length - 1] === "index") parts.pop();
   return parts.length === 0 ? "." : parts.map(() => "..").join("/");
 }
+function toTimestamp(value) {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+function getFileTimestamp(file) {
+  const data = file;
+  const frontmatter = file.frontmatter ?? {};
+  const dates = data["dates"] ?? {};
+  const candidates = [
+    dates["modified"],
+    dates["created"],
+    dates["published"],
+    data["modified"],
+    data["updated"],
+    data["created"],
+    data["date"],
+    frontmatter["modified"],
+    frontmatter["updated"],
+    frontmatter["created"],
+    frontmatter["published"],
+    frontmatter["date"]
+  ];
+  for (const candidate of candidates) {
+    const timestamp = toTimestamp(candidate);
+    if (timestamp > 0) return timestamp;
+  }
+  return 0;
+}
+function noteCountLabel(count) {
+  return `${count} ${count === 1 ? "note" : "notes"}`;
+}
 var RootIndexPanels_default = ((userOpts) => {
   const opts = {
     layout: "cards",
@@ -55,7 +91,9 @@ var RootIndexPanels_default = ((userOpts) => {
     const seenDirs = /* @__PURE__ */ new Set();
     for (const f3 of allFiles) {
       const s2 = String(f3.slug ?? "");
-      const head = s2.split("/")[0];
+      const parts = s2.split("/").filter(Boolean);
+      if (parts.length < 2) continue;
+      const head = parts[0];
       if (head && head !== "index" && !opts.excludeDirs.includes(head)) {
         seenDirs.add(head);
       }
@@ -66,7 +104,11 @@ var RootIndexPanels_default = ((userOpts) => {
         const s2 = String(f3.slug ?? "");
         return s2 === `${seg}/index` || s2 === seg;
       });
-      const docCount = allFiles.filter((f3) => {
+      const directoryFiles = allFiles.filter((f3) => {
+        const s2 = String(f3.slug ?? "");
+        return s2 === seg || s2.startsWith(`${seg}/`);
+      });
+      const docCount = directoryFiles.filter((f3) => {
         const s2 = String(f3.slug ?? "");
         return s2.startsWith(`${seg}/`) && s2 !== `${seg}/index`;
       }).length;
@@ -76,12 +118,15 @@ var RootIndexPanels_default = ((userOpts) => {
       const rawTags = fm["tags"];
       const tags = Array.isArray(rawTags) ? rawTags.filter((t2) => typeof t2 === "string").slice(0, opts.tagCount) : [];
       const description = typeof fm["description"] === "string" ? fm["description"] : opts.descriptionFallback;
-      entries.push({ seg, title, description, docCount, tags });
+      const date = Math.max(...directoryFiles.map(getFileTimestamp), 0);
+      entries.push({ seg, title, description, docCount, tags, date });
     }
     if (opts.sort === "alphabetical") {
       entries.sort((a2, b) => a2.title.localeCompare(b.title));
     } else if (opts.sort === "docCount") {
       entries.sort((a2, b) => b.docCount - a2.docCount);
+    } else if (opts.sort === "date") {
+      entries.sort((a2, b) => b.date - a2.date || a2.title.localeCompare(b.title));
     }
     const base = relativeBase(slug);
     if (entries.length === 0) {
@@ -91,13 +136,10 @@ var RootIndexPanels_default = ((userOpts) => {
       return /* @__PURE__ */ u2("div", { class: "rip rip--list", children: /* @__PURE__ */ u2("ul", { class: "rip-list", children: entries.map((entry) => /* @__PURE__ */ u2("li", { class: "rip-list-item", children: /* @__PURE__ */ u2("a", { href: `${base}/${entry.seg}`, class: "rip-list-link", children: [
         /* @__PURE__ */ u2("div", { class: "rip-list-row", children: [
           /* @__PURE__ */ u2("span", { class: "rip-list-title", children: entry.title }),
-          opts.showDocCount && /* @__PURE__ */ u2("span", { class: "rip-count", children: [
-            entry.docCount,
-            "\xA0notes"
-          ] })
+          opts.showDocCount && /* @__PURE__ */ u2("span", { class: "rip-count", children: noteCountLabel(entry.docCount) })
         ] }),
         opts.showDescription && entry.description && /* @__PURE__ */ u2("p", { class: "rip-desc", children: entry.description })
-      ] }) })) }) });
+      ] }) }, entry.seg)) }) });
     }
     return /* @__PURE__ */ u2("div", { class: "rip rip--cards", children: /* @__PURE__ */ u2("ul", { class: "rip-grid", children: entries.map((entry) => /* @__PURE__ */ u2("li", { class: "rip-card", children: /* @__PURE__ */ u2("a", { href: `${base}/${entry.seg}`, class: "rip-card-link", children: [
       /* @__PURE__ */ u2("div", { class: "rip-card-top", children: [
@@ -108,39 +150,14 @@ var RootIndexPanels_default = ((userOpts) => {
       opts.showTags && entry.tags.length > 0 && /* @__PURE__ */ u2("div", { class: "rip-tags", children: entry.tags.map((tag) => /* @__PURE__ */ u2("span", { class: "rip-tag", children: [
         "#",
         tag
-      ] })) })
-    ] }) })) }) });
+      ] }, tag)) })
+    ] }) }, entry.seg)) }) });
   };
   RootIndexPanels.css = panels_default;
   RootIndexPanels.afterDOMLoaded = panels_inline_default;
   return RootIndexPanels;
 });
 
-// node_modules/@quartz-community/utils/dist/lang.js
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
-
-// src/components/styles/example.scss
-var example_default = ".example-component {\n  padding: 8px 16px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: 4px;\n  font-weight: 600;\n  display: inline-block;\n}";
-
-// src/components/scripts/example.inline.ts
-var example_inline_default = 'function l(){let e=window.location.pathname;return e.startsWith("/")&&(e=e.slice(1)),e.endsWith("/")&&(e=e.slice(0,-1)),e||"index"}function r(){let e=document.querySelectorAll(".example-component");if(e.length===0)return;let t=[];function o(n){(n.ctrlKey||n.metaKey)&&n.shiftKey&&n.key.toLowerCase()==="e"&&(n.preventDefault(),console.log("[ExampleComponent] Keyboard shortcut triggered!"))}document.addEventListener("keydown",o),t.push(()=>document.removeEventListener("keydown",o));for(let n of e){let i=()=>{console.log("[ExampleComponent] Clicked!")};n.addEventListener("click",i),t.push(()=>n.removeEventListener("click",i))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{t.forEach(n=>n())}),console.log("[ExampleComponent] Initialized with",e.length,"component(s)")}document.addEventListener("nav",e=>{let t=e.detail?.url||l();console.log("[ExampleComponent] Navigation to:",t),r()});document.addEventListener("render",()=>{console.log("[ExampleComponent] Render event - re-initializing"),r()});document.addEventListener("prenav",()=>{let e=document.querySelector(".example-component");e&&sessionStorage.setItem("exampleScrollTop",e.scrollTop?.toString()||"0")});\n';
-
-// src/components/ExampleComponent.tsx
-var ExampleComponent_default = ((opts) => {
-  const { prefix = "", suffix = "", className = "example-component" } = opts ?? {};
-  const Component = (props) => {
-    const frontmatter = props.fileData?.frontmatter;
-    const title = frontmatter?.title ?? "Untitled";
-    const fullText = `${prefix}${title}${suffix}`;
-    return /* @__PURE__ */ u2("div", { class: classNames(className), children: fullText });
-  };
-  Component.css = example_default;
-  Component.afterDOMLoaded = example_inline_default;
-  return Component;
-});
-
-export { ExampleComponent_default as ExampleComponent, RootIndexPanels_default as RootIndexPanels };
+export { RootIndexPanels_default as RootIndexPanels };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
