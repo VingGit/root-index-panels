@@ -20,12 +20,7 @@
     "index",
     "component"
   ],
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -114,14 +109,8 @@
       "descriptionFallback": ""
     },
     "optionSchema": {
-      "layout": {
-        "type": "enum",
-        "values": ["cards", "list"]
-      },
-      "sort": {
-        "type": "enum",
-        "values": ["alphabetical", "docCount", "date"]
-      },
+      "layout": { "type": "enum", "values": ["cards", "list"] },
+      "sort": { "type": "enum", "values": ["alphabetical", "docCount", "date"] },
       "showDescription": { "type": "boolean" },
       "showDocCount": { "type": "boolean" },
       "showTags": { "type": "boolean" },
