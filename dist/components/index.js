@@ -3,7 +3,7 @@ import { createRequire } from 'module';
 createRequire(import.meta.url);
 
 // src/components/scripts/panels.inline.ts
-var panels_inline_default = 'function u(){let o=document.querySelectorAll(".rip-grid, .rip-list");if(o.length===0)return;let c=[];for(let r of o){let t=function(d){let l=document.activeElement;if(!l)return;let a=l.closest(".rip-card-link, .rip-list-link");if(!a)return;let s=a.closest(".rip-card, .rip-list-item");if(!s)return;let i=e.indexOf(s);if(i===-1)return;let n;switch(d.key){case"ArrowRight":case"ArrowDown":n=e[i+1];break;case"ArrowLeft":case"ArrowUp":n=e[i-1];break;case"Home":n=e[0];break;case"End":n=e[e.length-1];break}n&&(d.preventDefault(),n.querySelector(".rip-card-link, .rip-list-link")?.focus())};var f=t;let e=Array.from(r.querySelectorAll(".rip-card, .rip-list-item"));e.length!==0&&(r.addEventListener("keydown",t),c.push(()=>r.removeEventListener("keydown",t)))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{c.forEach(r=>r())})}document.addEventListener("nav",()=>{u()});\n';
+var panels_inline_default = 'function u(){let i=document.querySelectorAll(".rip-grid, .rip-list");if(i.length===0)return;let o=[];for(let r of i){let e=Array.from(r.querySelectorAll(".rip-card, .rip-list-item"));if(e.length===0)continue;let c=d=>{let l=document.activeElement;if(!l)return;let s=l.closest(".rip-card-link, .rip-list-link");if(!s)return;let a=s.closest(".rip-card, .rip-list-item");if(!a)return;let t=e.indexOf(a);if(t===-1)return;let n;switch(d.key){case"ArrowRight":case"ArrowDown":n=e[t+1];break;case"ArrowLeft":case"ArrowUp":n=e[t-1];break;case"Home":n=e[0];break;case"End":n=e[e.length-1];break}n&&(d.preventDefault(),n.querySelector(".rip-card-link, .rip-list-link")?.focus())};r.addEventListener("keydown",c),o.push(()=>r.removeEventListener("keydown",c))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{o.forEach(r=>r())})}document.addEventListener("nav",()=>{u()});\n';
 
 // src/components/styles/panels.scss
 var panels_default = ".rip {\n  margin: 1.5rem 0 2.5rem;\n  width: 100%;\n}\n\n.rip-empty {\n  color: var(--gray);\n  font-size: 0.9rem;\n  font-style: italic;\n}\n\n.rip-desc {\n  font-size: 0.82rem;\n  line-height: 1.55;\n  color: var(--gray);\n  margin: 0;\n  flex: 1 1 auto;\n}\n\n.rip-count {\n  display: inline-block;\n  font-size: 0.68rem;\n  font-family: var(--codeFont);\n  color: var(--gray);\n  border: 1px solid var(--lightgray);\n  border-radius: 4px;\n  padding: 0.1em 0.4em;\n  white-space: nowrap;\n  flex-shrink: 0;\n  line-height: 1.6;\n}\n\n.rip-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 0.3rem;\n  margin-top: auto;\n  padding-top: 0.4rem;\n}\n\n.rip-tag {\n  font-size: 0.67rem;\n  font-family: var(--codeFont);\n  color: var(--secondary);\n  background: var(--highlight);\n  border-radius: 3px;\n  padding: 0.1em 0.45em;\n}\n\n.rip--cards .rip-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));\n  gap: 0.75rem;\n  list-style: none;\n  padding: 0;\n  margin: 0;\n}\n.rip--cards .rip-card {\n  border: 1px solid var(--lightgray);\n  border-radius: 8px;\n  background: transparent;\n  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;\n}\n.rip--cards .rip-card:hover {\n  border-color: var(--secondary);\n  transform: translateY(-2px);\n  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);\n}\n.rip--cards .rip-card:focus-within {\n  outline: 2px solid var(--secondary);\n  outline-offset: 2px;\n}\n.rip--cards .rip-card-link {\n  display: flex;\n  flex-direction: column;\n  gap: 0.45rem;\n  padding: 1.1rem 1.2rem;\n  height: 100%;\n  box-sizing: border-box;\n  text-decoration: none;\n  color: var(--darkgray);\n  border-radius: inherit;\n}\n.rip--cards .rip-card-link:hover {\n  background: var(--highlight);\n  color: var(--dark);\n}\n.rip--cards .rip-card-link:focus {\n  outline: none;\n}\n.rip--cards .rip-card-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 0.5rem;\n}\n.rip--cards .rip-card-title {\n  font-family: var(--headerFont);\n  font-weight: 600;\n  font-size: 0.975rem;\n  color: var(--dark);\n  line-height: 1.3;\n}\n\n.rip--list .rip-list {\n  list-style: none;\n  padding: 0;\n  margin: 0;\n}\n.rip--list .rip-list-item {\n  border-bottom: 1px solid var(--lightgray);\n}\n.rip--list .rip-list-item:first-child {\n  border-top: 1px solid var(--lightgray);\n}\n.rip--list .rip-list-item:focus-within {\n  outline: 2px solid var(--secondary);\n  outline-offset: -2px;\n}\n.rip--list .rip-list-link {\n  display: flex;\n  flex-direction: column;\n  gap: 0.2rem;\n  padding: 0.8rem 0.3rem;\n  text-decoration: none;\n  color: var(--darkgray);\n  transition: color 0.12s;\n}\n.rip--list .rip-list-link:hover {\n  color: var(--secondary);\n}\n.rip--list .rip-list-link:focus {\n  outline: none;\n}\n.rip--list .rip-list-row {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 1rem;\n}\n.rip--list .rip-list-title {\n  font-family: var(--headerFont);\n  font-weight: 600;\n  font-size: 0.95rem;\n  color: var(--dark);\n}\n\n@media (max-width: 600px) {\n  .rip--cards .rip-grid {\n    grid-template-columns: 1fr;\n  }\n}";
@@ -49,10 +49,7 @@ var RootIndexPanels_default = ((userOpts) => {
     descriptionFallback: "",
     ...userOpts
   };
-  const RootIndexPanels = ({
-    fileData,
-    allFiles
-  }) => {
+  const RootIndexPanels = ({ fileData, allFiles }) => {
     const slug = String(fileData.slug ?? "");
     if (slug !== "index") return /* @__PURE__ */ u2(k, {});
     const seenDirs = /* @__PURE__ */ new Set();
@@ -88,14 +85,7 @@ var RootIndexPanels_default = ((userOpts) => {
     }
     const base = relativeBase(slug);
     if (entries.length === 0) {
-      return /* @__PURE__ */ u2("div", { class: "rip", children: /* @__PURE__ */ u2("p", { class: "rip-empty", children: [
-        "No subdirectories found. Create a folder inside your content directory and add an ",
-        /* @__PURE__ */ u2("code", { children: "index.md" }),
-        " with a",
-        " ",
-        /* @__PURE__ */ u2("code", { children: "description" }),
-        " in its frontmatter."
-      ] }) });
+      return /* @__PURE__ */ u2("div", { class: "rip", children: /* @__PURE__ */ u2("p", { class: "rip-empty", children: "No subdirectories found." }) });
     }
     if (opts.layout === "list") {
       return /* @__PURE__ */ u2("div", { class: "rip rip--list", children: /* @__PURE__ */ u2("ul", { class: "rip-list", children: entries.map((entry) => /* @__PURE__ */ u2("li", { class: "rip-list-item", children: /* @__PURE__ */ u2("a", { href: `${base}/${entry.seg}`, class: "rip-list-link", children: [
@@ -123,7 +113,6 @@ var RootIndexPanels_default = ((userOpts) => {
   };
   RootIndexPanels.css = panels_default;
   RootIndexPanels.afterDOMLoaded = panels_inline_default;
-  RootIndexPanels.displayName = "RootIndexPanels";
   return RootIndexPanels;
 });
 
