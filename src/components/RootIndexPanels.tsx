@@ -203,6 +203,5 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
 
   RootIndexPanels.css = style;
   RootIndexPanels.afterDOMLoaded = script;
-  RootIndexPanels.displayName = "RootIndexPanels";
   return RootIndexPanels;
 }) satisfies QuartzComponentConstructor;
