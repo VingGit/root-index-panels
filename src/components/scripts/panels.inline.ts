@@ -19,7 +19,7 @@ function initRootIndexPanels() {
     );
     if (cards.length === 0) continue;
 
-    function onKeyDown(e: KeyboardEvent) {
+    const onKeyDown = (e: KeyboardEvent) => {
       const active = document.activeElement;
       if (!active) return;
 
@@ -59,7 +59,7 @@ function initRootIndexPanels() {
           .querySelector<HTMLElement>(".rip-card-link, .rip-list-link")
           ?.focus();
       }
-    }
+    };
 
     grid.addEventListener("keydown", onKeyDown);
     cleanups.push(() => grid.removeEventListener("keydown", onKeyDown));
