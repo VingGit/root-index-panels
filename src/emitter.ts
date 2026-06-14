@@ -67,12 +67,7 @@ export const ExampleEmitter: QuartzEmitterPlugin<Partial<ExampleEmitterOptions>>
       json = options.transformManifest(json)
     }
 
-    const output = await writeFile(
-      ctx.argv.output,
-      options.manifestSlug as FullSlug,
-      ".json",
-      json,
-    )
+    const output = await writeFile(ctx.argv.output, options.manifestSlug as FullSlug, ".json", json)
     return [output]
   }
 
