@@ -21,40 +21,38 @@ const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\
 const remarkHighlightToken = (token: string): Plugin<[], MdastRoot> => {
   const escapedToken = escapeRegExp(token)
   const pattern = new RegExp(`${escapedToken}([^\n]+?)${escapedToken}`, "g")
-  return () =>
-    (tree: MdastRoot, _file: VFile) => {
-      findAndReplace(tree, [
-        [
-          pattern,
-          (_match: string, value: string) => ({
-            type: "strong",
-            children: [{ type: "text", value }],
-          }),
-        ],
-      ])
-    }
+  return () => (tree: MdastRoot, _file: VFile) => {
+    findAndReplace(tree, [
+      [
+        pattern,
+        (_match: string, value: string) => ({
+          type: "strong",
+          children: [{ type: "text", value }],
+        }),
+      ],
+    ])
+  }
 }
 
 const rehypeHeadingClass = (className: string): Plugin<[], HastRoot> => {
-  return () =>
-    (tree: HastRoot, _file: VFile) => {
-      visit(tree, "element", (node: Element) => {
-        if (!/^h[1-6]$/.test(node.tagName)) {
-          return
-        }
+  return () => (tree: HastRoot, _file: VFile) => {
+    visit(tree, "element", (node: Element) => {
+      if (!/^h[1-6]$/.test(node.tagName)) {
+        return
+      }
 
-        const existing = node.properties?.className
-        const classes: string[] = Array.isArray(existing)
-          ? existing.filter((value): value is string => typeof value === "string")
-          : typeof existing === "string"
-            ? [existing]
-            : []
-        node.properties = {
-          ...node.properties,
-          className: [...classes, className],
-        }
-      })
-    }
+      const existing = node.properties?.className
+      const classes: string[] = Array.isArray(existing)
+        ? existing.filter((value): value is string => typeof value === "string")
+        : typeof existing === "string"
+          ? [existing]
+          : []
+      node.properties = {
+        ...node.properties,
+        className: [...classes, className],
+      }
+    })
+  }
 }
 
 /**

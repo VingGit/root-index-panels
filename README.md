@@ -73,16 +73,16 @@ tags:
 
 ## Options
 
-| Option                 | Type                                     | Default          | Description                                     |
-| ---------------------- | ---------------------------------------- | ---------------- | ----------------------------------------------- |
-| `layout`               | `"cards" \| "list"`                      | `"cards"`        | Visual presentation of the directory listing    |
-| `showDescription`      | `boolean`                                | `true`           | Show the description from frontmatter           |
-| `showDocCount`         | `boolean`                                | `true`           | Show note count badge                           |
-| `showTags`             | `boolean`                                | `true`           | Show tags (cards layout only)                   |
-| `tagCount`             | `number`                                 | `3`              | Maximum tags displayed per card                 |
-| `sort`                 | `"alphabetical" \| "docCount" \| "date"` | `"alphabetical"` | Sort order for the directory grid               |
-| `excludeDirs`          | `string[]`                               | `[]`             | First-path-segment names to hide from the grid  |
-| `descriptionFallback`  | `string`                                 | `""`             | Text shown when a directory has no description  |
+| Option                | Type                                     | Default          | Description                                    |
+| --------------------- | ---------------------------------------- | ---------------- | ---------------------------------------------- |
+| `layout`              | `"cards" \| "list"`                      | `"cards"`        | Visual presentation of the directory listing   |
+| `showDescription`     | `boolean`                                | `true`           | Show the description from frontmatter          |
+| `showDocCount`        | `boolean`                                | `true`           | Show note count badge                          |
+| `showTags`            | `boolean`                                | `true`           | Show tags (cards layout only)                  |
+| `tagCount`            | `number`                                 | `3`              | Maximum tags displayed per card                |
+| `sort`                | `"alphabetical" \| "docCount" \| "date"` | `"alphabetical"` | Sort order for the directory grid              |
+| `excludeDirs`         | `string[]`                               | `[]`             | First-path-segment names to hide from the grid |
+| `descriptionFallback` | `string`                                 | `""`             | Text shown when a directory has no description |
 
 ---
 
@@ -101,12 +101,12 @@ All styles use Quartz's CSS custom properties (`--light`, `--lightgray`, `--seco
 
 ## Keyboard navigation
 
-| Key        | Action              |
-| ---------- | ------------------- |
+| Key       | Action              |
+| --------- | ------------------- |
 | `→` / `↓` | Focus next card     |
 | `←` / `↑` | Focus previous card |
-| `Home`     | Focus first card    |
-| `End`      | Focus last card     |
+| `Home`    | Focus first card    |
+| `End`     | Focus last card     |
 
 All event listeners are registered with `window.addCleanup` so Quartz's SPA router removes them cleanly before each navigation.
 
