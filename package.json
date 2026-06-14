@@ -1,23 +1,24 @@
 {
-  "name": "@quartz-community/plugin-template",
+  "name": "@quartz-community/root-index-panels",
   "version": "0.1.0",
-  "description": "Template repository for Quartz community plugins.",
+  "description": "Quartz 5 plugin that replaces the root index page with a responsive card grid of first-level vault directories.",
   "type": "module",
   "license": "MIT",
-  "author": "Quartz Community",
-  "homepage": "https://quartz.jzhao.xyz",
+  "author": "VingGit",
+  "homepage": "https://github.com/VingGit/root-index-panels",
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartz-community/plugin-template"
+    "url": "https://github.com/VingGit/root-index-panels"
   },
   "keywords": [
     "quartz",
     "quartz-plugin",
-    "plugin-template",
-    "remark",
-    "rehype",
-    "mdast",
-    "hast"
+    "quartz5",
+    "folder-page",
+    "directory",
+    "cards",
+    "index",
+    "component"
   ],
   "files": [
     "dist",
@@ -94,30 +95,45 @@
     "vitest": "^2.1.9"
   },
   "quartz": {
-    "name": "plugin-template",
-    "displayName": "Plugin Template",
-    "category": "transformer",
-    "version": "1.0.0",
+    "name": "root-index-panels",
+    "displayName": "Root Index Panels",
+    "category": "component",
+    "version": "0.1.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
     "defaultOrder": 50,
-    "defaultEnabled": true,
-    "defaultOptions": {},
+    "defaultEnabled": false,
+    "defaultOptions": {
+      "layout": "cards",
+      "showDescription": true,
+      "showDocCount": true,
+      "showTags": true,
+      "tagCount": 3,
+      "sort": "alphabetical",
+      "excludeDirs": [],
+      "descriptionFallback": ""
+    },
     "optionSchema": {
-      "highlightToken": {
+      "layout": {
         "type": "enum",
-        "values": [
-          "==",
-          "**",
-          "~~"
-        ]
-      }
+        "values": ["cards", "list"]
+      },
+      "sort": {
+        "type": "enum",
+        "values": ["alphabetical", "docCount", "date"]
+      },
+      "showDescription": { "type": "boolean" },
+      "showDocCount": { "type": "boolean" },
+      "showTags": { "type": "boolean" },
+      "tagCount": { "type": "number" },
+      "excludeDirs": { "type": "array" },
+      "descriptionFallback": { "type": "string" }
     },
     "components": {
-      "ExampleComponent": {
-        "displayName": "Example Component",
-        "defaultPosition": "right",
-        "defaultPriority": 50
+      "RootIndexPanels": {
+        "displayName": "Root Index Panels",
+        "defaultPosition": "center",
+        "defaultPriority": 10
       }
     }
   },

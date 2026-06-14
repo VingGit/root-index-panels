@@ -1,0 +1,205 @@
+// ============================================================================
+// RootIndexPanels styles
+//
+// Uses Quartz's built-in CSS custom properties so the component respects
+// the user's chosen colour scheme and dark-mode toggle automatically.
+//
+// Quartz variable reference:
+//   --light         page background
+//   --lightgray     subtle borders / surface tint
+//   --gray          placeholder / muted text
+//   --darkgray      body text
+//   --dark          headings / strong text
+//   --secondary     link / accent colour
+//   --tertiary      hover accent
+//   --highlight     translucent hover background
+//   --bodyFont      body typeface
+//   --headerFont    heading typeface
+//   --codeFont      monospace typeface
+// ============================================================================
+
+// ── Shared wrapper ────────────────────────────────────────────────────────
+
+.rip {
+  margin: 1.5rem 0 2.5rem;
+  width: 100%;
+}
+
+.rip-empty {
+  color: var(--gray);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+// ── Shared sub-elements ───────────────────────────────────────────────────
+
+.rip-desc {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--gray);
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.rip-count {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-family: var(--codeFont);
+  color: var(--gray);
+  border: 1px solid var(--lightgray);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.rip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+}
+
+.rip-tag {
+  font-size: 0.67rem;
+  font-family: var(--codeFont);
+  color: var(--secondary);
+  background: var(--highlight);
+  border-radius: 3px;
+  padding: 0.1em 0.45em;
+}
+
+// ── Cards layout ──────────────────────────────────────────────────────────
+
+.rip--cards {
+  .rip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .rip-card {
+    border: 1px solid var(--lightgray);
+    border-radius: 8px;
+    background: transparent;
+    transition:
+      border-color 0.15s ease,
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &:hover {
+      border-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
+    }
+
+    &:focus-within {
+      outline: 2px solid var(--secondary);
+      outline-offset: 2px;
+    }
+  }
+
+  .rip-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 1.1rem 1.2rem;
+    height: 100%;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: var(--darkgray);
+    border-radius: inherit;
+
+    &:hover {
+      background: var(--highlight);
+      color: var(--dark);
+    }
+
+    &:focus {
+      outline: none; // handled by .rip-card:focus-within
+    }
+  }
+
+  .rip-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .rip-card-title {
+    font-family: var(--headerFont);
+    font-weight: 600;
+    font-size: 0.975rem;
+    color: var(--dark);
+    line-height: 1.3;
+  }
+}
+
+// ── List layout ───────────────────────────────────────────────────────────
+
+.rip--list {
+  .rip-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .rip-list-item {
+    border-bottom: 1px solid var(--lightgray);
+
+    &:first-child {
+      border-top: 1px solid var(--lightgray);
+    }
+
+    &:focus-within {
+      outline: 2px solid var(--secondary);
+      outline-offset: -2px;
+    }
+  }
+
+  .rip-list-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 0.3rem;
+    text-decoration: none;
+    color: var(--darkgray);
+    transition: color 0.12s;
+
+    &:hover {
+      color: var(--secondary);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .rip-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .rip-list-title {
+    font-family: var(--headerFont);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--dark);
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+
+@media (max-width: 600px) {
+  .rip--cards .rip-grid {
+    grid-template-columns: 1fr;
+  }
+}
