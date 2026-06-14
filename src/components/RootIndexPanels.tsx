@@ -36,6 +36,7 @@ interface DirEntry {
   description: string
   docCount: number
   tags: string[]
+  date: number
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────────────
@@ -48,6 +49,47 @@ function relativeBase(slug: string): string {
   const parts = slug.split("/").filter(Boolean)
   if (parts[parts.length - 1] === "index") parts.pop()
   return parts.length === 0 ? "." : parts.map(() => "..").join("/")
+}
+
+function toTimestamp(value: unknown): number {
+  if (value instanceof Date) return value.getTime()
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Date.parse(value)
+    return Number.isNaN(parsed) ? 0 : parsed
+  }
+  return 0
+}
+
+function getFileTimestamp(file: QuartzComponentProps["fileData"]): number {
+  const data = file as Record<string, unknown>
+  const frontmatter = (file.frontmatter ?? {}) as Record<string, unknown>
+  const dates = (data["dates"] ?? {}) as Record<string, unknown>
+
+  const candidates = [
+    dates["modified"],
+    dates["created"],
+    dates["published"],
+    data["modified"],
+    data["updated"],
+    data["created"],
+    data["date"],
+    frontmatter["modified"],
+    frontmatter["updated"],
+    frontmatter["created"],
+    frontmatter["published"],
+    frontmatter["date"],
+  ]
+
+  for (const candidate of candidates) {
+    const timestamp = toTimestamp(candidate)
+    if (timestamp > 0) return timestamp
+  }
+  return 0
+}
+
+function noteCountLabel(count: number): string {
+  return `${count} ${count === 1 ? "note" : "notes"}`
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────────────
@@ -75,7 +117,10 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
     const seenDirs = new Set<string>()
     for (const f of allFiles) {
       const s = String(f.slug ?? "")
-      const head = s.split("/")[0]
+      const parts = s.split("/").filter(Boolean)
+      if (parts.length < 2) continue
+
+      const head = parts[0]
       if (head && head !== "index" && !opts.excludeDirs.includes(head)) {
         seenDirs.add(head)
       }
@@ -91,8 +136,13 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
         return s === `${seg}/index` || s === seg
       })
 
+      const directoryFiles = allFiles.filter((f) => {
+        const s = String(f.slug ?? "")
+        return s === seg || s.startsWith(`${seg}/`)
+      })
+
       // Count notes inside the directory, excluding the index itself
-      const docCount = allFiles.filter((f) => {
+      const docCount = directoryFiles.filter((f) => {
         const s = String(f.slug ?? "")
         return s.startsWith(`${seg}/`) && s !== `${seg}/index`
       }).length
@@ -110,7 +160,9 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
       const description =
         typeof fm["description"] === "string" ? fm["description"] : opts.descriptionFallback
 
-      entries.push({ seg, title, description, docCount, tags })
+      const date = Math.max(...directoryFiles.map(getFileTimestamp), 0)
+
+      entries.push({ seg, title, description, docCount, tags, date })
     }
 
     // ── Sort ──────────────────────────────────────────────────────────────────────────
@@ -118,6 +170,8 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
       entries.sort((a, b) => a.title.localeCompare(b.title))
     } else if (opts.sort === "docCount") {
       entries.sort((a, b) => b.docCount - a.docCount)
+    } else if (opts.sort === "date") {
+      entries.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title))
     }
 
     const base = relativeBase(slug)
@@ -137,12 +191,12 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
         <div class="rip rip--list">
           <ul class="rip-list">
             {entries.map((entry) => (
-              <li class="rip-list-item">
+              <li class="rip-list-item" key={entry.seg}>
                 <a href={`${base}/${entry.seg}`} class="rip-list-link">
                   <div class="rip-list-row">
                     <span class="rip-list-title">{entry.title}</span>
                     {opts.showDocCount && (
-                      <span class="rip-count">{entry.docCount}&nbsp;notes</span>
+                      <span class="rip-count">{noteCountLabel(entry.docCount)}</span>
                     )}
                   </div>
                   {opts.showDescription && entry.description && (
@@ -161,7 +215,7 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
       <div class="rip rip--cards">
         <ul class="rip-grid">
           {entries.map((entry) => (
-            <li class="rip-card">
+            <li class="rip-card" key={entry.seg}>
               <a href={`${base}/${entry.seg}`} class="rip-card-link">
                 <div class="rip-card-top">
                   <span class="rip-card-title">{entry.title}</span>
@@ -173,7 +227,9 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
                 {opts.showTags && entry.tags.length > 0 && (
                   <div class="rip-tags">
                     {entry.tags.map((tag) => (
-                      <span class="rip-tag">#{tag}</span>
+                      <span class="rip-tag" key={tag}>
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 )}

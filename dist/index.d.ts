@@ -1,21 +1,9 @@
-export { ExampleComponent, ExampleComponentOptions, RootIndexPanels, RootIndexPanelsOptions } from './components/index.js';
-import { QuartzTransformerPlugin, QuartzFilterPlugin, QuartzEmitterPlugin } from '@quartz-community/types';
+import { RootIndexPanelsOptions } from './components/index.js';
+export { RootIndexPanels } from './components/index.js';
+import { QuartzPageTypePlugin } from '@quartz-community/types';
 export { PageGenerator, PageMatcher, QuartzComponent, QuartzComponentConstructor, QuartzComponentProps, QuartzEmitterPlugin, QuartzFilterPlugin, QuartzPageTypePlugin, QuartzPageTypePluginInstance, QuartzTransformerPlugin, StringResource, VirtualPage } from '@quartz-community/types';
-import { ExampleTransformerOptions, ExampleFilterOptions, ExampleEmitterOptions } from './types.js';
 
-/**
- * Example transformer showing remark/rehype usage and resource injection.
- */
-declare const ExampleTransformer: QuartzTransformerPlugin<Partial<ExampleTransformerOptions>>;
+type RootIndexPanelsPageOptions = RootIndexPanelsOptions;
+declare const RootIndexPanelsPage: QuartzPageTypePlugin<RootIndexPanelsPageOptions>;
 
-/**
- * Example filter that removes drafts, tagged pages, and excluded path prefixes.
- */
-declare const ExampleFilter: QuartzFilterPlugin<Partial<ExampleFilterOptions>>;
-
-/**
- * Example emitter that writes a JSON manifest of content metadata.
- */
-declare const ExampleEmitter: QuartzEmitterPlugin<Partial<ExampleEmitterOptions>>;
-
-export { ExampleEmitter, ExampleEmitterOptions, ExampleFilter, ExampleFilterOptions, ExampleTransformer, ExampleTransformerOptions };
+export { RootIndexPanelsOptions, RootIndexPanelsPage, type RootIndexPanelsPageOptions };

@@ -1,6 +1,18 @@
 import fs from "fs"
 import path from "path"
 
+const layoutPositions = new Set(["left", "right", "beforeBody", "afterBody"])
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function requireString(value: unknown, pathLabel: string, errors: string[]): void {
+  if (typeof value !== "string" || value.length === 0) {
+    errors.push(`${pathLabel} must be a non-empty string`)
+  }
+}
+
 export function validateManifest(): void {
   const pkgPath = path.resolve("package.json")
   if (!fs.existsSync(pkgPath)) {
@@ -17,17 +29,52 @@ export function validateManifest(): void {
     return
   }
 
-  const warnings: string[] = []
+  const errors: string[] = []
 
-  if (!quartz.name) warnings.push("quartz.name is missing")
-  if (!quartz.displayName) warnings.push("quartz.displayName is missing")
-  if (!quartz.category) warnings.push("quartz.category is missing")
-  if (!quartz.version) warnings.push("quartz.version is missing")
+  requireString(quartz.name, "quartz.name", errors)
+  requireString(quartz.displayName, "quartz.displayName", errors)
+  requireString(quartz.description, "quartz.description", errors)
+  requireString(quartz.version, "quartz.version", errors)
 
-  if (warnings.length > 0) {
-    console.warn("\x1b[33m⚠ Plugin manifest warnings:\x1b[0m")
-    for (const w of warnings) {
-      console.warn(`  - ${w}`)
+  const categories = Array.isArray(quartz.category) ? quartz.category : [quartz.category]
+  if (!categories.includes("component")) {
+    errors.push('quartz.category must include "component"')
+  }
+
+  if (!isRecord(quartz.configSchema)) {
+    errors.push("quartz.configSchema is required for Quartz 5 option discovery")
+  }
+
+  if ("optionSchema" in quartz) {
+    errors.push("quartz.optionSchema is ignored by Quartz 5; use quartz.configSchema")
+  }
+
+  if (!isRecord(quartz.components)) {
+    errors.push("quartz.components must declare exported components")
+  } else {
+    const component = quartz.components["RootIndexPanels"]
+    if (!isRecord(component)) {
+      errors.push("quartz.components.RootIndexPanels is required")
+    } else {
+      requireString(component.name, "quartz.components.RootIndexPanels.name", errors)
+      requireString(component.displayName, "quartz.components.RootIndexPanels.displayName", errors)
+      requireString(component.description, "quartz.components.RootIndexPanels.description", errors)
+      requireString(component.version, "quartz.components.RootIndexPanels.version", errors)
+
+      if (
+        typeof component.defaultPosition === "string" &&
+        !layoutPositions.has(component.defaultPosition)
+      ) {
+        errors.push(
+          `quartz.components.RootIndexPanels.defaultPosition must be one of ${[
+            ...layoutPositions,
+          ].join(", ")}`,
+        )
+      }
     }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Invalid Quartz plugin manifest:\n${errors.map((e) => `  - ${e}`).join("\n")}`)
   }
 }

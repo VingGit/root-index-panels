@@ -18,13 +18,6 @@ interface RootIndexPanelsOptions {
     /** Fallback description when frontmatter has none. Default: "" */
     descriptionFallback?: string;
 }
-declare const _default$1: (userOpts?: RootIndexPanelsOptions) => QuartzComponent;
+declare const _default: (userOpts?: RootIndexPanelsOptions) => QuartzComponent;
 
-interface ExampleComponentOptions {
-    prefix?: string;
-    suffix?: string;
-    className?: string;
-}
-declare const _default: (opts?: ExampleComponentOptions) => QuartzComponent;
-
-export { _default as ExampleComponent, type ExampleComponentOptions, _default$1 as RootIndexPanels, type RootIndexPanelsOptions };
+export { _default as RootIndexPanels, type RootIndexPanelsOptions };

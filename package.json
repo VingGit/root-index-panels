@@ -1,6 +1,6 @@
 {
   "name": "@quartz-community/root-index-panels",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Quartz 5 plugin that replaces the root index page with a responsive card grid of first-level vault directories.",
   "type": "module",
   "license": "MIT",
@@ -54,51 +54,51 @@
     "check": "npm run typecheck && npm run lint && npm run format && npm run test"
   },
   "peerDependencies": {
-    "preact": "^10.0.0",
-    "vfile": "^6.0.3"
+    "preact": "^10.0.0"
   },
   "peerDependenciesMeta": {
     "preact": {
       "optional": false
-    },
-    "vfile": {
-      "optional": true
     }
   },
   "dependencies": {
-    "@quartz-community/types": "github:quartz-community/types",
-    "@quartz-community/utils": "github:quartz-community/utils"
+    "@quartz-community/types": "github:quartz-community/types"
   },
   "devDependencies": {
-    "@types/hast": "^3.0.4",
-    "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "github-slugger": "^2.0.0",
-    "hast-util-to-jsx-runtime": "^2.3.6",
-    "mdast-util-find-and-replace": "^3.0.2",
     "preact": "^10.28.2",
+    "preact-render-to-string": "^6.6.5",
     "prettier": "^3.6.2",
-    "rehype-slug": "^6.0.0",
-    "remark-gfm": "^4.0.1",
-    "remark-parse": "^11.0.0",
-    "remark-stringify": "^11.0.0",
     "sass": "^1.97.3",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
-    "unified": "^11.0.5",
-    "unist-util-visit": "^5.1.0",
-    "vfile": "^6.0.3",
     "vitest": "^2.1.9"
   },
   "quartz": {
     "name": "root-index-panels",
     "displayName": "Root Index Panels",
-    "category": "component",
-    "version": "0.1.0",
+    "description": "Renders first-level vault directories as panels on the root index page.",
+    "author": "VingGit",
+    "homepage": "https://github.com/VingGit/root-index-panels",
+    "keywords": [
+      "quartz",
+      "quartz-plugin",
+      "quartz5",
+      "folder-page",
+      "directory",
+      "cards",
+      "index",
+      "component"
+    ],
+    "category": [
+      "pageType",
+      "component"
+    ],
+    "version": "0.1.1",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
     "defaultOrder": 50,
@@ -113,7 +113,7 @@
       "excludeDirs": [],
       "descriptionFallback": ""
     },
-    "optionSchema": {
+    "configSchema": {
       "layout": {
         "type": "enum",
         "values": [
@@ -150,9 +150,15 @@
     },
     "components": {
       "RootIndexPanels": {
+        "name": "RootIndexPanels",
         "displayName": "Root Index Panels",
-        "defaultPosition": "center",
-        "defaultPriority": 10
+        "description": "Directory panel grid for the root index page.",
+        "version": "0.1.1",
+        "quartzVersion": ">=5.0.0",
+        "author": "VingGit",
+        "homepage": "https://github.com/VingGit/root-index-panels",
+        "defaultPosition": "beforeBody",
+        "defaultPriority": 30
       }
     }
   },
