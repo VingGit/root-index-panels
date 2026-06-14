@@ -21,5 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Preact JSX runtime is now externalized correctly so Quartz renders the built component with the host Preact instance.
 - Root-level notes are no longer promoted into directory panels.
 - The documented `date` sort option now sorts by available Quartz date data or date-like frontmatter.

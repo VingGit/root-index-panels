@@ -63,15 +63,10 @@ const inlineScriptPlugin: Plugin = {
  * across all plugins and the Quartz host.
  */
 const SINGLETON_EXTERNALS = [
-  "preact",
-  "preact/hooks",
-  "preact/jsx-runtime",
-  "preact/compat",
-  "@jackyzha0/quartz",
-  "@jackyzha0/quartz/*",
-  "vfile",
-  "vfile/*",
-  "unified",
+  /^preact(?:\/.*)?$/,
+  /^@jackyzha0\/quartz(?:\/.*)?$/,
+  /^vfile(?:\/.*)?$/,
+  /^unified(?:\/.*)?$/,
 ]
 
 export default defineConfig({
@@ -90,7 +85,6 @@ export default defineConfig({
   splitting: false,
   outDir: "dist",
   platform: "node",
-  noExternal: [/.*/],
   external: SINGLETON_EXTERNALS,
   banner: {
     js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
