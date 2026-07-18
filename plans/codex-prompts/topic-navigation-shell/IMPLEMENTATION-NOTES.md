@@ -61,9 +61,19 @@ Populate this file during the implementation run. It is evidence, not a substitu
 
 - Local implementation, distribution generation, isolated CLI insertion, integration, responsive,
   subdirectory-hosting, light-dismiss, focus-restoration, and visual-computed-style gates pass.
-- The final follow-up commit/push, green CI result, and clean remote-pin add/enable/build must be
-  recorded externally after this containing revision is created. No version bump, tag, release,
-  npm publication, marketplace action, or parent push is authorized by this follow-up.
+- Implementation commit `fd5c1f1de447733955459aaf0ee8eb12c8ecd0d9`
+  (`feat: align navigation shell with landing design`) is pushed to `origin/main`. GitHub CI run
+  <https://github.com/VingGit/root-index-panels/actions/runs/29652498365> completed successfully for
+  that exact SHA.
+- A preserved stock-shaped Quartz workspace removed the local source, added
+  `github:VingGit/root-index-panels`, and enabled it through the normal CLI. Add selected committed
+  prebuilt `dist/`; the lock and cache resolved the full implementation SHA above; configuration
+  contained one enabled plugin entry and one left-priority-40 layout stanza. A clean
+  `/group/project/` build emitted 57 files and proved overview/authored/directories order, one sidebar
+  on root and topic, authored root/book labels, scoped Overview/current state, Graph on both pages,
+  and shipped popup/glow/light-dismiss resources.
+- No version bump, tag, release, npm publication, marketplace action, PR, or parent push was
+  performed or authorized by this follow-up.
 
 ## Original navigation-shell increment (historical evidence)
 

@@ -129,12 +129,12 @@ failure is not proof.
 
 - [x] The prior navigation-shell implementation revision was pushed and remotely verified as
       recorded in `IMPLEMENTATION-NOTES.md`; that evidence remains historical baseline context.
-- [ ] The 2026-07-18 design-alignment follow-up status/diff contains the complete intentional change
+- [x] The 2026-07-18 design-alignment follow-up status/diff contains the complete intentional change
       and no `.make`, cache, tarball,
       screenshot, secret, parent content, or unrelated user/agent edit.
-- [ ] The follow-up implementation commit is pushed; its exact hash and green GitHub CI run are
+- [x] The follow-up implementation commit is pushed; its exact hash and green GitHub CI run are
       recorded externally (the containing commit hash cannot be self-recorded).
-- [ ] A clean stock-shaped host remotely adds/enables that exact pushed follow-up revision and passes
+- [x] A clean stock-shaped host remotely adds/enables that exact pushed follow-up revision and passes
       the rendered body/sidebar/Graph/subdirectory-path checks; its lock records the same hash.
 - [x] Parent status is reported separately. No parent GitLab push occurred without authorization.
 - [x] No version-only bump, tag, release, npm publish, or marketplace side effect occurred.
