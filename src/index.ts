@@ -1,7 +1,10 @@
 export { default as RootIndexPanels } from "./components/RootIndexPanels"
-export type { RootIndexPanelsOptions } from "./components/RootIndexPanels"
 export { RootIndexPanelsPage } from "./pageType"
-export type { RootIndexPanelsPageOptions } from "./pageType"
+export type {
+  PanelIconComponent,
+  RootIndexPanelsOptions,
+  RootIndexPanelsPageOptions,
+} from "./types"
 
 // Re-export shared types for consumer convenience
 export type {

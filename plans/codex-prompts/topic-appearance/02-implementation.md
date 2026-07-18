@@ -1,40 +1,82 @@
-# Prompt 02 — Implement authored topic appearance metadata
+# Prompt 02 — Implement baseline correctness, then authored appearance
 
 ## Objective
 
-Implement Prompt 01 with focused edits. Do not redesign the component or modify template compatibility files without a real test need.
+Implement the frozen Prompt 01 contract in small, reviewable layers. Correct the book data model before adding visual metadata so appearance cannot be built on virtual-page contamination or broken links.
 
-## Steps
+Do not redesign host Quartz chrome, add Figma application features that Prompt 00 excludes, or patch any file that exists in official Quartz upstream. Keep every compatibility change inside this plugin and verify the pushed, prebuilt checkout through the normal `npx quartz plugin` workflow.
 
-1. **Types and defaults**
-   - Extend `RootIndexPanelsOptions` and add narrow local types for icon components and resolved appearance.
-   - Default `defaultAccent` to `"theme"`.
-   - Preserve legacy output when `panel` is absent; do not force visible icon markup onto old panels.
-   - Export any consumer-facing types through `src/index.ts` and `src/types.ts`.
+## Phase A — Baseline book correctness
 
-2. **Parsing and resolution**
-   - Read `frontmatter.panel` defensively as an object and accept only strings.
-   - Resolve built-in/custom icons with a deterministic precedence and graceful fallback.
-   - Resolve named accents through `options.accents`; then accept only conservatively validated direct CSS colours. Never inject an unvalidated string into class names, attributes, CSS, or markup.
-   - Store resolved appearance on every `DirEntry`, shared by cards and list rendering.
+1. **Normalize inputs**
+   - Add one runtime normalization boundary for all existing and new options.
+   - Preserve valid existing values and documented defaults; clamp/normalize invalid enum, numeric, array, map, boolean, and string inputs as frozen in Prompt 01.
+   - Keep function-valued `icons` out of manifest/YAML claims while accepting it through the TypeScript factory override.
 
-3. **Markup**
-   - Render an icon only when one resolves, inside the existing link before the topic title, with a stable class such as `.rip-panel-icon`.
-   - Add scoped data attributes and an inline custom property only when a custom accent resolves. Legacy panels inherit Quartz naturally.
-   - Preserve one interactive panel link; do not introduce nested buttons/links.
-   - Decorative icons use `aria-hidden="true"` and `focusable="false"`; preserve the title as the accessible link name.
+2. **Build the inventory once**
+   - Replace repeated `find`/`filter` scans with a single `Map`/`Set` aggregation over eligible physical/listed entries.
+   - Exclude root-level items, `tags`, `excludeDirs`, virtual files, and `unlisted` entries before discovery/counting.
+   - Count eligible physical descendants exactly once and exclude only the book's own landing index.
+   - Sort only after all entries are complete.
 
-4. **CSS**
-   - Keep selectors scoped under `.rip`, `.rip--cards`, or `.rip--list`.
-   - At existing panel accent touchpoints use a fallback chain such as `var(--rip-panel-accent, var(--secondary))` for border/focus/icon/title states.
-   - Do not introduce a palette, typography, surface, or layout opinion beyond existing Quartz variables.
-   - Preserve responsive layout and reduced-motion-friendly behavior.
+3. **Select metadata deterministically**
+   - Use the physical/listed `<segment>/index` only; do not allow `segment` or a virtual index to win based on input order.
+   - Preserve authored title text exactly. Apply humanization only to the segment fallback.
+   - Source description, tags, and `panel` metadata from the same selected index. Keep the date-sort key as the newest eligible physical date aggregated across the whole book.
 
-5. **Internationalization**
-   - Replace hard-coded note singular/plural and empty-state strings with the confirmed Quartz translation API.
-   - Resolve locale during rendering, not at module initialization.
+4. **Create canonical destinations**
+   - Use the public Quartz path utility and target `${segment}/index`.
+   - Accept a physical/listed index or existing FolderPage virtual index as a valid destination according to Prompt 00; omit candidates with neither rather than rendering a broken link, and document the host prerequisite.
+   - Never construct `./${segment}` manually.
 
-## Working example
+5. **Preserve Page Type boundaries**
+   - Keep root matching, priority, `layout: "content"`, and closure-captured options.
+   - Continue to replace the root HAST with panels and inherit the host frame/layout slots.
+   - Do not register the component a second time in a manual layout.
+
+## Phase B — Appearance and localization internals
+
+1. **Add focused modules**
+   - Put public consumer types in `src/types.ts` and the established public barrels.
+   - Add a small internal appearance resolver and curated static icon registry rather than embedding all validation in JSX.
+   - Add plugin-owned `src/i18n` definitions, `en-US`, `fi-FI`, and locale selector.
+   - Keep internal helpers internal unless they are a deliberate supported API.
+
+2. **Resolve defensively**
+   - Treat `frontmatter.panel` as unknown: reject null, arrays, non-objects, inherited data, non-string values, empty strings, and invalid identifiers/forms.
+   - Use own-property registry lookups and validate config defaults/map values just as strictly as frontmatter.
+   - Apply the exact icon/accent precedence from Prompt 01 once per completed directory entry, shared by cards and list output.
+   - Never accept raw markup or interpolate an unvalidated value into markup/style.
+
+3. **Render semantic markup**
+   - Keep one existing panel anchor as the only interaction.
+   - Render the `aria-hidden`/`inert` icon wrapper before the title only when an icon resolves. Pass decorative SVG props, make the wrapper non-interactive, and keep custom icon authors within the exported SVG-only contract.
+   - Add only the safe data/custom-property hooks specified in Prompt 01. Untouched default options produce no new appearance markup.
+   - Give a numeric-only visual count a localized accessible label; avoid duplicate audible text.
+
+4. **Apply scoped Figma-inspired styling**
+   - Keep every selector in the `rip-*` namespace and both card/list variants operational.
+   - Use `--rip-panel-accent` only for decorative icon tile, border/title/hover details, with Quartz token fallbacks.
+   - Keep `:focus-visible` independent of arbitrary authored colors and visibly robust in forced-colors mode.
+   - Add a deliberate `prefers-reduced-motion: reduce` path for lift/transition behavior.
+   - Preserve the responsive auto-fitting grid and avoid the Figma prototype's desktop-chrome overflow on narrow screens.
+
+5. **Localize at render time**
+   - Select the plugin catalog from `cfg.locale` inside component rendering.
+   - Replace the hard-coded count and empty state through that boundary.
+   - Keep English output compatible and use the documented fallback for unsupported locales.
+
+## Phase C — Manifest, dependencies, and build inputs
+
+- Add `lucide-preact` and the public path helper package `@quartz-community/utils`, update `package-lock.json`, perform the license/notice work, and ensure the notice is shipped. Import `resolveRelative` from the public utility package and use `FullSlug` from public types where its signature requires it.
+- Update `quartz.defaultOptions` and `configSchema` for every YAML-safe option the loader can accurately describe. Keep package/component metadata internally consistent without inventing a release version.
+- Restore dependency bundling in `tsup.config.ts` while retaining all required singleton externals and current inline SCSS/script handling.
+- Update source exports so `PanelIconComponent` and extended options appear through the intended package entry points.
+- Do not manually edit `dist/`; generate it only after tests/docs are ready.
+
+## Working examples
+
+Writer frontmatter:
 
 ```yaml
 ---
@@ -45,18 +87,26 @@ panel:
 ---
 ```
 
+YAML-safe defaults/named accents belong in the plugin's normal `quartz.config.yaml` entry. Custom component aliases use `quartz.ts` before configuration loading:
+
 ```ts
-RootIndexPanels({
-  icons: { "shell-notes": TerminalIcon },
+import * as ExternalPlugin from "./.quartz/plugins"
+
+ExternalPlugin.RootIndexPanelsPage({
+  icons: { "shell-notes": ShellNotesIcon },
   accents: { ocean: "var(--tertiary)" },
 })
-```
 
-`panel.icon: shell-notes` uses the alias. Omitting `panel` keeps theme-defined output.
+const config = await loadQuartzConfig()
+export default config
+export const layout = await loadQuartzLayout()
+```
 
 ## Acceptance criteria
 
-- Cards and list items share resolver behavior.
-- Invalid frontmatter/config is non-fatal and safe.
-- Root guard and SPA cleanup remain unchanged.
-- `npm run build` succeeds.
+- Full builds implement the Prompt 00 book model with no virtual `tags` panel or inflated counts.
+- Cards/list share one normalized entry/resolution path and canonical folder links.
+- Invalid frontmatter/config is non-fatal and cannot inject CSS/HTML or access inherited registry properties.
+- Default configuration has no icon/accent markup; explicit defaults and per-book metadata follow frozen precedence.
+- Plugin-owned locale output, root guard, SPA script lifecycle, and host layout ownership remain intact.
+- Source, manifest, lockfile, license treatment, exports, tests/docs, and eventual generated output agree.

@@ -1,2 +1,2 @@
 export { default as RootIndexPanels } from "./RootIndexPanels"
-export type { RootIndexPanelsOptions } from "./RootIndexPanels"
+export type { PanelIconComponent, RootIndexPanelsOptions } from "../types"

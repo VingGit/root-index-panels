@@ -1,240 +1,240 @@
 import type {
+  FullSlug,
   QuartzComponent,
-  QuartzComponentProps,
   QuartzComponentConstructor,
+  QuartzComponentProps,
 } from "@quartz-community/types"
+import { resolveRelative } from "@quartz-community/utils/path"
+import { resolvePanelAccent } from "../appearance"
+import { collectBooks, type BookEntry } from "../books"
+import { i18n, type RootIndexPanelsTranslation } from "../i18n"
+import { resolvePanelIcon } from "../icons"
+import { normalizeRootIndexPanelsOptions } from "../options"
+import type { RootIndexPanelsOptions } from "../types"
 // @ts-expect-error — .inline.ts files are processed by the tsup inline-script-loader
 import script from "./scripts/panels.inline.ts"
 import style from "./styles/panels.scss"
 
-// ── Options ───────────────────────────────────────────────────────────────────────
-
-export interface RootIndexPanelsOptions {
-  /** "cards" (default) or "list" */
-  layout?: "cards" | "list"
-  /** Show description from frontmatter. Default: true */
-  showDescription?: boolean
-  /** Show note-count badge. Default: true */
-  showDocCount?: boolean
-  /** Show tags from frontmatter (cards only). Default: true */
-  showTags?: boolean
-  /** Max tags per card. Default: 3 */
-  tagCount?: number
-  /** Sort order. Default: "alphabetical" */
-  sort?: "alphabetical" | "docCount" | "date"
-  /** Directory names (first path segment) to exclude. Default: [] */
-  excludeDirs?: string[]
-  /** Fallback description when frontmatter has none. Default: "" */
-  descriptionFallback?: string
+interface RenderEntry extends BookEntry {
+  href: string
+  icon: ReturnType<typeof resolvePanelIcon>
+  accent: ReturnType<typeof resolvePanelAccent>
 }
 
-// ── Internal types ───────────────────────────────────────────────────────────────────
+function ownDataValue(value: unknown, key: string): unknown {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
 
-interface DirEntry {
-  seg: string
-  title: string
-  description: string
-  docCount: number
-  tags: string[]
-  date: number
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────────────
-
-/**
- * Returns the relative path from the current page back to the site root.
- * For the root index ("index"), this is ".".
- */
-function relativeBase(slug: string): string {
-  const parts = slug.split("/").filter(Boolean)
-  if (parts[parts.length - 1] === "index") parts.pop()
-  return parts.length === 0 ? "." : parts.map(() => "..").join("/")
-}
-
-function toTimestamp(value: unknown): number {
-  if (value instanceof Date) return value.getTime()
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (typeof value === "string") {
-    const parsed = Date.parse(value)
-    return Number.isNaN(parsed) ? 0 : parsed
+  try {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    return descriptor && "value" in descriptor ? descriptor.value : undefined
+  } catch {
+    return undefined
   }
-  return 0
 }
 
-function getFileTimestamp(file: QuartzComponentProps["fileData"]): number {
-  const data = file as Record<string, unknown>
-  const frontmatter = (file.frontmatter ?? {}) as Record<string, unknown>
-  const dates = (data["dates"] ?? {}) as Record<string, unknown>
-
-  const candidates = [
-    dates["modified"],
-    dates["created"],
-    dates["published"],
-    data["modified"],
-    data["updated"],
-    data["created"],
-    data["date"],
-    frontmatter["modified"],
-    frontmatter["updated"],
-    frontmatter["created"],
-    frontmatter["published"],
-    frontmatter["date"],
-  ]
-
-  for (const candidate of candidates) {
-    const timestamp = toTimestamp(candidate)
-    if (timestamp > 0) return timestamp
+function panelAttributes(entry: RenderEntry): Record<string, string | undefined> {
+  return {
+    "data-rip-icon": entry.icon?.name,
+    "data-rip-accent":
+      entry.accent.kind === "named"
+        ? entry.accent.name
+        : entry.accent.kind === "direct"
+          ? "direct"
+          : undefined,
+    style: entry.accent.kind === "theme" ? undefined : `--rip-panel-accent: ${entry.accent.value}`,
   }
-  return 0
 }
 
-function noteCountLabel(count: number): string {
-  return `${count} ${count === 1 ? "note" : "notes"}`
+function PanelIcon({ entry }: { entry: RenderEntry }) {
+  if (!entry.icon) return null
+
+  const Icon = entry.icon.component
+  return (
+    <span class="rip-panel-icon" aria-hidden="true" inert>
+      <Icon aria-hidden="true" focusable="false" width={20} height={20} stroke-width={1.8} />
+    </span>
+  )
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────────────
+function ListPanel({
+  entry,
+  idPrefix,
+  showDescription,
+  showDocCount,
+  translation,
+}: {
+  entry: RenderEntry
+  idPrefix: string
+  showDescription: boolean
+  showDocCount: boolean
+  translation: RootIndexPanelsTranslation
+}) {
+  const titleId = `${idPrefix}-title`
+  const countId = `${idPrefix}-count`
+  const descriptionId = `${idPrefix}-description`
+  const describedBy = [
+    showDocCount ? countId : undefined,
+    showDescription && entry.description ? descriptionId : undefined,
+  ].filter((id): id is string => id !== undefined)
 
-export default ((userOpts?: RootIndexPanelsOptions) => {
-  const opts: Required<RootIndexPanelsOptions> = {
-    layout: "cards",
-    showDescription: true,
-    showDocCount: true,
-    showTags: true,
-    tagCount: 3,
-    sort: "alphabetical",
-    excludeDirs: [],
-    descriptionFallback: "",
-    ...userOpts,
-  }
+  return (
+    <li class="rip-list-item">
+      <a
+        href={entry.href}
+        class="rip-list-link"
+        aria-labelledby={titleId}
+        aria-describedby={describedBy.length > 0 ? describedBy.join(" ") : undefined}
+        {...panelAttributes(entry)}
+      >
+        <div class="rip-list-row">
+          <span class="rip-panel-heading">
+            <PanelIcon entry={entry} />
+            <span class="rip-list-title" id={titleId}>
+              {entry.title}
+            </span>
+          </span>
+          {showDocCount && (
+            <span class="rip-count" id={countId}>
+              {translation.noteCount(entry.docCount)}
+            </span>
+          )}
+        </div>
+        {showDescription && entry.description && (
+          <p class="rip-desc" id={descriptionId}>
+            {entry.description}
+          </p>
+        )}
+      </a>
+    </li>
+  )
+}
 
-  const RootIndexPanels: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
-    const slug = String(fileData.slug ?? "")
+function CardPanel({
+  entry,
+  idPrefix,
+  showDescription,
+  showDocCount,
+  showTags,
+  translation,
+}: {
+  entry: RenderEntry
+  idPrefix: string
+  showDescription: boolean
+  showDocCount: boolean
+  showTags: boolean
+  translation: RootIndexPanelsTranslation
+}) {
+  const countLabel = translation.noteCount(entry.docCount)
+  const titleId = `${idPrefix}-title`
+  const countId = `${idPrefix}-count`
+  const descriptionId = `${idPrefix}-description`
+  const tagsId = `${idPrefix}-tags`
+  const describedBy = [
+    showDocCount ? countId : undefined,
+    showDescription && entry.description ? descriptionId : undefined,
+    showTags && entry.tags.length > 0 ? tagsId : undefined,
+  ].filter((id): id is string => id !== undefined)
 
-    // Only render on the vault's root index page
-    if (slug !== "index") return <></>
+  return (
+    <li class="rip-card">
+      <a
+        href={entry.href}
+        class="rip-card-link"
+        aria-labelledby={titleId}
+        aria-describedby={describedBy.length > 0 ? describedBy.join(" ") : undefined}
+        {...panelAttributes(entry)}
+      >
+        <div class="rip-card-top">
+          <span class="rip-panel-heading">
+            <PanelIcon entry={entry} />
+            <span class="rip-card-title" id={titleId}>
+              {entry.title}
+            </span>
+          </span>
+          {showDocCount && (
+            <>
+              <span class="rip-count" aria-hidden="true">
+                {entry.docCount}
+              </span>
+              <span class="rip-sr-only" id={countId}>
+                {countLabel}
+              </span>
+            </>
+          )}
+        </div>
+        {showDescription && entry.description && (
+          <p class="rip-desc" id={descriptionId}>
+            {entry.description}
+          </p>
+        )}
+        {showTags && entry.tags.length > 0 && (
+          <div class="rip-tags" id={tagsId}>
+            {entry.tags.map((tag, index) => (
+              <span class="rip-tag" key={`${tag}-${index}`}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </a>
+    </li>
+  )
+}
 
-    // ── Collect first-level directory slugs ────────────────────────────────────────
-    const seenDirs = new Set<string>()
-    for (const f of allFiles) {
-      const s = String(f.slug ?? "")
-      const parts = s.split("/").filter(Boolean)
-      if (parts.length < 2) continue
+export default ((userOptions?: RootIndexPanelsOptions) => {
+  const options = normalizeRootIndexPanelsOptions(userOptions)
 
-      const head = parts[0]
-      if (head && head !== "index" && !opts.excludeDirs.includes(head)) {
-        seenDirs.add(head)
-      }
-    }
+  const RootIndexPanels: QuartzComponent = ({ fileData, allFiles, cfg }: QuartzComponentProps) => {
+    if (fileData.slug !== "index") return <></>
 
-    // ── Build a DirEntry for each directory ────────────────────────────────────────
-    const entries: DirEntry[] = []
+    const translation = i18n(cfg.locale)
+    const entries: RenderEntry[] = collectBooks(allFiles, options).map((entry) => ({
+      ...entry,
+      href: resolveRelative(fileData.slug as FullSlug, `${entry.segment}/index` as FullSlug),
+      icon: resolvePanelIcon(ownDataValue(entry.panel, "icon"), options),
+      accent: resolvePanelAccent(ownDataValue(entry.panel, "accent"), options),
+    }))
 
-    for (const seg of seenDirs) {
-      // Prefer <seg>/index.md for metadata; fall back to any file at <seg>
-      const indexFile = allFiles.find((f) => {
-        const s = String(f.slug ?? "")
-        return s === `${seg}/index` || s === seg
-      })
-
-      const directoryFiles = allFiles.filter((f) => {
-        const s = String(f.slug ?? "")
-        return s === seg || s.startsWith(`${seg}/`)
-      })
-
-      // Count notes inside the directory, excluding the index itself
-      const docCount = directoryFiles.filter((f) => {
-        const s = String(f.slug ?? "")
-        return s.startsWith(`${seg}/`) && s !== `${seg}/index`
-      }).length
-
-      const fm = (indexFile?.frontmatter ?? {}) as Record<string, unknown>
-
-      const rawTitle = typeof fm["title"] === "string" ? fm["title"] : seg
-      const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1).replace(/-/g, " ")
-
-      const rawTags = fm["tags"]
-      const tags = Array.isArray(rawTags)
-        ? rawTags.filter((t): t is string => typeof t === "string").slice(0, opts.tagCount)
-        : []
-
-      const description =
-        typeof fm["description"] === "string" ? fm["description"] : opts.descriptionFallback
-
-      const date = Math.max(...directoryFiles.map(getFileTimestamp), 0)
-
-      entries.push({ seg, title, description, docCount, tags, date })
-    }
-
-    // ── Sort ──────────────────────────────────────────────────────────────────────────
-    if (opts.sort === "alphabetical") {
-      entries.sort((a, b) => a.title.localeCompare(b.title))
-    } else if (opts.sort === "docCount") {
-      entries.sort((a, b) => b.docCount - a.docCount)
-    } else if (opts.sort === "date") {
-      entries.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title))
-    }
-
-    const base = relativeBase(slug)
-
-    // ── Empty state ───────────────────────────────────────────────────────────────────
     if (entries.length === 0) {
       return (
         <div class="rip">
-          <p class="rip-empty">No subdirectories found.</p>
+          <p class="rip-empty">{translation.emptyState}</p>
         </div>
       )
     }
 
-    // ── List layout ───────────────────────────────────────────────────────────────────
-    if (opts.layout === "list") {
+    if (options.layout === "list") {
       return (
         <div class="rip rip--list">
           <ul class="rip-list">
-            {entries.map((entry) => (
-              <li class="rip-list-item" key={entry.seg}>
-                <a href={`${base}/${entry.seg}`} class="rip-list-link">
-                  <div class="rip-list-row">
-                    <span class="rip-list-title">{entry.title}</span>
-                    {opts.showDocCount && (
-                      <span class="rip-count">{noteCountLabel(entry.docCount)}</span>
-                    )}
-                  </div>
-                  {opts.showDescription && entry.description && (
-                    <p class="rip-desc">{entry.description}</p>
-                  )}
-                </a>
-              </li>
+            {entries.map((entry, index) => (
+              <ListPanel
+                key={entry.segment}
+                entry={entry}
+                idPrefix={`rip-panel-${index}`}
+                showDescription={options.showDescription}
+                showDocCount={options.showDocCount}
+                translation={translation}
+              />
             ))}
           </ul>
         </div>
       )
     }
 
-    // ── Cards layout (default) ────────────────────────────────────────────────────────────
     return (
       <div class="rip rip--cards">
         <ul class="rip-grid">
-          {entries.map((entry) => (
-            <li class="rip-card" key={entry.seg}>
-              <a href={`${base}/${entry.seg}`} class="rip-card-link">
-                <div class="rip-card-top">
-                  <span class="rip-card-title">{entry.title}</span>
-                  {opts.showDocCount && <span class="rip-count">{entry.docCount}</span>}
-                </div>
-                {opts.showDescription && entry.description && (
-                  <p class="rip-desc">{entry.description}</p>
-                )}
-                {opts.showTags && entry.tags.length > 0 && (
-                  <div class="rip-tags">
-                    {entry.tags.map((tag) => (
-                      <span class="rip-tag" key={tag}>
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </a>
-            </li>
+          {entries.map((entry, index) => (
+            <CardPanel
+              key={entry.segment}
+              entry={entry}
+              idPrefix={`rip-panel-${index}`}
+              showDescription={options.showDescription}
+              showDocCount={options.showDocCount}
+              showTags={options.showTags}
+              translation={translation}
+            />
           ))}
         </ul>
       </div>
@@ -244,4 +244,6 @@ export default ((userOpts?: RootIndexPanelsOptions) => {
   RootIndexPanels.css = style
   RootIndexPanels.afterDOMLoaded = script
   return RootIndexPanels
-}) satisfies QuartzComponentConstructor
+}) satisfies QuartzComponentConstructor<RootIndexPanelsOptions>
+
+export type { RootIndexPanelsOptions } from "../types"

@@ -69,6 +69,10 @@ const SINGLETON_EXTERNALS = [
   /^unified(?:\/.*)?$/,
 ]
 
+// tsup gives `noExternal` precedence over `external`. Exclude host singletons from
+// the blanket bundling matcher so they remain shared with Quartz at runtime.
+const BUNDLE_NON_SINGLETONS = /^(?!(?:preact|@jackyzha0\/quartz|vfile|unified)(?:\/|$)).+/
+
 export default defineConfig({
   entry: {
     index: "src/index.ts",
@@ -86,6 +90,7 @@ export default defineConfig({
   outDir: "dist",
   platform: "node",
   external: SINGLETON_EXTERNALS,
+  noExternal: [BUNDLE_NON_SINGLETONS],
   banner: {
     js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
   },

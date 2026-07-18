@@ -24,6 +24,7 @@
     "dist",
     "README.md",
     "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
     "CHANGELOG.md"
   ],
   "exports": {
@@ -50,11 +51,15 @@
     "lint": "eslint . --max-warnings=0",
     "format": "prettier . --check",
     "test": "vitest run",
+    "test:integration": "node test/integration/parent-build.mjs",
+    "test:watch-integration": "node test/integration/watch-build.mjs",
     "typecheck": "tsc --noEmit",
+    "verify:dist": "node scripts/check-dist-externals.mjs",
+    "verify:package": "node scripts/check-packed-package.mjs",
     "check": "npm run typecheck && npm run lint && npm run format && npm run test"
   },
   "peerDependencies": {
-    "preact": "^10.0.0"
+    "preact": "^10.27.2"
   },
   "peerDependenciesMeta": {
     "preact": {
@@ -62,7 +67,9 @@
     }
   },
   "dependencies": {
-    "@quartz-community/types": "github:quartz-community/types"
+    "@quartz-community/types": "github:quartz-community/types",
+    "@quartz-community/utils": "github:quartz-community/utils",
+    "lucide-preact": "1.25.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
@@ -70,6 +77,7 @@
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "happy-dom": "20.10.6",
     "preact": "^10.28.2",
     "preact-render-to-string": "^6.6.5",
     "prettier": "^3.6.2",
@@ -111,7 +119,10 @@
       "tagCount": 3,
       "sort": "alphabetical",
       "excludeDirs": [],
-      "descriptionFallback": ""
+      "descriptionFallback": "",
+      "defaultIcon": "",
+      "defaultAccent": "theme",
+      "accents": {}
     },
     "configSchema": {
       "layout": {
@@ -146,6 +157,12 @@
       },
       "descriptionFallback": {
         "type": "string"
+      },
+      "defaultIcon": {
+        "type": "string"
+      },
+      "defaultAccent": {
+        "type": "string"
       }
     },
     "components": {
@@ -156,9 +173,7 @@
         "version": "0.1.1",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
-        "homepage": "https://github.com/VingGit/root-index-panels",
-        "defaultPosition": "beforeBody",
-        "defaultPriority": 30
+        "homepage": "https://github.com/VingGit/root-index-panels"
       }
     }
   },

@@ -1,57 +1,76 @@
-// ============================================================================
-// RootIndexPanels styles
-//
-// Uses Quartz's built-in CSS custom properties so the component respects
-// the user's chosen colour scheme and dark-mode toggle automatically.
-//
-// Quartz variable reference:
-//   --light         page background
-//   --lightgray     subtle borders / surface tint
-//   --gray          placeholder / muted text
-//   --darkgray      body text
-//   --dark          headings / strong text
-//   --secondary     link / accent colour
-//   --tertiary      hover accent
-//   --highlight     translucent hover background
-//   --bodyFont      body typeface
-//   --headerFont    heading typeface
-//   --codeFont      monospace typeface
-// ============================================================================
-
-// ── Shared wrapper ────────────────────────────────────────────────────────
-
 .rip {
-  margin: 1.5rem 0 2.5rem;
   width: 100%;
+  margin: 1.5rem 0 2.5rem;
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.rip-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .rip-empty {
+  margin: 0;
   color: var(--gray);
   font-size: 0.9rem;
   font-style: italic;
 }
 
-// ── Shared sub-elements ───────────────────────────────────────────────────
-
 .rip-desc {
-  font-size: 0.82rem;
-  line-height: 1.55;
-  color: var(--gray);
-  margin: 0;
   flex: 1 1 auto;
+  margin: 0;
+  color: var(--gray);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.rip-panel-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rip-panel-icon {
+  display: inline-grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 2.35rem;
+  place-items: center;
+  border: 1px solid var(--rip-panel-accent, var(--lightgray));
+  border-radius: 0.65rem;
+  color: var(--rip-panel-accent, var(--secondary));
+  background: var(--highlight);
+  pointer-events: none;
+
+  svg {
+    display: block;
+    pointer-events: none;
+  }
 }
 
 .rip-count {
   display: inline-block;
-  font-size: 0.68rem;
-  font-family: var(--codeFont);
-  color: var(--gray);
-  border: 1px solid var(--lightgray);
-  border-radius: 4px;
-  padding: 0.1em 0.4em;
-  white-space: nowrap;
   flex-shrink: 0;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--lightgray);
+  border-radius: 999px;
+  color: var(--gray);
+  font-family: var(--codeFont);
+  font-size: 0.68rem;
   line-height: 1.6;
+  white-space: nowrap;
 }
 
 .rip-tags {
@@ -63,143 +82,199 @@
 }
 
 .rip-tag {
-  font-size: 0.67rem;
-  font-family: var(--codeFont);
-  color: var(--secondary);
+  padding: 0.12em 0.48em;
+  border-radius: 999px;
+  color: var(--rip-panel-accent, var(--secondary));
   background: var(--highlight);
-  border-radius: 3px;
-  padding: 0.1em 0.45em;
+  font-family: var(--codeFont);
+  font-size: 0.67rem;
+  overflow-wrap: anywhere;
 }
-
-// ── Cards layout ──────────────────────────────────────────────────────────
 
 .rip--cards {
   .rip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 0.75rem;
-    list-style: none;
-    padding: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.85rem;
     margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .rip-card {
-    border: 1px solid var(--lightgray);
-    border-radius: 8px;
-    background: transparent;
-    transition:
-      border-color 0.15s ease,
-      transform 0.15s ease,
-      box-shadow 0.15s ease;
-
-    &:hover {
-      border-color: var(--secondary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
-    }
-
-    &:focus-within {
-      outline: 2px solid var(--secondary);
-      outline-offset: 2px;
-    }
+    min-width: 0;
+    margin: 0;
   }
 
   .rip-card-link {
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    padding: 1.1rem 1.2rem;
+    min-height: 10.5rem;
     height: 100%;
-    box-sizing: border-box;
-    text-decoration: none;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1.05rem 1.1rem;
+    border: 1px solid var(--lightgray);
+    border-radius: 0.8rem;
     color: var(--darkgray);
-    border-radius: inherit;
+    background: transparent;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
 
-    &:hover {
-      background: var(--highlight);
-      color: var(--dark);
-    }
-
-    &:focus {
-      outline: none; // handled by .rip-card:focus-within
+    &:focus-visible {
+      outline: 3px solid var(--secondary);
+      outline-offset: 3px;
     }
   }
 
   .rip-card-top {
     display: flex;
+    min-width: 0;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.65rem;
   }
 
   .rip-card-title {
-    font-family: var(--headerFont);
-    font-weight: 600;
-    font-size: 0.975rem;
+    min-width: 0;
     color: var(--dark);
+    font-family: var(--headerFont);
+    font-size: 1rem;
+    font-weight: 650;
     line-height: 1.3;
+    overflow-wrap: anywhere;
+    transition: color 150ms ease;
+  }
+
+  @media (hover: hover) {
+    .rip-card-link:hover {
+      border-color: var(--rip-panel-accent, var(--secondary));
+      box-shadow: 0 0.45rem 1.5rem rgba(0, 0, 0, 0.09);
+      transform: translateY(-2px);
+
+      .rip-card-title {
+        color: var(--rip-panel-accent, var(--secondary));
+      }
+    }
   }
 }
 
-// ── List layout ───────────────────────────────────────────────────────────
-
 .rip--list {
   .rip-list {
-    list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--lightgray);
+    list-style: none;
   }
 
   .rip-list-item {
+    margin: 0;
     border-bottom: 1px solid var(--lightgray);
-
-    &:first-child {
-      border-top: 1px solid var(--lightgray);
-    }
-
-    &:focus-within {
-      outline: 2px solid var(--secondary);
-      outline-offset: -2px;
-    }
   }
 
   .rip-list-link {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.8rem 0.3rem;
-    text-decoration: none;
+    gap: 0.35rem;
+    padding: 0.8rem 0.35rem 0.8rem 0.55rem;
+    border-inline-start: 0.2rem solid transparent;
     color: var(--darkgray);
-    transition: color 0.12s;
+    text-decoration: none;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease,
+      background-color 120ms ease;
 
-    &:hover {
-      color: var(--secondary);
+    &[data-rip-accent] {
+      border-inline-start-color: var(--rip-panel-accent);
     }
 
-    &:focus {
-      outline: none;
+    &:hover {
+      color: var(--rip-panel-accent, var(--secondary));
+      background: var(--highlight);
+
+      .rip-list-title {
+        color: var(--rip-panel-accent, var(--secondary));
+      }
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--secondary);
+      outline-offset: 2px;
     }
   }
 
   .rip-list-row {
     display: flex;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
   }
 
   .rip-list-title {
-    font-family: var(--headerFont);
-    font-weight: 600;
-    font-size: 0.95rem;
+    min-width: 0;
     color: var(--dark);
+    font-family: var(--headerFont);
+    font-size: 0.96rem;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+
+  .rip-panel-icon {
+    width: 2rem;
+    height: 2rem;
+    flex-basis: 2rem;
+    border-radius: 0.55rem;
   }
 }
-
-// ── Responsive ────────────────────────────────────────────────────────────
 
 @media (max-width: 600px) {
   .rip--cards .rip-grid {
     grid-template-columns: 1fr;
+  }
+
+  .rip--cards .rip-card-link {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rip .rip-card-link,
+  .rip .rip-card-title,
+  .rip .rip-list-link {
+    transition: none;
+  }
+
+  .rip--cards .rip-card-link:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .rip .rip-card-link,
+  .rip .rip-list,
+  .rip .rip-list-item,
+  .rip .rip-count,
+  .rip .rip-panel-icon {
+    border-color: CanvasText;
+  }
+
+  .rip .rip-card-link:focus-visible,
+  .rip .rip-list-link:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .rip .rip-panel-icon,
+  .rip .rip-tag {
+    color: LinkText;
+    background: Canvas;
+  }
+
+  .rip .rip-list-link[data-rip-accent] {
+    border-inline-start-color: LinkText;
   }
 }

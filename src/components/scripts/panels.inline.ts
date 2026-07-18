@@ -7,7 +7,7 @@
 // router can tear them down before the next navigation.
 // ============================================================================
 
-function initRootIndexPanels() {
+export function initRootIndexPanels() {
   const grids = document.querySelectorAll<HTMLElement>(".rip-grid, .rip-list")
   if (grids.length === 0) return
 
@@ -18,6 +18,8 @@ function initRootIndexPanels() {
     if (cards.length === 0) continue
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
+
       const active = document.activeElement
       if (!active) return
 
