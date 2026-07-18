@@ -284,18 +284,23 @@ viewport, plugin-local CSS exposes the content again above the mobile breakpoint
 summary can never strand desktop navigation in a closed native-details state.
 
 Real-browser testing found that Quartz's intrinsic `auto` grid tracks can retain a wider
-left/center/right minimum after this component is inserted. The plugin therefore uses two
+left/center/right minimum after this component is inserted, and that CanvasFrame adds its open drawer
+padding outside a full-width content box. The plugin therefore uses three
 non-suppressing containment rules in addition to Explorer replacement:
 
 - a default-frame-only selector gated by
   `#quartz-body > .left.sidebar > .rip-sidebar` replaces only the tablet/mobile grid track sizes
   with `minmax(0, ...)`; and
 - `.left.sidebar:has(> .rip-sidebar)` constrains the mobile left container's width and wrapping so
-  the sidebar and existing left components fit the viewport.
+  the sidebar and existing left components fit the viewport; and
+- a Canvas-frame selector gated by a direct `.canvas-sidebar > .rip-sidebar` sets only
+  `box-sizing: border-box`, keeping the host's 300px open-drawer padding inside the desktop viewport.
 
 These rules preserve Quartz's grid areas, document order, and responsive right-rail flow. They do
 not select `.right`, Graph, Table of Contents, or any individual right component, and the
-`data-frame="default"` gate means CanvasPage and other custom frames never match the grid rule.
+`data-frame="default"` gate means CanvasPage and other custom frames never match the grid rule. The
+separate Canvas rule does not target the stage, container, controls, or transforms, and mobile keeps
+Quartz's existing overlay behavior because CanvasPage resets the open-frame padding there.
 
 `replaceExplorer` defaults to `true`. Frame-specific selectors hide only a direct stock Explorer
 sibling when this component explicitly opts in:
@@ -324,9 +329,10 @@ book title and book-root link, so that crumb becomes the first visible breadcrum
 or reconstructing Breadcrumbs. Root-context routes keep normal stock breadcrumb behavior. The site
 title/PageTitle and the manual switcher continue to link to the true root.
 
-Together these are exactly four narrowly scoped behavioral selector kinds: default-frame grid-track
-containment, mobile left-container containment, frame-specific direct Explorer replacement, and
-eligible-book breadcrumb-root promotion. No script performs either replacement or breadcrumb work.
+Together these are exactly five narrowly scoped behavioral selector kinds: default-frame grid-track
+containment, mobile left-container containment, frame-specific direct Explorer replacement,
+Canvas-frame box-model containment, and eligible-book breadcrumb-root promotion. No script performs
+Explorer replacement, Canvas containment, or breadcrumb work.
 
 The plugin does not clear, hide, move, or style the right layout slot. A right-positioned Graph—and
 independent Table of Contents and Backlinks entries—continues to render on the root and ordinary

@@ -39,8 +39,17 @@ describe("RootIndexSidebar Explorer replacement styles", () => {
     expect(compactStyleSource).toContain(
       '.page[data-frame="canvas"]>#quartz-body>.center.canvas-frame>.canvas-sidebar:has(>.rip-sidebar[data-rip-replace-explorer="true"])>.explorer{display:none!important;}',
     )
-    expect(styleSource.match(/\.page\[data-frame="canvas"\]/g)).toHaveLength(1)
+    expect(styleSource.match(/\.page\[data-frame="canvas"\]/g)).toHaveLength(2)
     expect(styleSource).not.toContain('[data-rip-replace-explorer="false"]')
+  })
+
+  it("contains an open CanvasFrame drawer inside the viewport when the plugin is mounted", () => {
+    expect(compactStyleSource).toContain(
+      '.page[data-frame="canvas"]>#quartz-body>.center.canvas-frame:has(>.canvas-sidebar>.rip-sidebar){box-sizing:border-box;}',
+    )
+    expect(styleSource).not.toContain(".canvas-stage")
+    expect(styleSource).not.toContain(".canvas-container")
+    expect(styleSource).not.toContain(".canvas-controls")
   })
 
   it("hides only the redundant root breadcrumb on default-frame book routes", () => {

@@ -898,6 +898,25 @@ function assertCanvasExplorerReplacementCss(outputRoot) {
   )
 }
 
+function assertCanvasFrameContainmentCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const selector =
+    ".page[data-frame=canvas]>#quartz-body>.center.canvas-frame:has(>.canvas-sidebar>.rip-sidebar)"
+  const selectorStart = css.indexOf(selector)
+  assert.notEqual(
+    selectorStart,
+    -1,
+    "emitted CSS lost the plugin-gated CanvasFrame containment selector",
+  )
+  const declarationStart = css.indexOf("{", selectorStart)
+  const declarationEnd = css.indexOf("}", declarationStart)
+  assert.ok(declarationStart > selectorStart && declarationEnd > declarationStart)
+  assert.ok(
+    css.slice(declarationStart + 1, declarationEnd).includes("box-sizing:border-box"),
+    "emitted CanvasFrame containment rule lost border-box sizing",
+  )
+}
+
 function assertBookBreadcrumbCss(outputRoot) {
   const css = normalizedCss(outputRoot)
   const selector =
@@ -1393,6 +1412,7 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assertAssetReferencesResolve(dottedPath, outputRoot)
   assertExplorerReplacementCss(outputRoot)
   assertCanvasExplorerReplacementCss(outputRoot)
+  assertCanvasFrameContainmentCss(outputRoot)
   assertBookBreadcrumbCss(outputRoot)
   assertResponsiveContainmentCss(outputRoot)
   assertDesignCss(outputRoot)

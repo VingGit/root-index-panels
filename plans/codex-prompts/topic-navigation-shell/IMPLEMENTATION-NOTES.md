@@ -50,6 +50,14 @@ Populate this file during the implementation run. It is evidence, not a substitu
   At `390px` the drawer fit without horizontal overflow. Removing the true opt-in attribute—the
   exact SSR state produced by `replaceExplorer: false`—changed the direct Explorer from `none` to
   `flex` in both default and Canvas frames while the plugin and stage stayed visible.
+- A post-deployment audit exposed a separate CanvasPage box-model defect at desktop: its 100%-wide
+  content-box frame grew to 1740px when the host added 300px open-drawer padding. The plugin now gates
+  `box-sizing: border-box` on the exact CanvasFrame that directly hosts `RootIndexSidebar`; it applies
+  in both Explorer option states and never targets the stage, container, controls, or transforms.
+- A rebuilt isolated Quartz host passed closed/open/closed Edge geometry at 1440, 801, 800, and 390
+  CSS pixels. Desktop open frames stayed viewport-wide with 300px inward padding and stage widths of
+  1140/501px; 800/390 retained the overlay model; controls and Canvas content remained non-zero; and
+  `documentElement`, body, and forced `scrollTo` probes remained at zero horizontal overflow.
 
 ### Push, CI, and remote-consumer evidence
 

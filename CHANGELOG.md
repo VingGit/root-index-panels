@@ -57,10 +57,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Overview, opens top-level folders by default, and opens deeper folders only for current ancestry.
   The right layout slot remains host-owned; CanvasPage's fullscreen no-right-slot frame remains an
   explicit host-controlled exception.
-- Responsive host coupling is limited to four narrowly scoped behavioral selector kinds:
+- Responsive host coupling is limited to five narrowly scoped behavioral selector kinds:
   default-frame grid-track containment, direct-plugin mobile left-container containment,
-  frame-specific direct Explorer sibling replacement, and default-frame eligible-book breadcrumb
-  promotion. Explorer replacement remains the only whole-component suppression.
+  frame-specific direct Explorer sibling replacement, Canvas-frame box-model containment, and
+  default-frame eligible-book breadcrumb promotion. Explorer replacement remains the only
+  whole-component suppression.
 
 ### Fixed
 
@@ -99,6 +100,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CanvasFrame now receives its own direct, frame-gated Explorer replacement variant, removing the
   duplicate stock tree below `RootIndexSidebar` when `replaceExplorer` is enabled while preserving it
   when the option is false.
+- CanvasFrame's open 300px desktop drawer padding is now contained inside its full-width frame when
+  this plugin is mounted, eliminating right-edge clipping and horizontal scrolling while preserving
+  the mobile overlay, stage, controls, and both Explorer option states.
 - Default-frame eligible-book routes now promote Quartz's existing book-title/book-root breadcrumb by
   hiding only the redundant leading Home crumb; root routes and true-root PageTitle/switcher access
   remain unchanged.

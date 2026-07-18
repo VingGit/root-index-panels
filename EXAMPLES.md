@@ -206,9 +206,10 @@ When stock Breadcrumbs renders on a default-frame eligible-book route, only its 
 crumb. Root-context breadcrumbs remain unchanged, while PageTitle and the manual selector continue
 to provide true-root access. This book-root promotion is CSS-only.
 
-The responsive grid rule, mobile-left rule, frame-specific Explorer variants, and book-breadcrumb
-promotion are exactly four narrowly scoped host-selector kinds. None selects the right rail, Graph,
-TOC, or Backlinks.
+The responsive grid rule, mobile-left rule, frame-specific Explorer variants, plugin-gated Canvas
+frame box sizing, and book-breadcrumb promotion are exactly five narrowly scoped host-selector kinds.
+None selects the right rail, Graph, TOC, or Backlinks; Canvas containment does not target its stage,
+container, controls, or transforms.
 
 These relevant entries coexist normally; no body placement is present:
 

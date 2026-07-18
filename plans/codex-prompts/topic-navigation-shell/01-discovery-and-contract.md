@@ -208,17 +208,19 @@ separate view over `allFiles` and must not change `docCount`.
 - Search, PageTitle, toolbar components, before/after-body components, Footer, and right components
   remain independent host entries. The sidebar must not import their packages or duplicate their
   behavior.
-- Plugin CSS may style `rip-*` content and use exactly four kinds of narrowly scoped behavioral host
+- Plugin CSS may style `rip-*` content and use exactly five kinds of narrowly scoped behavioral host
   selector:
   1. default-frame `#quartz-body` grid containment gated by a direct
      `.left.sidebar > .rip-sidebar` descendant;
   2. direct-plugin mobile left-container width/wrap containment; and
-  3. frame-specific default/Canvas direct Explorer sibling replacement; and
-  4. default-frame eligible-book breadcrumb-root promotion.
+  3. frame-specific default/Canvas direct Explorer sibling replacement;
+  4. direct-plugin Canvas-frame `box-sizing: border-box` containment; and
+  5. default-frame eligible-book breadcrumb-root promotion.
 - Repeated breakpoint variants and the two Explorer frame variants do not create additional kinds.
-  Explorer replacement is the only whole-component suppression; breadcrumb promotion may hide only
-  the redundant first Home element. CSS must not select `.right`, `.graph`, `.toc`, `.backlinks`,
-  `.search`, `.page-title`, toolbar controls, or unrelated custom frames.
+  Explorer replacement is the only whole-component suppression; Canvas containment must not target
+  stage/container/controls/transforms; breadcrumb promotion may hide only the redundant first Home
+  element. CSS must not select `.right`, `.graph`, `.toc`, `.backlinks`, `.search`, `.page-title`,
+  toolbar controls, or unrelated custom frames.
 - Plugin scripts must not query, move, clone, hide, or attach handlers to those components.
 - The integration fixture keeps Graph enabled at `position: right` with `display: all` behavior and
   no content/root override clearing it. Generated root and book-note DOM must contain Graph under the

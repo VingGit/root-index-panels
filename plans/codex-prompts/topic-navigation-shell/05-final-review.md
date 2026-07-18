@@ -28,13 +28,19 @@ historical check as evidence that the new behavior passed.
 - [x] On default-frame eligible-book routes, only the redundant first stock Home breadcrumb element
       is hidden, making Quartz's existing book-title/book-root link first. Root-context Breadcrumbs
       retain stock behavior, and PageTitle/manual selector retain true-root access.
-- [x] CSS contains exactly four behavioral host-selector kinds: default-frame grid containment,
-      mobile-left containment, frame-specific direct Explorer replacement, and book-root breadcrumb
-      promotion. No script rewrites Explorer/Breadcrumbs and no selector or script changes the right
-      slot, Graph, TOC, Backlinks, or unrelated components/frames.
+- [x] CSS contains exactly five behavioral host-selector kinds: default-frame grid containment,
+      mobile-left containment, frame-specific direct Explorer replacement, direct-plugin Canvas-frame
+      border-box containment, and book-root breadcrumb promotion. No script rewrites
+      Explorer/Breadcrumbs and no selector or script changes the right slot, Graph, TOC, Backlinks, or
+      unrelated components/frames.
+- [x] Opening/closing CanvasFrame at 1440px and 801px allocates its desktop drawer padding inward;
+      800px and 390px retain Quartz's mobile overlay. Frame/stage/controls remain visible, the direct
+      stock Explorer remains hidden when opted in, and every state has zero horizontal scroll.
+- [ ] The corrected revision is pushed, GitHub CI passes, a fresh consumer lock resolves it, GitLab
+      Pages deploys it, and the two requested live routes pass the same computed-style audit.
 - [x] Focused unit/style tests, full check/build/dist/package gates, isolated Page Type integration,
-      desktop/tablet/mobile browser checks, base-path links, and fresh remote-pin verification pass at
-      the exact pushed revision, with current evidence recorded in `IMPLEMENTATION-NOTES.md`.
+      desktop/tablet/mobile browser checks, and base-path links pass in the corrected worktree, with
+      current evidence recorded in `IMPLEMENTATION-NOTES.md`.
 - [x] README, examples, architecture, changelog, prompt contracts, plugin DOX, generated `dist/`, and
       public declarations agree with the correction. No upstream file, release, tag, npm publish,
       marketplace action, or unauthorized parent push occurs.

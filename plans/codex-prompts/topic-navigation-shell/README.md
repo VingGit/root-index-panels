@@ -64,15 +64,16 @@ contract item.
   including responsive layouts; the plugin must not clear, hide, replace, or restyle the right slot.
 - Preserve host PageTitle, Search, Darkmode, ReaderMode, Breadcrumbs, Table of Contents, Backlinks,
   Footer, and other independently installed components. `RootIndexSidebar` replaces the navigation
-  role of stock Explorer. Exactly four kinds of narrowly scoped behavioral host selector are
+  role of stock Explorer. Exactly five kinds of narrowly scoped behavioral host selector are
   permitted: default-frame `#quartz-body` grid-track containment gated by a direct
   `.left.sidebar > .rip-sidebar` descendant at tablet/mobile breakpoints; direct-plugin mobile
   left-container width/wrap containment; frame-specific direct Explorer sibling replacement for
-  default and Canvas frames; and default-frame eligible-book breadcrumb-root promotion.
-  `replaceExplorer` defaults to `true`; `false` preserves Explorer in both frames. Structural
-  containment may not select the right rail or custom frames. No script may mutate Explorer or
-  Breadcrumbs. Explorer replacement is the only whole-component suppression; breadcrumb promotion
-  hides only the redundant first Home crumb.
+  default and Canvas frames; direct-plugin Canvas-frame border-box containment; and default-frame
+  eligible-book breadcrumb-root promotion. `replaceExplorer` defaults to `true`; `false` preserves
+  Explorer in both frames. Default-frame structural containment may not select the right rail or
+  custom frames; Canvas containment may not target stage/container/controls/transforms. No script may
+  mutate Explorer or Breadcrumbs. Explorer replacement is the only whole-component suppression;
+  breadcrumb promotion hides only the redundant first Home crumb.
 - Keep book/card eligibility, physical counts, and book ordering listed-physical only. Scoped
   navigation additionally admits a generated Canvas/Base leaf only with its own matching provenance
   marker, canonical lower-case suffix, and non-unlisted state. These leaves use distinct icons and

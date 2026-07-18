@@ -43,17 +43,22 @@
   add only light-dismiss behavior: one open selector, outside-pointer and switcher-link close, and
   Escape close with focus restoration. It must initialize on Quartz `nav` and tear down through
   `window.addCleanup`.
-- Exactly four kinds of narrowly scoped host selector are allowed:
+- Exactly five kinds of narrowly scoped host selector are allowed:
   1. default-frame `#quartz-body` grid containment gated by a direct
      `.left.sidebar > .rip-sidebar` descendant, used at tablet/mobile breakpoints only to replace
      intrinsic `auto` tracks with `minmax(0, ...)` tracks;
   2. direct-plugin mobile `.left.sidebar:has(> .rip-sidebar)` width/wrap containment;
   3. frame-specific direct Explorer sibling replacement, with separate default
      `.left.sidebar` and Canvas `.canvas-sidebar` variants gated by the frame, direct
-     `.rip-sidebar[data-rip-replace-explorer="true"]`, and direct `.explorer` sibling; and
-  4. default-frame eligible-book breadcrumb-root promotion that hides only the redundant first stock
+     `.rip-sidebar[data-rip-replace-explorer="true"]`, and direct `.explorer` sibling;
+  4. Canvas-frame box-model containment gated by a direct
+     `.canvas-sidebar > .rip-sidebar` descendant, which may set only `box-sizing: border-box` on the
+     host `.canvas-frame` so its open desktop drawer padding remains inside the viewport; and
+  5. default-frame eligible-book breadcrumb-root promotion that hides only the redundant first stock
      `Home` breadcrumb so Quartz's existing book-title/book-root link becomes the first crumb.
 - Breakpoint variants and the two frame-specific Explorer variants remain one selector kind each.
+  Canvas-frame containment applies whether Explorer replacement is enabled or disabled and must not
+  target the Canvas stage, container, controls, or transforms.
   `replaceExplorer` defaults to `true`; `false` must leave Explorer untouched in both frames. Explorer
   replacement is the only whole-component suppression; breadcrumb promotion may hide only the
   redundant first breadcrumb element. Root-context routes retain their normal Home crumb. Never use
@@ -81,12 +86,13 @@
   `topic-appearance/` for non-superseded book/appearance history.
 - Treat the parent Quartz docs, source, installed public APIs, and real CLI behavior as authoritative
   when template examples conflict.
-- Keep styles/scripts under `rip-*`, except the four documented behavioral selector kinds. The
+- Keep styles/scripts under `rip-*`, except the five documented behavioral selector kinds. The
   default-frame rule may only constrain grid tracks, the mobile left rule may only constrain
-  width/wrapping, the Explorer variants may hide only their direct opted-in Explorer siblings, and
-  breadcrumb promotion may hide only the redundant first Home crumb on a default-frame eligible-book
-  route. Sidebar navigation must work without JavaScript; both panel and sidebar `.inline.ts`
-  lifecycles must clean up on SPA navigation.
+  width/wrapping, the Explorer variants may hide only their direct opted-in Explorer siblings, the
+  Canvas-frame rule may only apply border-box sizing to its direct plugin-hosting frame, and breadcrumb
+  promotion may hide only the redundant first Home crumb on a default-frame eligible-book route.
+  Sidebar navigation must work without JavaScript; both panel and sidebar `.inline.ts` lifecycles must
+  clean up on SPA navigation.
 - Define and test physical-versus-virtual data, `allFiles` cache identity, and partial-watch
   invalidation explicitly. Clean/full builds are authoritative.
 - Do not bump versions, tag, release, publish, or submit to a marketplace without separate user

@@ -146,7 +146,7 @@ sidebar shell summary becomes a native mobile disclosure; sidebar summaries and 
 the native `<details>` remains closed after a narrow-to-wide resize, because its reopening summary is
 hidden there.
 
-The stylesheet permits exactly four kinds of narrowly scoped behavioral host selector:
+The stylesheet permits exactly five kinds of narrowly scoped behavioral host selector:
 
 1. `.page[data-frame="default"]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body`
    may replace only intrinsic `auto` track sizing with `minmax(0, ...)` at tablet/mobile
@@ -154,15 +154,20 @@ The stylesheet permits exactly four kinds of narrowly scoped behavioral host sel
 2. `.left.sidebar:has(> .rip-sidebar)` may constrain only the mobile left container's width and
    wrapping, including long-label wrapping, so it occupies the available viewport.
 3. The frame-specific direct Explorer sibling variants documented below may suppress Explorer.
-4. A default-frame eligible-book breadcrumb selector may hide only the redundant first stock Home
+4. A Canvas-frame selector gated by a direct `.canvas-sidebar > .rip-sidebar` may set only
+   `box-sizing: border-box` on `.canvas-frame`, containing the host's open desktop drawer padding
+   without targeting its stage, container, controls, or transforms.
+5. A default-frame eligible-book breadcrumb selector may hide only the redundant first stock Home
    crumb so the existing book-title/book-root link becomes first.
 
 The first rule is gated by the default frame and a direct plugin descendant, preserves grid areas
 and DOM order, and does not match CanvasPage or another custom frame. The structural rules and
 behavioral replacements never select `.right`, `.graph`, `.toc`, Backlinks, or an individual right
 component. Repeated breakpoint declarations and the two frame-specific Explorer variants remain one
-selector kind each. Browser testing at tablet/mobile widths and zoom/reflow is the compatibility
-evidence for this deliberately narrow Quartz-markup dependency.
+selector kind each. The Canvas containment rule remains active for both `replaceExplorer` states so
+box sizing does not change during the drawer transition. Browser testing at desktop, the 801/800px
+boundary, mobile, and zoom/reflow is the compatibility evidence for these deliberately narrow
+Quartz-markup dependencies.
 
 ## Explorer replacement and host ownership
 

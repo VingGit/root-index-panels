@@ -159,15 +159,17 @@ Overview semantics:
 - Support long titles, long descriptions, Unicode paths, zoom/reflow, forced colors, light/dark
   themes, coarse pointers, and `prefers-reduced-motion`.
 - Accent color is decorative and never the only current/focus/expanded indicator.
-- Scope plugin markup/classes under `rip-*`, except exactly four narrowly scoped behavioral
+- Scope plugin markup/classes under `rip-*`, except exactly five narrowly scoped behavioral
   host-selector kinds: the default-frame grid containment above; mobile
   `.left.sidebar:has(> .rip-sidebar)` width/wrap containment; frame-specific direct opted-in Explorer
-  sibling replacement for default and Canvas frames; and default-frame eligible-book breadcrumb-root
-  promotion. The mobile left rule may set only `min-width`, `width`, `max-width`, `flex-wrap`, and
-  `overflow-wrap` for viewport containment. Explorer variants must require the explicit
-  `rip-sidebar` marker/data attribute and are the only whole-component suppression. Breadcrumb
-  promotion may hide only a non-only first stock Home crumb; root-context routes keep normal
-  Breadcrumbs behavior and PageTitle/manual-selector access to the true root.
+  sibling replacement for default and Canvas frames; direct-plugin Canvas-frame border-box
+  containment; and default-frame eligible-book breadcrumb-root promotion. The mobile left rule may
+  set only `min-width`, `width`, `max-width`, `flex-wrap`, and `overflow-wrap` for viewport
+  containment. The Canvas-frame rule may set only `box-sizing: border-box` and must not target stage,
+  container, controls, or transforms. Explorer variants must require the explicit `rip-sidebar`
+  marker/data attribute and are the only whole-component suppression. Breadcrumb promotion may hide
+  only a non-only first stock Home crumb; root-context routes keep normal Breadcrumbs behavior and
+  PageTitle/manual-selector access to the true root.
 
 ## Durable compatibility fixture
 

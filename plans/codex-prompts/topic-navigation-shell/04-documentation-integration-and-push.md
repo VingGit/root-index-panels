@@ -51,12 +51,13 @@ Update the README around real user workflows, not internal file names alone.
 - Explain that sidebar book ordering/eligibility inherits normalized `excludeDirs`,
   `descriptionFallback`, `sort`, and `tagCount` inventory inputs from the panel model, while generated
   Canvas/Base leaves never create/prove/inflate that listed-physical book model or provide folder
-  Overviews. Document exactly four host-selector kinds separately: default-frame/direct-plugin-gated
+  Overviews. Document exactly five host-selector kinds separately: default-frame/direct-plugin-gated
   grid-track containment at tablet/mobile breakpoints, mobile left-container width/wrap containment,
-  frame-specific default/Canvas direct Explorer sibling suppression, and default-frame book-root
-  breadcrumb promotion. State that Explorer replacement is the only whole-component suppression,
-  breadcrumb promotion hides only the redundant first Home element, and no rule targets the right
-  rail, Graph, TOC, Backlinks, or unrelated custom frames.
+  frame-specific default/Canvas direct Explorer sibling suppression, direct-plugin Canvas-frame
+  border-box containment, and default-frame book-root breadcrumb promotion. State that Explorer
+  replacement is the only whole-component suppression, Canvas containment does not target its stage,
+  container, controls, or transforms, breadcrumb promotion hides only the redundant first Home
+  element, and no rule targets the right rail, Graph, TOC, Backlinks, or unrelated custom frames.
 - Use **base-path/subdirectory hosting compatibility** consistently. Give `/quartz-for-gitlab/` as an
   example and explain that public Quartz path resolution—not GitLab-specific logic—keeps links valid.
 - Document Canvas/Bases as distinctly iconed scoped-navigation destinations without claiming they are

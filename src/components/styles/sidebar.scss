@@ -338,6 +338,12 @@
   display: none !important;
 }
 
+.page[data-frame="canvas"]
+  > #quartz-body
+  > .center.canvas-frame:has(> .canvas-sidebar > .rip-sidebar) {
+  box-sizing: border-box;
+}
+
 .page[data-frame="default"]:has(
     > #quartz-body > .left.sidebar > .rip-sidebar[data-rip-scope="book"]
   )

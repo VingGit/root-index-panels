@@ -248,7 +248,7 @@ Do not junction over a locked cache or infer remote usability from a local workt
   (<800px) widths in light/dark themes.
 - At tablet/mobile widths, compare viewport, document, `#quartz-body`, left, center, right, and Graph
   bounds. Require no plugin-induced horizontal overflow, a shrinkable center/right responsive flow,
-  and no containment-rule match on Canvas/custom frames.
+  and no default-frame grid-containment match on Canvas/custom frames.
 - Compare functional hierarchy to the Make source and inspect the right Graph at every width.
 - Measure the selector closed/open Explorer position and require zero layout shift. Verify the popup
   stays within the viewport, covered Explorer content is non-interactive while open, outside pointer
@@ -257,7 +257,9 @@ Do not junction over a locked cache or infer remote usability from a local workt
   TOC, and Backlinks through SPA navigation.
 - Open real `.canvas` and `.base` routes. Confirm each appears in the current book tree with its own
   glyph/current state; the Canvas drawer has no visible stock Explorer below the plugin sidebar when
-  opted in, while the canvas stage remains visible.
+  opted in, while the canvas stage remains visible. Toggle the Canvas drawer closed/open/closed at
+  desktop, 801px, 800px, and mobile: desktop padding must allocate inward, mobile must remain an
+  overlay, controls/stage must remain visible, and every state must have zero horizontal scroll.
 - On a regular/default-frame nested book route, confirm the first visible/accessible breadcrumb is the
   book-title link to the book root rather than Home. Confirm root context remains stock and the site
   title/manual selector still reaches the true front page.
