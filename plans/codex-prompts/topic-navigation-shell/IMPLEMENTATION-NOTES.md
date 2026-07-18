@@ -92,10 +92,26 @@ Populate this file during the implementation run. It is evidence, not a substitu
   `open=false`. ArrowRight moved to the next card; the accessibility tree exposed a named
   `Book navigation` landmark. Root → Custom Book SPA navigation and Back/Forward kept one sidebar and
   one Graph, selected `Custom Book`, removed root cards off-root, and raised zero page errors.
-- Nested plugin commit and pushed revision: pending the authorized nested-only push; record the
-  implementation commit and final evidence revision here after GitHub accepts them.
-- GitHub CI run: pending push.
-- Fresh remote add/enable/build revision: pending a green pushed revision.
+- Nested plugin implementation commit and pushed revision:
+  `f5e8a1eae3018e819b6995d35fb1f4b6013adf99` (`feat: add multi-book navigation shell`) is
+  pushed on `main` and matches `origin/main` at the implementation evidence point. This
+  implementation-notes closeout is a later evidence-only revision; embedding that containing
+  revision's own hash would be self-referential, so its exact final hash and CI result are reported
+  externally after it is pushed.
+- GitHub CI run: the implementation revision passed the repository workflow in green at
+  <https://github.com/VingGit/root-index-panels/actions/runs/29649169553>.
+- Fresh remote add/enable/build revision: a clean stock-shaped host ran
+  `npx quartz plugin remove root-index-panels --concurrency 1`, added
+  `github:VingGit/root-index-panels`, and enabled it through the ordinary CLI. Add selected the
+  committed prebuilt distribution and reported `f5e8a1e`; the lock, plugin cache checkout, and
+  checkout `HEAD` all recorded the full implementation hash
+  `f5e8a1eae3018e819b6995d35fb1f4b6013adf99`. Generated configuration contained exactly one enabled
+  `root-index-panels` entry from `github:VingGit/root-index-panels`, positioned left at priority
+  `40`. A `/group/project/` base-directory build processed 14 inputs and emitted 56 files. Its root
+  contained one sidebar, six cards, authored and overview sentinels, and one Graph; a Custom Book
+  deep route contained one sidebar, no root cards, and one Graph. The built CSS contained both the
+  scoped Explorer replacement and wide-screen disclosure-restoration rules, and generated metadata
+  used the base path.
 - Parent worktree status and whether it was pushed: parent changes are limited to root DOX/general
   plugin guidance, allowed durable `content/` fixtures, and the user's pre-existing
   `quartz.lock.json` modification. No parent GitLab push occurred. No parent Quartz source, docs,
@@ -105,4 +121,13 @@ Populate this file during the implementation run. It is evidence, not a substitu
   data stale for nested add/change until a direct-root change or clean build; full builds are
   authoritative. Canvas uses Quartz's fullscreen custom frame, so the default-frame right Graph is
   intentionally not injected there. No version bump, tag, release, npm publish, marketplace action,
-  or parent push is authorized or performed.
+  or parent push is authorized or performed. Explicit browser/ancestor-free audit workspaces remain
+  outside both repositories under system temporary directories because the command policy rejected
+  recursive cleanup; they are untracked, unpackaged, and contain only disposable verification copies.
+- DOX/document closeout: the root, plugin, integration, and content DOX chains were re-read after
+  implementation; their ownership, topology, fixture, and verification contracts already match the
+  delivered behavior. This evidence-only pass changes only `IMPLEMENTATION-NOTES.md` and
+  `05-final-review.md`; other plugin docs, parent DOX/general plugin guidance, content DOX/checklist,
+  and explicitly superseded appearance evidence are intentionally unchanged because no durable
+  contract changed after the implementation commit. Official Quartz upstream files outside the
+  explicit disposable-`content/` fixture exception remain untouched.
