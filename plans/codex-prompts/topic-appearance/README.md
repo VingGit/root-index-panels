@@ -1,5 +1,14 @@
 # Codex prompt set — root books and authored panel appearance
 
+> [!important]
+> This prompt set is the completed appearance-increment contract and remains authoritative for
+> book discovery, panel metadata, icons, accents, localization, and its recorded implementation
+> evidence. The active follow-up is
+> [`topic-navigation-shell`](../topic-navigation-shell/README.md). That follow-up supersedes this
+> set only where it explicitly changes root Markdown rendering, overview statistics, the browse
+> affordance, manifest component registration/layout insertion, route-aware navigation, or host
+> component integration. Do not rerun this set as a request to remove those newer features.
+
 This is the implementation plan for the next `@quartz-community/root-index-panels` increment. It first makes the existing “first-level folder = book” behavior correct against Quartz 5's real Page Type inputs, then adds optional icon/accent metadata inspired by the [Figma Make prototype](https://www.figma.com/make/BaiQVR8caWHbwcXtS4NOzf/Alternative-Landing-Page-Design?code-node-id=0-9&p=f&fullscreen=1).
 
 This prompt set is an implementation record, not the implementation itself. Prompt 01 is the authoritative technical contract; later prompts may add checks but must not silently weaken or reinterpret it.
@@ -46,7 +55,7 @@ Run the prompts in order. Do not start source implementation until Prompt 01's g
 - Optional icon/accent metadata works in cards and list layout without changing default appearance.
 - Manifest metadata, public declarations, bundled runtime dependencies, license notices, committed `dist/`, tests, and public docs agree.
 - A fresh `quartz plugin add` does not inject a duplicate layout component, and the root frame does not expose TOC or reading-time UI for Markdown that the Page Type replaces.
-- Plugin-owned localization, accessibility, SPA lifecycle, light/dark/mobile rendering, and a GitLab-style subpath build are verified.
+- Plugin-owned localization, accessibility, SPA lifecycle, light/dark/mobile rendering, and a base-path/subdirectory-hosted build are verified.
 - The known Quartz watch-mode invalidation limitation is reproduced and documented; a clean full build is the correctness boundary for aggregate root data.
 - The DOX closeout is complete, and the final report distinguishes plugin changes, ignored integration-cache changes, and any parent-repository changes.
 

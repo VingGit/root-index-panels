@@ -9,34 +9,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `RootIndexSidebar`, a server-rendered Home/book switcher and route-scoped hierarchy built
+  from native disclosures, lists, and links, with responsive, forced-color, and reduced-motion
+  behavior.
+- Added authored root HAST composition above a semantic directory/note/last-updated overview,
+  no-JavaScript browse anchor, and the existing cards/list collection.
+- Added `replaceExplorer`, defaulting to `true`, with a narrowly scoped direct-sibling selector and a
+  `false` opt-out that preserves stock Explorer.
+- Added public `RootIndexSidebar` and `RootIndexSidebarOptions` exports and declared the sidebar as
+  the manifest's only layout component at left priority `40`.
 - Added optional book-index `panel.icon` and `panel.accent` metadata with 13 statically bundled Lucide icons, TypeScript custom icon aliases, YAML-safe named accents, and theme/direct accent fallbacks.
 - Added public `PanelIconComponent`, extended `RootIndexPanelsOptions`, and consistent root, `./types`, and `./components` declarations.
-- Added plugin-owned `en-US` and `fi-FI` count/empty-state catalogs with per-render English fallback for unsupported locales.
+- Added plugin-owned `en-US` and `fi-FI` count, overview, browse, empty-state, and sidebar labels with
+  per-render English fallback for unsupported locales.
 - Added reduced-motion, forced-color, decorative-icon, localized count-label, and SPA keyboard lifecycle coverage.
-- Added packed-package and generated-runtime-import verification plus shipped Lucide/Feather and Quartz utility dependency notices.
-- Added isolated stock-Quartz integration matrices for CLI installation, mixed-Preact rendering, YAML/TypeScript options, SPA/no-SPA assets, GitLab subpaths, and watch invalidation evidence.
+- Added packed-package and generated-runtime verification, including ancestor-dependency detection,
+  plus notices for the shipped Lucide/Feather, Quartz utility, and HAST-to-JSX dependency closure.
+- Added isolated stock-Quartz integration matrices for fresh CLI layout installation,
+  mixed-Preact rendering, YAML/TypeScript options, authored root metadata, sidebar/Explorer/Graph
+  composition, SPA/no-SPA assets, base-path/subdirectory hosting, and watch invalidation evidence.
+- Added a durable JavaScript/Git/SQL compatibility-lab contract with physical/listed counts of
+  `8`/`5`/`6`, distinct writer-selected icons/accents, cross-book edges, and Quartz feature specimens.
 
 ### Changed
 
 - Defined books from listed physical first-level content only, with the physical book index as the sole metadata source and a physical or FolderPage-generated index required as the destination.
 - Counts now include listed physical descendants once, exclude the book's own index, include authored nested indexes, and ignore virtual pages. Date sorting now uses the newest eligible physical entry across the book.
-- Directory links now resolve `<book>/index` through Quartz's public path utility, producing canonical trailing-slash links that remain correct under GitLab Pages subpaths.
+- Root panels plus all Home/book/note/folder sidebar destinations now use Quartz public path
+  utilities, producing canonical relative links under both domain-root and subdirectory-hosted sites.
 - Runtime options, registry maps, sort ties, and duplicate slugs are normalized deterministically at the plugin boundary. YAML and TypeScript map overrides remain intentionally shallow.
 - Restyled both layouts around Quartz theme tokens with responsive cards, scoped appearance hooks, subtle optional accents, and host-controlled focus behavior.
 - Bundled non-singleton runtime dependencies into the committed prebuilt output while keeping Preact/Quartz host packages external.
+- The manifest now declares exactly one installable component, `RootIndexSidebar`; the Page Type body
+  remains public but outside component discovery, preventing duplicate root rendering.
+- Sidebar scoping replaces only the stock Explorer navigation role. The right layout slot remains
+  host-owned; CanvasPage's fullscreen no-right-slot frame remains an explicit host-controlled
+  exception.
+- Responsive host coupling is limited to three narrowly scoped selector kinds: default-frame grid
+  track containment, direct-plugin mobile left-container containment, and direct Explorer sibling
+  replacement. Explorer remains the only cross-plugin suppression.
 
 ### Fixed
 
 - Root notes, `tags`, unlisted content, virtual FolderPage/TagPage output, and synthetic Canvas/Bases pages no longer create books, leak metadata, or inflate counts.
 - Explicit title casing such as `iOS` and `eBPF` is preserved; only missing titles are humanized from their directory segment.
 - Missing landing destinations are omitted instead of producing broken links, including dotted directory segments that previously risked file-style URLs.
-- Root TOC, reading-time, and source-text component data are suppressed only for the exact physical root won by this Page Type, through a shallow render clone that cannot affect higher-priority or virtual owners and does not mutate the processed record used by other emitters.
+- Root Markdown is visible exactly once and root TOC, reading-time, and source-text data remain intact
+  for normal host components and emitters.
+- The plugin no longer needs root-only metadata deletion or a render clone; the physical root HAST is
+  rendered through Quartz's public JSX utility before the overview and book collection.
 - Repeated Quartz SPA navigation now cleans up panel keyboard listeners without duplicate handling.
 - Built-in icons render through a hook-free Lucide-node adapter, avoiding split Preact context failures in local plugin worktrees without any Quartz upstream change.
 - Card counts now use reliable localized accessible descriptions, and modified Arrow/Home/End browser shortcuts are no longer intercepted.
 - Throwing/accessor-backed synthetic metadata is ignored without executing authored accessors or crashing the root render.
 - Declared the path utility's optional `github-slugger` peer directly so clean Linux checkouts no longer depend on an ancestor Quartz installation to run source tests and builds.
 - Embedded source-map text is normalized to LF after builds, so the committed `dist/` freshness check is deterministic across Windows and Linux without discarding useful source content.
+- Browser-observed tablet/mobile horizontal overflow from Quartz intrinsic `auto` grid tracks is
+  contained with default-frame-only `minmax(0, ...)` tracks and direct-plugin left width/wrapping;
+  right-rail components and Canvas/custom frames remain untargeted.
+- Declared the JSX utility's optional `hast-util-to-jsx-runtime` peer directly so standalone source
+  builds cannot resolve it accidentally from an ancestor Quartz installation.
+- A sidebar shell collapsed on mobile becomes visible when resized to tablet/desktop, even though
+  its native `<details>` state remains closed and its narrow-only summary is hidden.
+- Finite numeric dates outside the ECMAScript Date range are ignored instead of crashing both the
+  requested-locale and English-fallback overview formatters.
+- Canvas/Bases virtual records named `<book>/index` no longer qualify a physical directory as a book
+  destination; only physical indexes and ordinary generated FolderPage indexes do.
+- Root panels and sidebar inventory now share one canonical-slug parser, so leading, trailing,
+  doubled, dot, and backslash path anomalies cannot create mismatched links.
+- Revoked option and frontmatter proxies fall back safely at the public root component boundary.
+- Packed-package verification now exercises sidebar runtime exports and sidebar option declarations
+  through every public entry.
 
 ### Security
 
@@ -44,7 +87,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known limitations
 
-- Quartz partial watch builds do not invalidate the regular root Page Type when nested content changes, so root panels/counts/dates can remain stale after nested add/change/delete events. A clean/full build is authoritative.
+- Quartz partial watch builds do not fully invalidate nested aggregates, so root
+  panels/counts/dates or cached sidebar inventory can remain stale after nested add/change/delete
+  events. A clean/full build is authoritative.
 
 ## [0.1.1] - 2026-06-14
 

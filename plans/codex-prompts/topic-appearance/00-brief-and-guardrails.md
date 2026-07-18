@@ -1,5 +1,11 @@
 # Prompt 00 — Product brief, book model, and non-negotiable guardrails
 
+> [!note]
+> Historical increment boundary: the book and appearance rules below remain in force, but the
+> exclusions concerning root Markdown, statistics/browse UI, Explorer/book switching, manifest
+> layout insertion, and host-shell integration are superseded by
+> [`topic-navigation-shell`](../topic-navigation-shell/README.md).
+
 ## Goal
 
 Make `@quartz-community/root-index-panels` a dependable Quartz 5 landing-page Page Type for a multi-book knowledge base: each eligible first-level `content/` directory is represented by one panel, and its authored `index.md` may opt into a panel icon and accent.
@@ -21,7 +27,7 @@ Implement this model exactly unless the user approves a contract change:
 - Render a book candidate only when it has an explicit physical/listed `<book>/index.md` or a FolderPage-generated `<book>/index` destination. Omit it without a broken link when neither exists. Documentation must state that one destination mode is required. Virtual FolderPage output may prove a destination exists, but it must not create a candidate or contribute metadata/counts.
 - Count listed physical pages below the book except the book's own landing index. Authored nested indexes count; virtual indexes do not.
 - Preserve `sort: date` as the newest available date across the book's listed physical entries, not only the book index date.
-- Use Quartz path utilities to target `<book>/index`, producing a canonical directory URL such as `./java/` under root and under GitLab Pages subpaths.
+- Use Quartz path utilities to target `<book>/index`, producing a canonical directory URL such as `./java/` under root and with base-path/subdirectory hosting.
 - Aggregate the eligible files in one pass rather than repeatedly scanning `allFiles` for every book.
 
 ## Authored appearance

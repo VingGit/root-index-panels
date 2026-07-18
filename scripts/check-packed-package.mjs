@@ -67,7 +67,11 @@ try {
       await import("@quartz-community/root-index-panels/types")
       if (typeof root.RootIndexPanels !== "function") throw new Error("missing root component")
       if (typeof root.RootIndexPanelsPage !== "function") throw new Error("missing Page Type")
+      if (typeof root.RootIndexSidebar !== "function") throw new Error("missing root sidebar")
       if (typeof components.RootIndexPanels !== "function") throw new Error("missing component entry")
+      if (typeof components.RootIndexSidebar !== "function") {
+        throw new Error("missing component sidebar entry")
+      }
       if (typeof root.RootIndexPanels().afterDOMLoaded !== "string") {
         throw new Error("built inline script is unavailable")
       }
@@ -83,14 +87,17 @@ try {
         PanelIconComponent,
         RootIndexPanelsOptions,
         RootIndexPanelsPageOptions,
+        RootIndexSidebarOptions,
       } from "@quartz-community/root-index-panels"
       import type {
         PanelIconComponent as ComponentIcon,
         RootIndexPanelsOptions as ComponentOptions,
+        RootIndexSidebarOptions as ComponentSidebarOptions,
       } from "@quartz-community/root-index-panels/components"
       import type {
         PanelIconComponent as TypesIcon,
         RootIndexPanelsOptions as TypesOptions,
+        RootIndexSidebarOptions as TypesSidebarOptions,
       } from "@quartz-community/root-index-panels/types"
 
       declare const icon: PanelIconComponent
@@ -101,11 +108,23 @@ try {
         accents: { brand: "var(--brand)" },
       } satisfies RootIndexPanelsOptions
       const pageOptions: RootIndexPanelsPageOptions = options
+      const sidebarOptions: RootIndexSidebarOptions = options
       const componentOptions: ComponentOptions = options
+      const componentSidebarOptions: ComponentSidebarOptions = options
       const typesOptions: TypesOptions = options
+      const typesSidebarOptions: TypesSidebarOptions = options
       const componentIcon: ComponentIcon = icon
       const typesIcon: TypesIcon = icon
-      void [pageOptions, componentOptions, typesOptions, componentIcon, typesIcon]
+      void [
+        pageOptions,
+        sidebarOptions,
+        componentOptions,
+        componentSidebarOptions,
+        typesOptions,
+        typesSidebarOptions,
+        componentIcon,
+        typesIcon,
+      ]
     `,
   )
   const typeConfig = path.join(temporaryRoot, "tsconfig.json")

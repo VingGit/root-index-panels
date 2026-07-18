@@ -1,5 +1,11 @@
 # Prompt 01 — Verify compatibility and freeze the implementation contract
 
+> [!note]
+> This is the frozen contract for the completed appearance increment. Its book/appearance API and
+> evidence remain authoritative. The active navigation-shell contract explicitly supersedes its
+> `layout: "content"`-only body boundary, hidden-root-source policy, and no-position manifest rule;
+> see [`topic-navigation-shell`](../topic-navigation-shell/README.md).
+
 ## Objective
 
 Reconfirm every API and repository fact below in the implementation session, record any drift, and stop before source edits if the frozen contract is no longer implementable. Do not guess from memory or silently substitute an upstream-template convention for the local Quartz 5 loader.
@@ -27,7 +33,7 @@ Run `npm ci`, then capture baseline `npm run check` and `npm run build` results 
 - Implement the exact inventory, visibility, metadata, destination, count, reserved namespace, and root prerequisites in Prompt 00.
 - Filter physical/listed entries before inventory and counting. Virtual TagPage/FolderPage output can be consulted only to confirm a generated destination.
 - Use two ordered metadata lookups: physical/listed `<segment>/index` first; otherwise no metadata index. Never combine it with `slug === segment` in one `find()`.
-- Use `resolveRelative(fileData.slug!, `${segment}/index`)`; assert a root result of `./<segment>/` and a valid GitLab subpath destination.
+- Use `resolveRelative(fileData.slug!, `${segment}/index`)`; assert a root result of `./<segment>/` and a valid base-path/subdirectory-hosted destination.
 - Preserve explicit index titles byte-for-byte. Humanize only a slug fallback.
 - Normalize runtime options as well as manifest/YAML input according to the table below. Do not rely on manifest discovery metadata as runtime validation.
 - Keep Page Type priority `100`, layout key `content`, and body options captured by the Page Type factory closure. Root Markdown content remains intentionally replaced by the panel body.

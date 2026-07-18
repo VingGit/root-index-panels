@@ -7,6 +7,110 @@
   }
 }
 
+.rip-root-content {
+  margin-bottom: 1.75rem;
+}
+
+.rip-overview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.15rem 0 1.35rem;
+  border-top: 1px solid var(--lightgray);
+}
+
+.rip-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.5rem;
+  margin: 0;
+}
+
+.rip-stat {
+  display: flex;
+  min-width: 5.5rem;
+  flex-direction: column;
+
+  dt {
+    color: var(--gray);
+    font-family: var(--codeFont);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    line-height: 1.45;
+    text-transform: lowercase;
+  }
+
+  dd {
+    order: -1;
+    margin: 0;
+    color: var(--dark);
+    font-family: var(--headerFont);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+}
+
+.rip-browse-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 0.45rem;
+  color: var(--gray);
+  background: var(--light);
+  font-size: 0.8rem;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--secondary);
+    color: var(--secondary);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 3px;
+  }
+}
+
+.rip-directories {
+  scroll-margin-top: 1rem;
+}
+
+.rip-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0 0 1rem;
+
+  &::after {
+    height: 1px;
+    flex: 1 1 auto;
+    background: var(--lightgray);
+    content: "";
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--gray);
+    font-family: var(--codeFont);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  span {
+    order: 2;
+    color: var(--gray);
+    font-family: var(--codeFont);
+    font-size: 0.68rem;
+  }
+}
+
 .rip-sr-only {
   position: absolute;
   width: 1px;
@@ -233,6 +337,19 @@
 }
 
 @media (max-width: 600px) {
+  .rip-overview {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rip-stats {
+    gap: 1rem 1.5rem;
+  }
+
+  .rip-browse-link {
+    align-self: flex-start;
+  }
+
   .rip--cards .rip-grid {
     grid-template-columns: 1fr;
   }
@@ -255,6 +372,8 @@
 }
 
 @media (forced-colors: active) {
+  .rip .rip-overview,
+  .rip .rip-browse-link,
   .rip .rip-card-link,
   .rip .rip-list,
   .rip .rip-list-item,

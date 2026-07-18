@@ -1,5 +1,10 @@
 # Prompt 02 — Implement baseline correctness, then authored appearance
 
+> [!note]
+> Historical implementation prompt. Preserve its completed book/appearance behavior, but do not
+> use its host-chrome, root-HAST, or manifest-layout exclusions to undo the active
+> [`topic-navigation-shell`](../topic-navigation-shell/README.md) increment.
+
 ## Objective
 
 Implement the frozen Prompt 01 contract in small, reviewable layers. Correct the book data model before adding visual metadata so appearance cannot be built on virtual-page contamination or broken links.

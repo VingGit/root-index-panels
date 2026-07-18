@@ -1,0 +1,90 @@
+# Codex prompt set — navigation shell, authored root, and compatibility books
+
+This is the active implementation contract for the next
+`@quartz-community/root-index-panels` increment. It extends the completed
+[`topic-appearance`](../topic-appearance/README.md) work with a route-aware book navigation
+component, visible authored root content, landing-page overview controls, and a durable parent
+Quartz compatibility fixture.
+
+Prompt 01 is the authoritative technical contract for this increment. The appearance prompt set
+remains authoritative for book discovery/counting, destinations, panel icons/accents, option
+normalization, localization, packaging, and its recorded watch limitation unless this set explicitly
+supersedes a boundary.
+
+## Source-of-truth order
+
+When evidence disagrees, use this order and record the resolution before source edits:
+
+1. The active user goal and the applicable `AGENTS.md` chain.
+2. The parent repository's current Quartz 5 docs, source, loader, installed public types, and actual
+   `npx quartz plugin` behavior.
+3. This prompt set, then the non-superseded `topic-appearance` contract.
+4. The plugin's current source, manifest, tests, generated `dist/`, and public documentation.
+5. The upstream Quartz community plugin template at a recorded commit.
+6. The ignored local `Alternative Landing Page Design.make` archive as design and interaction
+   evidence. Do not copy its generated React/Tailwind/Motion implementation into the plugin.
+
+Use **base-path/subdirectory hosting compatibility** for deployment beneath a path such as
+`/quartz-for-gitlab/`. This is not GitLab-specific behavior.
+
+## Run order
+
+1. [Product boundary and guardrails](./00-brief-and-guardrails.md)
+2. [Discovery and frozen contract](./01-discovery-and-contract.md)
+3. [Implementation sequence](./02-implementation.md)
+4. [Tests, fixture, accessibility, and visual review](./03-tests-fixture-and-accessibility.md)
+5. [Documentation, packaging, integration, and push](./04-documentation-integration-and-push.md)
+6. [Final audit and handoff](./05-final-review.md)
+
+Record inspected revisions, baseline results, decisions, and final evidence in
+[`IMPLEMENTATION-NOTES.md`](./IMPLEMENTATION-NOTES.md). Do not silently improvise around a frozen
+contract item.
+
+## Scope summary
+
+- Keep `RootIndexPanelsPage` as the root Page Type and `RootIndexPanels` as its body.
+- Render authored root Markdown, then calculated overview statistics and a browse affordance, then
+  the existing cards/list directory panels.
+- Add one plugin-owned left layout component, `RootIndexSidebar`, containing a native book switcher
+  and route-aware root/book navigation.
+- Derive sidebar books through the same normalized `excludeDirs`, `descriptionFallback`, `sort`, and
+  `tagCount` inventory inputs as panels; isolate cached variants by those values and `allFiles`
+  identity.
+- Declare only `RootIndexSidebar` in `quartz.components`; keep `RootIndexPanels` exported for the
+  Page Type/advanced API but omit it from manifest component discovery.
+- Let a fresh `npx quartz plugin add` insert the one left component. It must never insert the Page
+  Type body into a layout slot or produce a duplicate `.rip` body.
+- Keep Quartz's default frame and right layout slot. Graph remains rendered on root and note pages,
+  including responsive layouts; the plugin must not clear, hide, replace, or restyle the right slot.
+- Preserve host PageTitle, Search, Darkmode, ReaderMode, Breadcrumbs, Table of Contents, Backlinks,
+  Footer, and other independently installed components. `RootIndexSidebar` replaces the navigation
+  role of stock Explorer. Exactly three kinds of narrowly scoped host selector are permitted:
+  direct opted-in Explorer sibling replacement, default-frame `#quartz-body` grid-track containment
+  gated by a direct `.left.sidebar > .rip-sidebar` descendant at tablet/mobile breakpoints, and
+  direct-plugin mobile left-container width/wrap containment. `replaceExplorer` defaults to `true`;
+  `false` is the explicit opt-out. Structural containment may not select the right rail or custom
+  frames. No script may mutate Explorer, and Explorer is the only component that may be suppressed.
+- Keep all compatibility logic inside the external plugin. Never patch Quartz core or any upstream
+  file. The only parent-worktree write allowance is the user's disposable/persistent fixture work
+  under `content/` and its owning DOX documentation.
+- Keep three observable fixture books—JavaScript Basics, Git Practice, and SQL Pocketbook—with
+  distinct safe icon/accent frontmatter and a systematic cross-plugin test matrix.
+
+## Definition of done
+
+- Every frozen behavior in Prompt 01 is implemented and evidenced, not inferred.
+- Desktop, tablet, and mobile navigation work with keyboard, pointer, touch, SPA navigation,
+  reduced motion, forced colors, long labels, Unicode, narrow-closed-to-wide resizing, and
+  base-path/subdirectory hosting.
+- Root Markdown remains visible and drives normal Quartz TOC, reading-time, Search, RSS, sitemap,
+  and social metadata behavior; statistics and browse UI are accurate and accessible.
+- The right Graph component remains present on root and book notes and can show cross-book edges.
+- The three durable fixture books exercise configured Quartz features and contain an observable
+  expected-results checklist with stable sentinels.
+- Unit, DOM, package, real-host, clean-install, watch, browser, accessibility, and remote-pin gates
+  pass. The pushed nested-plugin commit and CI revision are recorded.
+- `dist/`, manifest, declarations, docs, examples, architecture, changelog, tests, and DOX contracts
+  agree. No release, tag, npm publish, or marketplace action occurs without separate authorization.
+
+The user has authorized commits and pushes from the nested plugin repository during this goal.
+That permission does not authorize pushing the parent GitLab repository or publishing a release.

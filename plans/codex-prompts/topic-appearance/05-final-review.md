@@ -1,5 +1,10 @@
 # Prompt 05 — Final implementation review and handoff
 
+> [!note]
+> Historical appearance closeout checklist. Use it for regression coverage, then apply the active
+> [`topic-navigation-shell`](../topic-navigation-shell/README.md) closeout. Where the two differ,
+> the navigation-shell contract controls only its explicitly expanded scope.
+
 Do not treat this as a summary-only prompt. Re-open the frozen contract, inspect the actual diff/artifacts, rerun the gates, and resolve discrepancies before reporting.
 
 ## Scope and book correctness
@@ -7,7 +12,7 @@ Do not treat this as a summary-only prompt. Re-open the frozen contract, inspect
 - [ ] Only existing root `index` is owned by `RootIndexPanelsPage`; priority/layout/frame behavior is intentional.
 - [ ] Books come only from listed physical first-level content; root notes, virtual pages, `tags`, excludes, and virtual-only/empty folders cannot create panels.
 - [ ] Physical book index metadata wins deterministically, authored titles are preserved, counts follow Prompt 00, and aggregation is single-pass.
-- [ ] Every card uses the Quartz-resolved `<segment>/index` directory URL; explicit/generated destinations and a dotted segment are integration-tested under a GitLab subpath.
+- [ ] Every card uses the Quartz-resolved `<segment>/index` directory URL; explicit/generated destinations and a dotted segment are integration-tested with base-path/subdirectory hosting.
 - [ ] Root `content/index.md`, FolderPage/explicit book index prerequisites, host layout ownership, root HAST behavior, and watch limitation are documented accurately.
 - [ ] Root TOC/reading-time data is suppressed without mutating shared processed content; Search/RSS/sitemap/OG treatment of the hidden root source is tested and documented.
 - [ ] Existing options/cards/list/tags/sorting/SPA behavior remain compatible except for the explicit correctness fixes.
@@ -43,7 +48,7 @@ Do not treat this as a summary-only prompt. Re-open the frozen contract, inspect
 
 ## Host integration and limitation gate
 
-- [ ] Isolated parent Quartz builds pass with TagPage/FolderPage, explicit/generated indexes, valid/invalid metadata, YAML/TS overrides, SPA on/off, locale variants, and GitLab-style base path.
+- [ ] Isolated parent Quartz builds pass with TagPage/FolderPage, explicit/generated indexes, valid/invalid metadata, YAML/TS overrides, SPA on/off, locale variants, and a base-path/subdirectory-hosted URL.
 - [ ] Root HTML/CSS and destination files were inspected, not inferred only from a zero exit code.
 - [ ] Nested add/change/delete watch staleness was reproduced/documented, and a clean full build was proven to refresh the root panels.
 - [ ] The ignored plugin cache was refreshed for testing and is not mistaken for a committed source change.

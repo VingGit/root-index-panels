@@ -17,10 +17,15 @@ export interface NormalizedRootIndexPanelsOptions {
   icons: Record<string, PanelIconComponent>
   defaultAccent: string
   accents: Record<string, string>
+  replaceExplorer: boolean
 }
 
 function isObjectRecord(value: unknown): value is Record<PropertyKey, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
+  try {
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+  } catch {
+    return false
+  }
 }
 
 function ownDataValue(value: unknown, key: string): unknown {
@@ -107,16 +112,25 @@ function normalizeDefaultAccent(value: unknown, accents: Record<string, string>)
 }
 
 function normalizeExcludeDirs(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-
   const directories: string[] = []
-  const seen = new Set<string>()
-  for (const item of value) {
-    if (typeof item !== "string") continue
-    const directory = item.trim()
-    if (directory.length === 0 || seen.has(directory)) continue
-    seen.add(directory)
-    directories.push(directory)
+  try {
+    if (!Array.isArray(value)) return directories
+    const seen = new Set<string>()
+    for (let index = 0; index < value.length; index += 1) {
+      let item: unknown
+      try {
+        item = value[index]
+      } catch {
+        continue
+      }
+      if (typeof item !== "string") continue
+      const directory = item.trim()
+      if (directory.length === 0 || seen.has(directory)) continue
+      seen.add(directory)
+      directories.push(directory)
+    }
+  } catch {
+    return directories
   }
   return directories
 }
@@ -138,6 +152,7 @@ export function normalizeRootIndexPanelsOptions(
   const defaultIcon = normalizeRegistryIdentifier(ownDataValue(options, "defaultIcon")) ?? ""
   const icons = normalizeIconRegistry(ownDataValue(options, "icons"))
   const accents = normalizeAccentRegistry(ownDataValue(options, "accents"))
+  const replaceExplorer = ownDataValue(options, "replaceExplorer")
 
   return {
     layout: layout === "list" || layout === "cards" ? layout : "cards",
@@ -155,5 +170,6 @@ export function normalizeRootIndexPanelsOptions(
     icons,
     defaultAccent: normalizeDefaultAccent(ownDataValue(options, "defaultAccent"), accents),
     accents,
+    replaceExplorer: typeof replaceExplorer === "boolean" ? replaceExplorer : true,
   }
 }

@@ -447,8 +447,12 @@ async function stopWatcher() {
   }
   if (!watcherExit.settled) {
     watcher.kill("SIGKILL")
-    await new Promise((resolve) => setTimeout(resolve, 250))
+    const killDeadline = Date.now() + 5_000
+    while (!watcherExit.settled && Date.now() < killDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   }
+  assert.ok(watcherExit.settled, `watch process ${watcher.pid} did not terminate`)
 }
 
 function runFullBuild() {
@@ -520,39 +524,49 @@ async function runDiagnostic() {
   )
   html = rootHtml()
   const changedDescription = panelDescription(html)
-  const countBeforeDelete = panelCount(html)
   process.stdout.write(
     `• nested change: root description=${JSON.stringify(changedDescription)} — ${classify(changedDescription, "OLD WATCH DESCRIPTION", "NEW WATCH DESCRIPTION")}\n`,
   )
 
   previousRebuilds = countRebuilds()
-  fs.unlinkSync(path.join(workspace, "content", "java", "one.md"))
-  await waitForRebuild(previousRebuilds, "watcher did not process the first nested delete")
+  writeWorkspaceFile(
+    "content/index.md",
+    "---\ntitle: Home\n---\n# ROOT AGGREGATE REFRESH SENTINEL\n",
+  )
+  await waitForRebuild(previousRebuilds, "watcher did not process the direct root refresh")
+  html = rootHtml()
+  assert.equal(panelCount(html), 2, "direct root refresh must establish a two-note aggregate")
+  assert.equal(
+    panelDescription(html),
+    "NEW WATCH DESCRIPTION",
+    "direct root refresh must establish the changed book description",
+  )
+  process.stdout.write("✓ direct root refresh established count=2 and the changed description\n")
 
   previousRebuilds = countRebuilds()
   fs.unlinkSync(path.join(workspace, "content", "java", "two.md"))
-  await waitForRebuild(previousRebuilds, "watcher did not process the second nested delete")
+  await waitForRebuild(previousRebuilds, "watcher did not process the nested delete")
   html = rootHtml()
   const deleteCount = panelCount(html)
   process.stdout.write(
-    `• nested delete: root count=${deleteCount} — ${classify(deleteCount, countBeforeDelete, 0)}\n`,
+    `• nested delete: root count=${deleteCount} — ${classify(deleteCount, 2, 1)}\n`,
   )
 
   await stopWatcher()
   runFullBuild()
   html = rootHtml()
-  assert.equal(panelCount(html), 0, "clean/full build must refresh the Java count to zero")
+  assert.equal(panelCount(html), 1, "clean/full build must refresh the Java count to one")
   assert.equal(
     panelDescription(html),
     "NEW WATCH DESCRIPTION",
     "clean/full build must refresh the Java description",
   )
-  process.stdout.write("✓ clean/full build refreshed count=0 and the changed description\n")
+  process.stdout.write("✓ clean/full build refreshed count=1 and the changed description\n")
 
   const staleObservations = [
     addCount === 1,
     changedDescription === "OLD WATCH DESCRIPTION",
-    deleteCount === countBeforeDelete,
+    deleteCount === 2,
   ].filter(Boolean).length
   if (staleObservations > 0) {
     process.stdout.write(

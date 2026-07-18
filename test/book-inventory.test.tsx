@@ -39,10 +39,12 @@ describe.each(layouts)("book inventory and routing (%s)", (layout) => {
         virtualFile("real/nested/index", { title: "Generated nested folder" }),
         physicalFile("tags/topic"),
         virtualFile("tags/index", { title: "Tag Index" }),
-        virtualFile("canvas-book/index"),
-        virtualFile("canvas-book/board", { title: "Synthetic Canvas" }),
-        virtualFile("bases-book/index"),
-        virtualFile("bases-book/database", { title: "Synthetic Bases" }),
+        physicalFile("canvas-book/note"),
+        virtualFile("canvas-book/index", {}, { canvasData: {} }),
+        virtualFile("canvas-book/board", { title: "Synthetic Canvas" }, { canvasData: {} }),
+        physicalFile("bases-book/note"),
+        virtualFile("bases-book/index", {}, { basesData: {} }),
+        virtualFile("bases-book/database", { title: "Synthetic Bases" }, { basesData: {} }),
       ],
       { layout },
     )
@@ -107,6 +109,44 @@ describe.each(layouts)("book inventory and routing (%s)", (layout) => {
     expect(html).toContain("Accessor")
     expect(html).toContain("Safe fallback")
     expect(html).toContain('data-rip-icon="coffee"')
+  })
+
+  it("ignores revoked frontmatter and option proxies", () => {
+    const revokedFrontmatter = Proxy.revocable<Record<string, unknown>>({}, {})
+    revokedFrontmatter.revoke()
+    const revokedOptions = Proxy.revocable<Record<string, unknown>>({}, {})
+    revokedOptions.revoke()
+    const files = [
+      physicalFile("revoked/index", revokedFrontmatter.proxy as unknown as Record<string, unknown>),
+      physicalFile("revoked/note"),
+    ]
+
+    expect(() => renderPanels(files, revokedOptions.proxy)).not.toThrow()
+    expect(renderPanels(files, revokedOptions.proxy)).toContain("Revoked")
+  })
+
+  it("rejects noncanonical root-panel slugs", () => {
+    const html = renderPanels(
+      [
+        physicalFile("valid/index", { title: "Valid" }),
+        physicalFile("valid/note"),
+        physicalFile("/leading/index", { title: "Leading" }),
+        physicalFile("/leading/note"),
+        physicalFile("doubled//index", { title: "Doubled" }),
+        physicalFile("doubled//note"),
+        physicalFile("trailing/index/", { title: "Trailing" }),
+        physicalFile("trailing/note/"),
+        physicalFile("backslash\\index", { title: "Backslash" }),
+        physicalFile("backslash\\note"),
+      ],
+      { layout },
+    )
+
+    expect(html).toContain('href="./valid/"')
+    expect(html).not.toContain("Leading")
+    expect(html).not.toContain("Doubled")
+    expect(html).not.toContain("Trailing")
+    expect(html).not.toContain("Backslash")
   })
 
   it("excludes the book index and virtual indexes but counts authored nested indexes", () => {
@@ -283,6 +323,20 @@ describe("book ordering", () => {
     expect(byCount.indexOf("Beta")).toBeLessThan(byCount.indexOf("Zulu"))
   })
 
+  it("uses locale-independent title and segment tie-breakers", () => {
+    const books = collectBooks(
+      [
+        physicalFile("lower/index", { title: "alpha" }),
+        physicalFile("upper-z/index", { title: "Alpha" }),
+        physicalFile("upper-a/index", { title: "Alpha" }),
+        physicalFile("beta/index", { title: "Beta" }),
+      ],
+      inventoryOptions(),
+    )
+
+    expect(books.map(({ segment }) => segment)).toEqual(["upper-a", "upper-z", "lower", "beta"])
+  })
+
   it("accepts epoch and pre-1970 dates while sorting undated books last", () => {
     const books = collectBooks(
       [
@@ -308,6 +362,7 @@ describe("runtime option normalization", () => {
       showDescription: "false",
       showDocCount: null,
       showTags: 0,
+      replaceExplorer: "false",
       tagCount: Number.POSITIVE_INFINITY,
       excludeDirs: [" alpha ", "alpha", "", 7, "Alpha", " beta"],
       descriptionFallback: 42,
@@ -318,6 +373,7 @@ describe("runtime option normalization", () => {
     expect(normalized.showDescription).toBe(true)
     expect(normalized.showDocCount).toBe(true)
     expect(normalized.showTags).toBe(true)
+    expect(normalized.replaceExplorer).toBe(true)
     expect(normalized.tagCount).toBe(3)
     expect(normalized.excludeDirs).toEqual(["alpha", "Alpha", "beta"])
     expect(normalized.descriptionFallback).toBe("")
@@ -342,6 +398,7 @@ describe("runtime option normalization", () => {
         showDescription: false,
         showDocCount: false,
         showTags: false,
+        replaceExplorer: false,
         descriptionFallback: "   ",
       }),
     ).toMatchObject({
@@ -350,6 +407,7 @@ describe("runtime option normalization", () => {
       showDescription: false,
       showDocCount: false,
       showTags: false,
+      replaceExplorer: false,
       descriptionFallback: "   ",
     })
 

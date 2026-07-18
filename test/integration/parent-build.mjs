@@ -10,8 +10,9 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 const PLUGIN_NAME = "root-index-panels"
 const WORKSPACE_PREFIX = "root-index-panels-integration-"
 const KEEP_WORKSPACE = process.env.RIP_KEEP_INTEGRATION === "1"
-const GITLAB_BASE_DIR = "/group/project"
-const GITLAB_BASE_URL = "gitlab.example/group/project"
+const BASE_PATH = "/group/project"
+const BASE_URL = "gitlab.example/group/project"
+const ROOT_SIDEBAR_LAYOUT = { position: "left", priority: 40 }
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const pluginRoot = path.resolve(scriptDirectory, "..", "..")
@@ -300,9 +301,33 @@ function pluginEntries(rootSource, rootOptions) {
       layout: { position: "right", priority: 30 },
     }),
     communityPlugin("description", { order: 70 }),
+    communityPlugin("content-index", {
+      order: 50,
+      options: { enableSiteMap: true, enableRSS: true },
+    }),
     communityPlugin("content-page", { order: 50 }),
     communityPlugin("folder-page", { order: 50 }),
     communityPlugin("tag-page", { order: 50 }),
+    communityPlugin("page-title", {
+      order: 50,
+      layout: { position: "left", priority: 10 },
+    }),
+    communityPlugin("search", {
+      order: 50,
+      layout: { position: "left", priority: 20 },
+    }),
+    communityPlugin("darkmode", {
+      order: 50,
+      layout: { position: "left", priority: 30 },
+    }),
+    communityPlugin("explorer", {
+      order: 50,
+      layout: { position: "left", priority: 50 },
+    }),
+    communityPlugin("graph", {
+      order: 50,
+      layout: { position: "right", priority: 10 },
+    }),
     communityPlugin("article-title", {
       order: 50,
       layout: { position: "beforeBody", priority: 10 },
@@ -325,6 +350,7 @@ function pluginEntries(rootSource, rootOptions) {
       enabled: true,
       options: rootOptions,
       order: 50,
+      layout: { ...ROOT_SIDEBAR_LAYOUT },
     },
   ]
 }
@@ -337,7 +363,7 @@ function configuration({ locale, enableSPA }) {
     enablePopovers: false,
     analytics: null,
     locale,
-    baseUrl: GITLAB_BASE_URL,
+    baseUrl: BASE_URL,
     ignorePatterns: [],
     theme,
   }
@@ -404,6 +430,18 @@ function sourceName(source) {
     : path.posix.basename(normalized)
 }
 
+function assertRootSidebarLayoutConfig(expectedEnabled, label) {
+  const parsed = YAML.parse(fs.readFileSync(path.join(workspace, "quartz.config.yaml"), "utf8"))
+  const rootEntries = parsed.plugins.filter((entry) => sourceName(entry.source) === PLUGIN_NAME)
+  assert.equal(rootEntries.length, 1, `${label} must retain exactly one root-index-panels entry`)
+  assert.equal(rootEntries[0].enabled, expectedEnabled, `${label} plugin enabled state drifted`)
+  assert.deepEqual(
+    rootEntries[0].layout,
+    ROOT_SIDEBAR_LAYOUT,
+    `${label} must retain the RootIndexSidebar layout`,
+  )
+}
+
 function exerciseFreshLocalInstall() {
   const remoteOptions = {
     layout: "cards",
@@ -439,9 +477,14 @@ function exerciseFreshLocalInstall() {
     "manifest defaultEnabled=false must survive fresh add",
   )
   assert.equal(
-    Object.hasOwn(rootEntries[0], "layout"),
-    false,
-    "fresh add must not generate a RootIndexPanels component layout stanza",
+    rootEntries[0].options.replaceExplorer,
+    true,
+    "fresh add must preserve the sidebar's Explorer replacement default",
+  )
+  assert.deepEqual(
+    rootEntries[0].layout,
+    ROOT_SIDEBAR_LAYOUT,
+    "fresh add must generate exactly one RootIndexSidebar left layout stanza",
   )
 
   const lock = readJson(path.join(workspace, "quartz.lock.json"))
@@ -460,6 +503,7 @@ function exerciseFreshLocalInstall() {
     fs.realpathSync(pluginRoot),
     "installed cache must point at the local working tree",
   )
+  assertRootSidebarLayoutConfig(false, "fresh local add")
 }
 
 const fixtureFiles = {
@@ -468,8 +512,8 @@ title: Integration Root
 ---
 # ROOT BODY SENTINEL
 
-This authored prose must be replaced by the panels page body. It is intentionally long enough to
-produce a reading-time label in the host ContentMeta component before the page transform runs.
+This authored prose must remain above the overview and panels. It is intentionally long enough to
+produce a reading-time label in the host ContentMeta component when the root Page Type renders.
 
 ## Root stale section one
 
@@ -495,6 +539,7 @@ tags: [wrong-root-tag]
 title: iOS
 description: Java authored description
 tags: [jvm, language, trimmed]
+modified: 2026-07-18
 panel:
   icon: coffee
   accent: ocean
@@ -585,13 +630,16 @@ function classCount(html, className) {
 }
 
 function anchorForHref(html, href) {
-  const marker = `href="${href}"`
-  const markerIndex = html.indexOf(marker)
-  assert.notEqual(markerIndex, -1, `missing panel link ${href}`)
-  const start = html.lastIndexOf("<a", markerIndex)
-  const end = html.indexOf("</a>", markerIndex)
-  assert.ok(start >= 0 && end > markerIndex, `could not isolate panel link ${href}`)
-  return html.slice(start, end + 4)
+  for (const match of html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
+    const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
+    if (
+      openingTag.includes(`href="${href}"`) &&
+      /\bclass="[^"]*\brip-(?:card|list)-link\b/.test(openingTag)
+    ) {
+      return match[0]
+    }
+  }
+  assert.fail(`missing panel link ${href}`)
 }
 
 function panelHrefs(html) {
@@ -602,6 +650,195 @@ function panelHrefs(html) {
     if (href) hrefs.push(href)
   }
   return hrefs
+}
+
+function sidebarHtml(html) {
+  const match = html.match(
+    /<nav\b(?=[^>]*\bclass="[^"]*\brip-sidebar\b[^"]*")[^>]*>[\s\S]*?<\/nav>/,
+  )
+  assert.ok(match, "missing RootIndexSidebar navigation")
+  return match[0]
+}
+
+function sidebarBookAnchorForHref(html, href) {
+  const sidebar = sidebarHtml(html)
+  for (const match of sidebar.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
+    const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
+    if (
+      openingTag.includes(`href="${href}"`) &&
+      /\bclass="[^"]*\brip-sidebar-book-link\b/.test(openingTag)
+    ) {
+      return match[0]
+    }
+  }
+  assert.fail(`missing sidebar book link ${href}`)
+}
+
+function assertRelativeSidebarLinks(html, label) {
+  const sidebar = sidebarHtml(html)
+  const hrefs = [...sidebar.matchAll(/<a\b[^>]*\bhref="([^"]+)"[^>]*>/g)].map((match) => match[1])
+  assert.ok(hrefs.length >= 3, `${label} sidebar did not render enough navigation links`)
+
+  for (const href of hrefs) {
+    assert.ok(!href.startsWith("/"), `${label} sidebar emitted a root-absolute link: ${href}`)
+    assert.ok(
+      !href.includes(BASE_PATH),
+      `${label} sidebar duplicated the configured base path: ${href}`,
+    )
+    assert.ok(!/^[a-z][a-z\d+.-]*:/i.test(href), `${label} sidebar emitted a URL: ${href}`)
+  }
+
+  return sidebar
+}
+
+function assertRightGraph(html, label) {
+  const rightSidebarIndex = html.indexOf('class="right sidebar"')
+  const graphIndex = html.indexOf('class="graph"', rightSidebarIndex)
+  assert.ok(rightSidebarIndex >= 0, `${label} lost the right sidebar`)
+  assert.ok(graphIndex > rightSidebarIndex, `${label} lost the right-side Graph`)
+  assert.equal(classCount(html, "graph"), 1, `${label} must render Graph exactly once`)
+}
+
+function assertLeftCompanions(html, label) {
+  for (const className of ["page-title", "search", "darkmode"]) {
+    assert.equal(
+      classCount(html, className),
+      1,
+      `${label} must retain exactly one left-side ${className} component`,
+    )
+  }
+}
+
+function emittedCss(outputRoot) {
+  const contents = []
+  const pending = [outputRoot]
+  while (pending.length > 0) {
+    const directory = pending.pop()
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const candidate = path.join(directory, entry.name)
+      if (entry.isDirectory()) pending.push(candidate)
+      else if (entry.isFile() && entry.name.endsWith(".css")) {
+        contents.push(fs.readFileSync(candidate, "utf8"))
+      }
+    }
+  }
+  return contents.join("\n")
+}
+
+function normalizedCss(outputRoot) {
+  return emittedCss(outputRoot)
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, "")
+    .replace(/["']/g, "")
+}
+
+function atRuleBodies(css, prelude) {
+  const bodies = []
+  const opening = `${prelude}{`
+  let searchFrom = 0
+
+  while (searchFrom < css.length) {
+    const start = css.indexOf(opening, searchFrom)
+    if (start === -1) break
+
+    const openBrace = start + prelude.length
+    let depth = 1
+    let cursor = openBrace + 1
+    while (cursor < css.length && depth > 0) {
+      if (css[cursor] === "{") depth += 1
+      else if (css[cursor] === "}") depth -= 1
+      cursor += 1
+    }
+
+    assert.equal(depth, 0, `emitted CSS left ${prelude} unclosed`)
+    bodies.push(css.slice(openBrace + 1, cursor - 1))
+    searchFrom = cursor
+  }
+
+  return bodies
+}
+
+function ruleBodies(css, selector) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return [...css.matchAll(new RegExp(`${escapedSelector}\\{([^{}]*)\\}`, "g"))].map(
+    (match) => match[1],
+  )
+}
+
+function assertExplorerReplacementCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const selector = ".left.sidebar:has(>.rip-sidebar[data-rip-replace-explorer=true])>.explorer"
+  const start = css.indexOf(selector)
+  assert.notEqual(start, -1, "emitted CSS lost the scoped Explorer replacement selector")
+  const end = css.indexOf("}", start)
+  assert.ok(end > start, "emitted Explorer replacement rule was not closed")
+  assert.match(
+    css.slice(start, end + 1),
+    /display:none!important/,
+    "emitted Explorer replacement rule must hide the stock Explorer",
+  )
+}
+
+function assertResponsiveContainmentCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const frameSelector =
+    ".page[data-frame=default]:has(>#quartz-body>.left.sidebar>.rip-sidebar)>#quartz-body"
+  const leftSelector = ".left.sidebar:has(>.rip-sidebar)"
+  const shellContentSelector = ".rip-sidebar-shell:not([open])>.rip-sidebar-content"
+  const wideMedia = "@media(min-width:801px)"
+  const tabletMedia = "@media(min-width:800px)and(max-width:1200px)"
+  const mobileMedia = "@media(max-width:800px)"
+
+  const tabletRules = atRuleBodies(css, tabletMedia).flatMap((body) =>
+    ruleBodies(body, frameSelector),
+  )
+  assert.ok(
+    tabletRules.some((body) => body.includes("grid-template-columns:minmax(0,20rem)minmax(0,1fr)")),
+    "emitted CSS lost the scoped tablet default-frame containment rule",
+  )
+
+  const mobileBlocks = atRuleBodies(css, mobileMedia)
+  const mobileFrameRules = mobileBlocks.flatMap((body) => ruleBodies(body, frameSelector))
+  assert.ok(
+    mobileFrameRules.some((body) => body.includes("grid-template-columns:minmax(0,1fr)!important")),
+    "emitted CSS lost the scoped mobile default-frame containment rule",
+  )
+
+  const mobileLeftRules = mobileBlocks.flatMap((body) => ruleBodies(body, leftSelector))
+  assert.ok(mobileLeftRules.length > 0, "emitted CSS lost the scoped mobile left-sidebar rule")
+  for (const declaration of [
+    "min-width:0",
+    "width:100%",
+    "max-width:100%",
+    "flex-wrap:wrap",
+    "overflow-wrap:anywhere",
+  ]) {
+    assert.ok(
+      mobileLeftRules.some((body) => body.includes(declaration)),
+      `emitted mobile left-sidebar rule lost ${declaration}`,
+    )
+  }
+
+  const wideShellRules = atRuleBodies(css, wideMedia).flatMap((body) =>
+    ruleBodies(body, shellContentSelector),
+  )
+  assert.ok(
+    wideShellRules.some((body) => body.includes("display:block")),
+    "emitted CSS can strand a mobile-collapsed sidebar shell after widening",
+  )
+
+  const pluginScopedSelectors = [...css.matchAll(/([^{}]+)\{[^{}]*\}/g)]
+    .map((match) => match[1])
+    .filter((selector) => selector.includes(".rip-sidebar"))
+  assert.ok(pluginScopedSelectors.length > 0, "emitted CSS lost all RootIndexSidebar selectors")
+  for (const selector of pluginScopedSelectors) {
+    for (const forbiddenTarget of [".right", ".graph", ".toc"]) {
+      assert.ok(
+        !selector.includes(forbiddenTarget),
+        `RootIndexSidebar CSS must not target ${forbiddenTarget}: ${selector}`,
+      )
+    }
+  }
 }
 
 function assertAssetReferencesResolve(htmlPath, outputRoot) {
@@ -651,18 +888,43 @@ function assertCommonRoot(outputRoot, expectedCountText) {
   assert.match(
     rootHtml,
     /data-basepath="\/group\/project"/,
-    "GitLab subpath must reach the host frame",
+    "configured base path must reach the host frame",
   )
+  assert.equal(classCount(rootHtml, "rip-sidebar"), 1, "root must render one RootIndexSidebar")
+  assert.equal(
+    classCount(rootHtml, "explorer"),
+    1,
+    "stock Explorer must remain in root SSR for scoped CSS replacement",
+  )
+  const rootSidebar = assertRelativeSidebarLinks(rootHtml, "root")
+  assert.match(rootSidebar, /data-rip-replace-explorer="true"/)
+  assert.match(rootSidebar, /data-rip-scope="root"/)
+  assert.match(rootSidebar, /class="rip-sidebar-home" href="\.\/" aria-current="page"/)
+  assert.match(rootSidebar, /class="rip-sidebar-book-link" href="\.\/java\/"/)
+  assertLeftCompanions(rootHtml, "root")
+  assertRightGraph(rootHtml, "root")
   assert.match(
     rootHtml,
     /<span class="rip-card-title"[^>]*>iOS<\/span>|<span class="rip-list-title"[^>]*>iOS<\/span>/,
   )
   assert.match(rootHtml, /Java authored description/)
+  const directoriesStart = bodyHtml.indexOf('<section id="rip-directories"')
+  const directoriesEnd = bodyHtml.indexOf("</section>", directoriesStart)
+  assert.ok(
+    directoriesStart >= 0 && directoriesEnd > directoriesStart,
+    "could not isolate the root directories section",
+  )
+  const directoriesHtml = bodyHtml.slice(directoriesStart, directoriesEnd + 10)
   assert.doesNotMatch(
-    rootHtml,
+    directoriesHtml,
     /WRONG ROOT JAVA METADATA|Wrong root-note description|wrong-root-tag/,
   )
-  assert.doesNotMatch(bodyHtml, /ROOT BODY SENTINEL|Root stale section/)
+  assert.match(bodyHtml, /ROOT BODY SENTINEL/)
+  assert.match(bodyHtml, /Root stale section one/)
+  assert.ok(
+    bodyHtml.indexOf("ROOT BODY SENTINEL") < bodyHtml.indexOf('class="rip-overview"'),
+    "authored root Markdown must render before the overview",
+  )
   assert.match(
     headHtml,
     /ROOT BODY SENTINEL/,
@@ -673,12 +935,22 @@ function assertCommonRoot(outputRoot, expectedCountText) {
     /<undefined\b/,
     "fixture frame must not contain an undefined footer",
   )
-  assert.equal(classCount(bodyHtml, "toc"), 0, "root must not retain a TOC for replaced Markdown")
-  assert.equal(
-    classCount(bodyHtml, "content-meta"),
-    0,
-    "root must not retain stale reading-time metadata",
+  assert.equal(classCount(bodyHtml, "rip-root-content"), 1, "root authored content duplicated")
+  assert.equal(classCount(bodyHtml, "rip-overview"), 1, "root overview must render once")
+  assert.equal(classCount(bodyHtml, "rip-stats"), 1, "root statistics must render once")
+  assert.equal(classCount(bodyHtml, "rip-stat"), 3, "root statistics inventory drifted")
+  assert.equal(classCount(bodyHtml, "rip-browse-link"), 1, "root browse link must render once")
+  assert.equal(classCount(bodyHtml, "rip-directories"), 1, "root directories section duplicated")
+  assert.match(bodyHtml, /class="rip-browse-link" href="#rip-directories"/)
+  assert.match(bodyHtml, /<dd>6<\/dd>/, "root directory statistic drifted")
+  assert.match(bodyHtml, /<dd>4<\/dd>/, "root total-note statistic drifted")
+  assert.equal(classCount(bodyHtml, "toc"), 1, "root authored Markdown lost its TOC")
+  assert.equal(classCount(bodyHtml, "content-meta"), 1, "root authored Markdown lost ContentMeta")
+  const rootMeta = bodyHtml.match(
+    /<p\b(?=[^>]*class="[^"]*\bcontent-meta\b[^"]*")[^>]*>[\s\S]*?<\/p>/,
   )
+  assert.ok(rootMeta, "root ContentMeta markup could not be isolated")
+  assert.match(rootMeta[0], /<span>[^<]*\d+[^<]*<\/span>/, "root reading time disappeared")
   assert.doesNotMatch(rootHtml, /\.\/tags\/|\.\/hidden-only\/|\.\/loose\//)
   assert.doesNotMatch(rootHtml, /#fff;outline:none/)
   assert.match(anchorForHref(rootHtml, "./java/"), /data-rip-icon="coffee"/)
@@ -687,10 +959,14 @@ function assertCommonRoot(outputRoot, expectedCountText) {
   assert.match(anchorForHref(rootHtml, "./safe/"), /data-rip-accent="direct"/)
   assert.match(anchorForHref(rootHtml, "./safe/"), /--rip-panel-accent: #1234/)
   if (classCount(rootHtml, "rip--cards") === 1) {
+    assert.equal(classCount(rootHtml, "rip-grid"), 1, "card grid must render once")
+    assert.equal(classCount(rootHtml, "rip-card"), expectedHrefs.length, "card count drifted")
     assert.match(anchorForHref(rootHtml, "./java/"), /#jvm/)
     assert.match(anchorForHref(rootHtml, "./java/"), /#language/)
     assert.doesNotMatch(anchorForHref(rootHtml, "./java/"), /#trimmed|#secret/)
   } else {
+    assert.equal(classCount(rootHtml, "rip-list"), 1, "list must render once")
+    assert.equal(classCount(rootHtml, "rip-list-item"), expectedHrefs.length, "list count drifted")
     assert.equal(classCount(rootHtml, "rip-tags"), 0, "list layout must retain its tag-free markup")
   }
 
@@ -721,9 +997,32 @@ function assertCommonRoot(outputRoot, expectedCountText) {
   assert.equal(classCount(topicHtml, "tags"), 1, "regular content page lost TagList")
   assert.match(topicHtml, /topic-tag/)
   assert.equal(classCount(topicHtml, "rip"), 0, "root Page Type leaked onto a non-root page")
+  assert.equal(
+    classCount(topicHtml, "rip-sidebar"),
+    1,
+    "regular book page must render one RootIndexSidebar",
+  )
+  assert.equal(
+    classCount(topicHtml, "explorer"),
+    1,
+    "stock Explorer must remain in regular-page SSR for scoped CSS replacement",
+  )
+  const topicSidebar = assertRelativeSidebarLinks(topicHtml, "regular book page")
+  assert.match(topicSidebar, /data-rip-replace-explorer="true"/)
+  assert.match(topicSidebar, /data-rip-scope="book"/)
+  assert.match(topicSidebar, /class="rip-sidebar-home" href="\.\.\/"/)
+  assert.match(topicSidebar, /class="rip-sidebar-book-link" href="\.\.\/java\/"/)
+  assert.match(
+    topicSidebar,
+    /class="rip-sidebar-note-link" href="\.\.\/java\/topic" aria-current="page"/,
+  )
+  assertLeftCompanions(topicHtml, "regular book page")
+  assertRightGraph(topicHtml, "regular book page")
 
   assertAssetReferencesResolve(rootPath, outputRoot)
   assertAssetReferencesResolve(topicPath, outputRoot)
+  assertExplorerReplacementCss(outputRoot)
+  assertResponsiveContainmentCss(outputRoot)
   return rootHtml
 }
 
@@ -747,6 +1046,7 @@ function buildVariant({ name, locale, enableSPA, rootOptions, typeScriptOverride
   const localSource = pluginRoot.replaceAll("\\", "/")
   writeConfig({ locale, enableSPA, rootSource: localSource, rootOptions })
   writeQuartzEntry(typeScriptOverride)
+  assertRootSidebarLayoutConfig(true, `${name} pre-build config`)
 
   const outputRoot = path.join(workspace, "public", name)
   assertInside(workspace, outputRoot, "build output")
@@ -759,13 +1059,14 @@ function buildVariant({ name, locale, enableSPA, rootOptions, typeScriptOverride
       "--output",
       path.relative(workspace, outputRoot),
       "--baseDir",
-      GITLAB_BASE_DIR,
+      BASE_PATH,
       "--concurrency",
       "1",
       "--verbose",
     ],
     `${name} Quartz build`,
   )
+  assertRootSidebarLayoutConfig(true, `${name} post-build config`)
   assertVariant(outputRoot)
 }
 
@@ -805,6 +1106,7 @@ function runIntegration() {
         "./java/": ">2 notes</span>",
       })
       assert.match(anchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
+      assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(anchorForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)
     },
@@ -840,6 +1142,11 @@ function runIntegration() {
       assert.match(custom, /data-rip-test-icon="ts-custom"/)
       assert.match(custom, /data-rip-accent="direct"/)
       assert.match(custom, /--rip-panel-accent: #abc/)
+      const customSidebar = sidebarBookAnchorForHref(rootHtml, "./custom/")
+      assert.match(customSidebar, /data-rip-icon="custom-mark"/)
+      assert.match(customSidebar, /data-rip-test-icon="ts-custom"/)
+      assert.match(customSidebar, /data-rip-accent="direct"/)
+      assert.match(customSidebar, /--rip-sidebar-accent: #abc/)
       assert.match(anchorForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)
       const scripts = emittedJavaScript(outputRoot)
       assert.doesNotMatch(scripts, /route-announcer/)
@@ -873,6 +1180,10 @@ function runIntegration() {
         "./java/": ">2 notes</span>",
       })
       assert.doesNotMatch(anchorForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
+      assert.doesNotMatch(
+        sidebarBookAnchorForHref(rootHtml, "./custom/"),
+        /data-rip-icon=|rip-sidebar-book-icon/,
+      )
       const unsafe = anchorForHref(rootHtml, "./unsafe/")
       assert.doesNotMatch(unsafe, /data-rip-accent=|--rip-panel-accent/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)

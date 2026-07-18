@@ -1,6 +1,19 @@
 # root-index-panels
 
-A Quartz 5 Page Type plugin for a multi-book knowledge base. It replaces the body of the existing root `content/index.md` with cards or a list for eligible first-level content directories while preserving Quartz's page frame, theme, navigation, and other layout components.
+A Quartz 5 Page Type and layout-component plugin for a multi-book knowledge base. Every eligible
+first-level content directory becomes a book. The physical root page renders its authored Markdown,
+an aggregate overview, and book cards or a list; a route-aware left sidebar switches between Home
+and the books without taking ownership of Quartz's right layout slot.
+
+The package has two deliberately separate rendering roles:
+
+- `RootIndexPanelsPage` owns only the physical `content/index.md` Page Type body. Its body component,
+  `RootIndexPanels`, remains a public advanced API but is not manifest-discoverable.
+- `RootIndexSidebar` is the only component declared in the manifest. A fresh CLI install places it
+  in the left slot at priority `40`.
+
+This topology produces one root body and one sidebar. It does not require Quartz core changes, a
+custom page frame, or manual placement of the Page Type body.
 
 ## Requirements and book model
 
@@ -12,21 +25,38 @@ A first-level directory becomes a book only when all of these conditions hold:
 - its first segment is not the reserved `tags` namespace or an `excludeDirs` entry (`index` is a valid book-directory name); and
 - `<book>/index` exists either as a listed physical `<book>/index.md` or as a generated FolderPage destination.
 
-If FolderPage is disabled, create an explicit `index.md` in every book. A generated FolderPage may prove that the destination exists, but virtual pages never create a book, supply metadata, or affect counts. Root-level notes, empty folders, and synthetic Canvas/Bases entries without `filePath` also do not create books.
+If FolderPage is disabled, create an explicit `index.md` in every book. A generated FolderPage may
+prove that the destination exists, but virtual pages never create a book, supply metadata, or affect
+counts. A virtual index carrying Canvas/Bases provenance cannot prove a book destination even when
+that directory also contains physical Markdown. Root-level notes, empty folders, and synthetic
+Canvas/Bases entries without `filePath` do not create books.
 
 The physical, listed `<book>/index.md` is the only metadata source. Its authored title is preserved exactly; only a missing title is humanized from the directory slug. A same-named root note such as `java.md` is never used. Each count includes listed physical descendants except the book's own index; authored nested indexes count and virtual indexes do not. Duplicate physical slugs count once, with the first eligible entry winning. `sort: date` uses the newest valid date found anywhere in the book's listed physical entries, checking Quartz `dates`, then top-level file data, then date-like index/descendant frontmatter. Valid dates include epoch and pre-1970 finite/parseable timestamps; undated books sort behind dated books.
 
-Every destination is resolved as `<book>/index` through Quartz's path utility. From the root, links are canonical directory URLs such as `./java/` or `./git.md/`, so they also work when the site is deployed below a GitLab Pages group/project subpath.
+Every destination is resolved as `<book>/index` through Quartz's public path utility. From the root,
+links are canonical directory URLs such as `./java/` or `./git.md/`. The same relative-resolution
+rule is used by the sidebar, so links continue to work when any hosting provider serves the site
+beneath a base path such as `/quartz-for-gitlab/`.
 
 ## Installation
 
-Install the plugin from GitHub:
+Install the plugin from GitHub, then enable the disabled-by-default entry created by the CLI:
 
 ```bash
 npx quartz plugin add github:VingGit/root-index-panels
+npx quartz plugin enable root-index-panels
 ```
 
-Enable and configure it in `quartz.config.yaml`:
+The add command reads the manifest and creates exactly one layout declaration for
+`RootIndexSidebar`:
+
+```yaml
+layout:
+  position: left
+  priority: 40
+```
+
+Configure the generated plugin entry in `quartz.config.yaml` as needed:
 
 ```yaml
 plugins:
@@ -44,10 +74,25 @@ plugins:
       defaultIcon: ""
       defaultAccent: theme
       accents: {}
+      replaceExplorer: true
+    layout:
+      position: left
+      priority: 40
     order: 50
 ```
 
-Do not add a plugin `layout` stanza or manually place `RootIndexPanels` when `RootIndexPanelsPage` is enabled. The Page Type already supplies the root body. The manifest intentionally has no component `defaultPosition` or `defaultPriority`, preventing a fresh install from adding a second copy to the layout.
+Do not add `RootIndexPanels` to a layout slot. `RootIndexPanelsPage` already supplies that body, and
+the manifest intentionally declares only the sidebar. Temporarily disable/re-enable the existing
+entry, or remove it cleanly, with the normal CLI:
+
+```bash
+npx quartz plugin disable root-index-panels
+npx quartz plugin enable root-index-panels
+npx quartz plugin remove root-index-panels
+```
+
+If an older installation predates the sidebar manifest, preserve its option values and run the
+remove/add/enable sequence again so Quartz regenerates the left-layout declaration.
 
 ## Writer frontmatter
 
@@ -112,12 +157,13 @@ Prefer named values backed by Quartz/custom CSS variables for light/dark contras
 | `showDocCount`        | boolean                            | `true`         | Non-booleans become `true`.                                                                             |
 | `showTags`            | boolean                            | `true`         | Non-booleans become `true`; tags render only in cards.                                                  |
 | `tagCount`            | number                             | `3`            | Finite values are floored and clamped to at least `0`; other values become `3`.                         |
-| `sort`                | `alphabetical \| docCount \| date` | `alphabetical` | Any other value becomes `alphabetical`; ties use title then segment.                                    |
+| `sort`                | `alphabetical \| docCount \| date` | `alphabetical` | Any other value becomes `alphabetical`; ties use lower-cased title, exact title, then segment.          |
 | `excludeDirs`         | string array                       | `[]`           | Items are trimmed; empty/non-string items and later duplicates are removed. Matching is case-sensitive. |
 | `descriptionFallback` | string                             | `""`           | Any string, including intentional whitespace, is preserved; non-strings become `""`.                    |
 | `defaultIcon`         | string                             | `""`           | A trimmed valid registry name; malformed or unresolved names produce no icon.                           |
 | `defaultAccent`       | string                             | `theme`        | `theme`, a named accent, or an allowed direct value; invalid values become `theme`.                     |
 | `accents`             | string map                         | `{}`           | Valid own names map to allowed direct values; invalid entries and the reserved `theme` key are ignored. |
+| `replaceExplorer`     | boolean                            | `true`         | `true` hides only the stock Explorer beside this sidebar; non-booleans become `true`.                   |
 
 `accents` is accepted by the YAML loader, but the current Quartz manifest schema cannot accurately describe arbitrary mappings, so it is not exposed through schema-driven TUI editing. `icons` contains Preact components and is TypeScript-only.
 
@@ -153,7 +199,113 @@ export const layout = await loadQuartzLayout()
 
 The TypeScript-only `icons` option has type `Record<string, PanelIconComponent>` and an effective default of `{}`. It keeps valid own registry keys whose values are component functions; malformed, inherited, accessor, and non-function entries are ignored. Like `accents`, the complete map is shallowly replaced by a later configuration surface.
 
-Custom icons must render decorative SVG content only: no links, controls, focusable descendants, or accessible-name content. `RootIndexPanels(...)`, separately exported from the package and `./components`, is the advanced component constructor; calling it does not configure the Page Type. Disable the Page Type before taking manual layout ownership.
+Custom icons must render decorative SVG content only: no links, controls, focusable descendants, or
+accessible-name content. `RootIndexPanels(...)`, separately exported from the package and
+`./components`, is the advanced body constructor; calling it does not configure the Page Type.
+Disable the Page Type before taking manual body ownership. `RootIndexSidebar` and
+`RootIndexSidebarOptions` are also exported from the package root and `./components`, but the normal
+CLI-created layout should remain the integration path.
+
+## Root landing page
+
+`RootIndexPanels` converts the already-transformed root HAST with Quartz's public `htmlToJsx`
+utility. It does not render raw Markdown, use a raw HTML-string injection path, or duplicate the
+article. A genuinely empty tree simply omits the Markdown wrapper. The visible body order is:
+
+1. authored root content inside the normal popover/Markdown classes;
+2. a semantic overview with directory count, total listed-note count, the newest valid book date when
+   one exists, and—when at least one book exists—a no-JavaScript `Browse directories` anchor; and
+3. the `#rip-directories` heading followed by cards, a list, or the localized empty state.
+
+Directory count is the number of rendered eligible books. Total notes is the safe sum of their
+existing physical/listed counts. The last-updated date uses the newest accepted aggregate book date,
+is formatted in UTC for deterministic output, and is omitted when every book is undated.
+
+The Page Type leaves root `toc`, `readingTime`, and `text` intact. Table of Contents, ContentMeta,
+Search, RSS, sitemap, and social metadata can therefore consume authored root content like they do
+on an ordinary content page.
+
+## Left navigation and host composition
+
+`RootIndexSidebar` server-renders a labelled `<nav>` made from native `<details>`, `<summary>`,
+lists, and ordinary links. It works without JavaScript and remains compatible with Quartz SPA
+navigation:
+
+- Home context covers the root, root notes, tags, 404, and routes whose first segment is not an
+  eligible book. Its note tree contains only listed physical root notes and excludes `index`.
+- Book context selects the matching book and shows only that book's listed physical descendants.
+  The book's own index is the overview destination rather than a repeated chapter.
+- Nested directories use native disclosure. A listed physical or FolderPage-generated index may
+  supply a folder overview link, while virtual-only Canvas/Bases records do not become navigation
+  notes.
+- The exact current link receives `aria-current="page"`; current ancestry is opened in server output.
+  Authored titles, long paths, spaces, and Unicode remain text rather than selector data.
+
+The sidebar inventory receives the same normalized `excludeDirs`, `descriptionFallback`, `sort`, and
+`tagCount` inputs as the panel collector. In particular, configured alphabetical/count/date ordering
+is shared; cache variants include all four values so distinct configurations cannot reuse the wrong
+model.
+
+At Quartz's narrow layout, the entire sidebar becomes a native disclosure; its summary and the
+sidebar's links/disclosures keep a 2.75rem minimum target. No client script, custom tree keyboard
+model, or focus trap is required. Reduced-motion and forced-color modes retain usable state and
+focus cues, and accent color is never the sole indicator. If a reader closes the shell on mobile and
+then widens the viewport, plugin-local CSS exposes the content again above the mobile breakpoint;
+the now-hidden summary can never strand desktop navigation in a closed native-details state.
+
+Real-browser testing found that Quartz's intrinsic `auto` grid tracks can retain a wider
+left/center/right minimum after this component is inserted. The plugin therefore uses two
+non-suppressing containment rules in addition to Explorer replacement:
+
+- a default-frame-only selector gated by
+  `#quartz-body > .left.sidebar > .rip-sidebar` replaces only the tablet/mobile grid track sizes
+  with `minmax(0, ...)`; and
+- `.left.sidebar:has(> .rip-sidebar)` constrains the mobile left container's width and wrapping so
+  the sidebar and existing left components fit the viewport.
+
+These rules preserve Quartz's grid areas, document order, and responsive right-rail flow. They do
+not select `.right`, Graph, Table of Contents, or any individual right component, and the
+`data-frame="default"` gate means CanvasPage and other custom frames never match. Together with the
+Explorer rule below, these are the plugin's exactly three kinds of narrowly scoped host selector.
+
+`replaceExplorer` defaults to `true`. The stylesheet hides only a direct stock Explorer sibling
+when this component explicitly opts in:
+
+```text
+.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer
+```
+
+This intentionally depends on Quartz's current default-frame `.left.sidebar` and stock `.explorer`
+markup, plus browser support for `:has()`. It is the only rule that suppresses another plugin. It
+never mutates Explorer with JavaScript and never targets Search, PageTitle, toolbar controls, or
+generic navigation. Set `replaceExplorer: false` to omit the opt-in attribute and keep both
+navigation components visible. On an older browser without `:has()`, the safe failure mode is also
+that stock Explorer remains visible.
+
+The plugin does not clear, hide, move, or style the right layout slot. A right-positioned Graph—and
+independent Table of Contents and Backlinks entries—continues to render on the root and ordinary
+book pages, including Quartz's responsive document flow. CanvasPage is the host-controlled
+exception: its fullscreen `canvas` frame exposes only a togglable left slot and canvas controls, so
+there is no ordinary right Graph slot unless the site overrides CanvasPage to use the default frame.
+Its custom `.canvas-sidebar` wrapper also sits outside the default-frame Explorer selector, so that
+drawer may show both navigation components when stock Explorer is configured.
+
+Cross-book links remain ordinary Quartz links. Graph and Backlinks can show those relationships; the
+sidebar scopes browsing, not the content graph.
+
+Graph is a separate plugin. Keep its ordinary right-layout entry enabled when the site should show
+it:
+
+```yaml
+- source: github:quartz-community/graph
+  enabled: true
+  layout:
+    position: right
+    priority: 10
+```
+
+Likewise, existing PageTitle, Search, Darkmode, ReaderMode, and toolbar entries remain in their own
+left positions; `RootIndexSidebar` does not install or duplicate them.
 
 ## Rendering, themes, and accessibility
 
@@ -165,17 +317,86 @@ Named and direct accents set a validated inline `--rip-panel-accent` custom prop
 
 Arrow keys move between adjacent panels when one has focus; `Home` and `End` move to the first and last panel. Listeners initialize on Quartz `nav` events and register through `window.addCleanup`, so SPA navigation tears them down before re-entry.
 
-The plugin ships `en-US` and `fi-FI` strings, selected from `cfg.locale` on each render. Unsupported locales fall back to English. English uses `1 note`, `N notes`, and `No subdirectories found.`; Finnish uses `1 muistiinpano`, `N muistiinpanoa`, and `Alikansioita ei löytynyt.`
+The plugin ships `en-US` and `fi-FI` strings for counts, overview labels, empty state, and sidebar
+navigation, selected from `cfg.locale` on each render. Unsupported locales fall back to English.
+English uses `1 note`, `N notes`, and `No subdirectories found.`; Finnish uses `1 muistiinpano`,
+`N muistiinpanoa`, and `Alikansioita ei löytynyt.`
 
-## Root source and visibility boundaries
+## Visibility and disclosure boundaries
 
-The root Markdown HAST is intentionally replaced by panels. The rendered root frame receives a shallow file-data clone without TOC or reading-time data, so hidden root headings do not leave stale TOC/read-time UI. The shared processed record is not mutated: Search, RSS, sitemap, and Open Graph emitters may still consume the authored root Markdown or its metadata. Use a metadata-only `content/index.md` when that source text should not be indexed elsewhere.
+Book eligibility reads Quartz's processed top-level `unlisted` flag rather than reparsing raw
+frontmatter. This respects visibility/encryption plugins that mark pages unlisted. An unlisted page
+cannot create a book, provide metadata/tags/dates, enter the sidebar inventory, or increase its
+count; a book can still appear if it has other listed physical content and a valid destination. Do
+not place sensitive book names or descriptions in listed indexes, and keep
+UnlistedPages/EncryptedPages configured for the disclosure policy you need.
 
-Book eligibility reads Quartz's processed top-level `unlisted` flag rather than reparsing raw frontmatter. This respects the output of visibility/encryption plugins that mark pages unlisted. An unlisted page cannot create a book, provide metadata/tags/dates, or increase its count; a book can still appear if it has other listed physical content and a valid destination. Do not place sensitive book names or descriptions in listed indexes, and keep UnlistedPages/EncryptedPages configured for the disclosure policy you need.
+## Base-path and subdirectory hosting
+
+There is no GitLab-specific routing branch. Root panels and sidebar destinations use Quartz's public
+`resolveRelative`/slug utilities from the current page. A deployment at a domain root and one below
+`/quartz-for-gitlab/` therefore use the same plugin code, with Quartz's normal site configuration
+controlling the base URL. Tests cover root, nested, dotted, spaced, Unicode, SPA, and no-SPA links
+under a non-root base path.
+
+## Reference compatibility fixture
+
+The companion Quartz development template keeps three durable first-level books as an observable
+interoperability lab:
+
+| Book              | `panel.icon` | Direct accent | Expected physical/listed descendants |
+| ----------------- | ------------ | ------------- | -----------------------------------: |
+| JavaScript Basics | `code-2`     | `#2563eb`     |                                    8 |
+| Git Practice      | `git-branch` | `#c2410c`     |                                    5 |
+| SQL Pocketbook    | `database`   | `#0f766e`     |                                    6 |
+
+Their physical index frontmatter is a copyable direct-accent pattern:
+
+```yaml
+# content/javascript-basics/index.md
+---
+title: JavaScript Basics
+description: JavaScript notes and Markdown compatibility specimens.
+panel:
+  icon: code-2
+  accent: "#2563eb"
+---
+# content/git-practice/index.md
+---
+title: Git Practice
+description: Git workflows and cross-book navigation specimens.
+panel:
+  icon: git-branch
+  accent: "#c2410c"
+---
+# content/sql-pocketbook/index.md
+---
+title: SQL Pocketbook
+description: SQL notes, assets, Bases, and the manual checklist.
+panel:
+  icon: database
+  accent: "#0f766e"
+---
+```
+
+The icon names above are built-ins. Custom component aliases remain TypeScript-only and frontmatter
+never contains SVG/component code.
+
+Each count excludes the book's own index, drafts, unlisted entries, assets, and virtual Page Type
+records. The listed encrypted Git specimen counts; its hidden encrypted control does not. Canvas and
+Bases routes remain linked interoperability targets, but their synthetic records do not inflate the
+physical/listed book totals. The fixture exercises Markdown, Search, TOC, Graph, Backlinks, aliases,
+encryption, transclusion, math, diagrams, assets, spaces, Unicode, Canvas, Bases, responsive layout,
+and cross-book links.
 
 ## Partial-watch limitation
 
-Full Quartz builds are authoritative. Quartz's partial Page Type emitter does not expose a dependency-invalidation hook from nested pages back to the regular root page. During `npx quartz build --serve`, adding, changing, or deleting a nested note can therefore leave `public/index.html` counts, dates, or panels stale. Stop the watcher and run a clean/full build to refresh the root aggregate. This plugin does not patch Quartz core or claim live aggregate correctness.
+Full Quartz builds are authoritative. Quartz's partial Page Type emitter does not expose a
+dependency-invalidation hook from nested pages back to the regular root page, and sidebar inventory
+is cached by the host `allFiles` identity. During `npx quartz build --serve`, adding, changing, or
+deleting a nested note can therefore leave root panels/overview or route-scoped sidebar aggregates
+stale. Stop the watcher and run a clean/full build before deployment. This plugin does not patch
+Quartz core or claim live aggregate correctness.
 
 ## Local development
 
@@ -204,16 +425,34 @@ The known watcher boundary has a separate, opt-in stock-host diagnostic:
 npm run test:watch-integration
 ```
 
-It currently reports nested add/change/delete root staleness as `EXPECTED LIMITATION`, then requires a clean build to correct the aggregate. It will also pass if a future compatible Quartz host begins invalidating the root correctly. This diagnostic is intentionally separate from CI and deployment gates.
+It records nested add/change/delete outcomes as either fresh or `EXPECTED LIMITATION`, then requires
+a clean build to correct the final aggregate. The current host has reproduced stale add/change
+observations, while some delete paths refresh correctly. The diagnostic will also pass if a future
+compatible Quartz host invalidates every aggregate. It is intentionally separate from CI and
+deployment gates.
 
 To test an unpublished checkout in a parent Quartz repository, use the CLI's local source workflow rather than overlaying a remotely pinned cache:
 
 ```bash
 npx quartz plugin remove root-index-panels
 npx quartz plugin add ./root-index-panels
+npx quartz plugin enable root-index-panels
 ```
 
 Confirm that `quartz.lock.json` records `commit: "local"`. After the desired revision has been pushed, switch back with another remove/add using `github:VingGit/root-index-panels`; do not treat a local cache as a verified remote install.
+
+```bash
+npx quartz plugin remove root-index-panels
+npx quartz plugin add github:VingGit/root-index-panels
+npx quartz plugin enable root-index-panels
+```
+
+Once an installation already has the sidebar layout declaration, fetch the latest revision from its
+tracked remote/ref with:
+
+```bash
+npx quartz plugin install --latest root-index-panels
+```
 
 ## License
 

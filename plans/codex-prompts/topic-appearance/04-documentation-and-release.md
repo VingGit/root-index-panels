@@ -1,5 +1,10 @@
 # Prompt 04 — Document, package, and integrate without releasing
 
+> [!note]
+> Historical appearance documentation/release gate. Keep its packaging and no-release rules, but
+> the active [`topic-navigation-shell`](../topic-navigation-shell/README.md) contract supersedes
+> the no-layout-stanza, hidden-root-source, and remove-all-parent-fixtures instructions.
+
 ## Objective
 
 Make the book model and appearance feature understandable to writers, YAML users, TypeScript site owners, theme authors, and future maintainers. Finish prebuilt package and parent Quartz integration work, but keep release actions outside this increment.
@@ -45,7 +50,7 @@ Also document:
 
 1. Switch the ignored cache from remote to local with `quartz plugin remove root-index-panels` followed by `quartz plugin add ./root-index-panels`; preserve options, remove any generated layout stanza, and confirm the lock reports `commit: "local"`. Never junction the nested repository over a remotely locked cache.
 2. Use isolated fixture content/config and restore/remove it after verification; do not leave sample metadata in the user's notes.
-3. Run the host scenarios in Prompt 03, including SPA modes, locale variants, and GitLab-style subpath output.
+3. Run the host scenarios in Prompt 03, including SPA modes, locale variants, and base-path/subdirectory-hosted output.
 4. Once the goal-mode authorization is active, the nested plugin may be committed and pushed for integration. Switch back with remove/add against the remote source, refresh `quartz.lock.json` to the exact pushed commit, and verify from a clean-shaped install if parent consumption is in scope; otherwise report that the parent remains pinned to the previous revision.
 5. Keep nested plugin history and parent history/status separate in the handoff.
 
@@ -60,4 +65,4 @@ This prompt does not authorize a version bump, Git tag, GitHub release, npm publ
 
 ## Acceptance criteria
 
-A writer can copy one YAML block; a YAML-only site owner understands available safe options; a TypeScript owner can register a custom icon against the correct factory; a theme author knows the stable hooks and accessibility boundary; a maintainer understands virtual pages/watch invalidation/bundling; the packed prebuilt and real GitLab-style host build are verified; and no release side effect occurred.
+A writer can copy one YAML block; a YAML-only site owner understands available safe options; a TypeScript owner can register a custom icon against the correct factory; a theme author knows the stable hooks and accessibility boundary; a maintainer understands virtual pages/watch invalidation/bundling; the packed prebuilt and real base-path/subdirectory-hosted build are verified; and no release side effect occurred.

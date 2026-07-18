@@ -19,7 +19,8 @@
 ## Work Guidance
 
 - Exercise the public CLI remove/add flow rather than constructing a successful plugin cache state by assertion alone.
-- Use real Quartz builds for Page Type arbitration, plugin option surfaces, locale behavior, Preact identity, SPA/no-SPA assets, and GitLab subpaths.
+- Use real Quartz builds for Page Type arbitration, plugin option surfaces, locale behavior, Preact identity, SPA/no-SPA assets, and base-path/subdirectory hosting.
+- Verify the manifest-driven left sidebar layout, scoped Explorer replacement, authored root body, and right-side Graph together in the real host frame.
 - Keep known watch invalidation evidence separate from deployment gates: full builds are authoritative.
 
 ## Verification

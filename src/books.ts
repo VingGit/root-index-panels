@@ -1,5 +1,7 @@
 import type { QuartzPluginData } from "@quartz-community/types"
 
+import { parseCanonicalSlug } from "./slug"
+
 type PluginFile = QuartzPluginData & Record<string, unknown>
 
 export interface BookInventoryOptions {
@@ -26,8 +28,14 @@ interface BookAccumulator {
   metadata?: PluginFile
 }
 
+const maximumDateTimestamp = 8_640_000_000_000_000
+
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
+  try {
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+  } catch {
+    return false
+  }
 }
 
 function ownValue(record: Record<string, unknown>, key: string): unknown {
@@ -44,15 +52,53 @@ function isPhysical(file: PluginFile): boolean {
   return typeof filePath === "string" && filePath.length > 0
 }
 
-function toTimestamp(value: unknown): number | undefined {
-  if (value instanceof Date) {
-    const timestamp = value.getTime()
-    return Number.isFinite(timestamp) ? timestamp : undefined
+function hasOwnDataProperty(value: unknown, key: string): boolean {
+  try {
+    if (!isRecord(value)) return false
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    return descriptor !== undefined && "value" in descriptor
+  } catch {
+    return false
   }
-  if (typeof value === "number" && Number.isFinite(value)) return value
+}
+
+function safeStringArray(value: unknown, limit: number): string[] {
+  try {
+    if (!Array.isArray(value)) return []
+    const values: string[] = []
+    const length = Math.min(value.length, limit)
+    for (let index = 0; index < length; index += 1) {
+      let item: unknown
+      try {
+        item = value[index]
+      } catch {
+        continue
+      }
+      if (typeof item === "string") values.push(item)
+    }
+    return values
+  } catch {
+    return []
+  }
+}
+
+function isSupportedDateTimestamp(value: number): boolean {
+  return Number.isFinite(value) && Math.abs(value) <= maximumDateTimestamp
+}
+
+function toTimestamp(value: unknown): number | undefined {
+  try {
+    if (value instanceof Date) {
+      const timestamp = Date.prototype.getTime.call(value)
+      return isSupportedDateTimestamp(timestamp) ? timestamp : undefined
+    }
+  } catch {
+    return undefined
+  }
+  if (typeof value === "number" && isSupportedDateTimestamp(value)) return value
   if (typeof value === "string") {
     const parsed = Date.parse(value)
-    return Number.isNaN(parsed) ? undefined : parsed
+    return isSupportedDateTimestamp(parsed) ? parsed : undefined
   }
   return undefined
 }
@@ -90,7 +136,13 @@ function humanizeSegment(segment: string): string {
 }
 
 function compareTitle(a: BookEntry, b: BookEntry): number {
-  return a.title.localeCompare(b.title) || a.segment.localeCompare(b.segment)
+  const leftTitle = a.title.toLowerCase()
+  const rightTitle = b.title.toLowerCase()
+  if (leftTitle < rightTitle) return -1
+  if (leftTitle > rightTitle) return 1
+  if (a.title < b.title) return -1
+  if (a.title > b.title) return 1
+  return a.segment < b.segment ? -1 : a.segment > b.segment ? 1 : 0
 }
 
 /**
@@ -104,11 +156,9 @@ export function collectBooks(allFiles: PluginFile[], options: BookInventoryOptio
   const books = new Map<string, BookAccumulator>()
 
   for (const file of allFiles) {
-    const rawSlug = ownValue(file, "slug")
-    const slug = typeof rawSlug === "string" ? rawSlug : ""
-    if (slug.length === 0) continue
-
-    const parts = slug.split("/").filter(Boolean)
+    const parsed = parseCanonicalSlug(ownValue(file, "slug"))
+    if (!parsed) continue
+    const { slug, parts } = parsed
     if (parts.length < 2) continue
 
     const segment = parts[0]
@@ -117,8 +167,10 @@ export function collectBooks(allFiles: PluginFile[], options: BookInventoryOptio
     const physical = isPhysical(file)
     const listed = ownValue(file, "unlisted") !== true
     const isBookIndex = parts.length === 2 && parts[1] === "index"
+    const syntheticIndex =
+      !physical && (hasOwnDataProperty(file, "canvasData") || hasOwnDataProperty(file, "basesData"))
 
-    if (isBookIndex && listed) {
+    if (isBookIndex && listed && !syntheticIndex) {
       // A listed physical index is explicit. A listed virtual index is the generated route.
       destinations.add(segment)
     }
@@ -153,9 +205,7 @@ export function collectBooks(allFiles: PluginFile[], options: BookInventoryOptio
       description:
         typeof rawDescription === "string" ? rawDescription : options.descriptionFallback,
       docCount: book.docCount,
-      tags: Array.isArray(rawTags)
-        ? rawTags.filter((tag): tag is string => typeof tag === "string").slice(0, options.tagCount)
-        : [],
+      tags: safeStringArray(rawTags, options.tagCount),
       date: book.date,
       panel: ownValue(frontmatter, "panel"),
     })

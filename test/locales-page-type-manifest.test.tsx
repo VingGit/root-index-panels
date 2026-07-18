@@ -1,12 +1,14 @@
-import type { BuildCtx } from "@quartz-community/types"
+import render from "preact-render-to-string"
 import { describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/components/scripts/panels.inline.ts", () => ({ default: "" }))
 vi.mock("../src/components/styles/panels.scss", () => ({ default: "" }))
+vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "" }))
 
 import packageJson from "../package.json"
 import { validateManifest } from "../src/build/validate-manifest"
 import { RootIndexPanels } from "../src/components"
+import RootIndexSidebar from "../src/components/RootIndexSidebar"
 import * as componentExports from "../src/components"
 import * as packageExports from "../src/index"
 import { RootIndexPanelsPage } from "../src/pageType"
@@ -54,6 +56,52 @@ describe("plugin localization", () => {
 
     expect(count).toContain(">1 note</span>")
     expect(empty).toContain("No subdirectories found.")
+  })
+
+  it.each([
+    ["en-US", "directories", "total notes", "Browse directories"],
+    ["fi-FI", "hakemistoa", "muistiinpanoja", "Selaa hakemistoja"],
+  ])("localizes the %s root overview", (locale, directories, totalNotes, browse) => {
+    const html = renderPanels(
+      [
+        physicalFile("git/index", { title: "Git" }),
+        physicalFile("git/topic"),
+        physicalFile("java/index", { title: "Java" }),
+        physicalFile("java/one"),
+        physicalFile("java/two"),
+      ],
+      undefined,
+      locale,
+    )
+
+    expect(html).toContain(`<dt>${directories}</dt><dd>2</dd>`)
+    expect(html).toContain(`<dt>${totalNotes}</dt><dd>3</dd>`)
+    expect(html).toContain(`href="#rip-directories">${browse}`)
+    expect(html).toContain(`id="rip-directories-heading">${browse}</h2>`)
+  })
+
+  it("formats the newest overview date in UTC and omits an empty Markdown wrapper", () => {
+    const html = renderPanels([
+      physicalFile(
+        "java/index",
+        { title: "Java" },
+        { dates: { modified: new Date("2024-01-02T23:00:00-05:00") } },
+      ),
+      physicalFile("java/topic"),
+    ])
+
+    expect(html).toContain("<dt>last updated</dt><dd>Jan 3, 2024</dd>")
+    expect(html).not.toContain("rip-root-content")
+  })
+
+  it("omits finite timestamps outside the ECMAScript Date range", () => {
+    const html = renderPanels([
+      physicalFile("java/index", { title: "Java" }, { date: 1e100 }),
+      physicalFile("java/topic"),
+    ])
+
+    expect(html).not.toContain("<dt>last updated</dt>")
+    expect(html).toContain("Java")
   })
 
   it("selects the locale per render rather than at module initialization", () => {
@@ -123,77 +171,45 @@ describe("RootIndexPanelsPage", () => {
     expect(html).toBe("")
   })
 
-  it("removes root-only toc and reading-time data through a shallow render clone", () => {
+  it("renders the authored root HAST and preserves TOC and reading-time component data", () => {
     const pageType = RootIndexPanelsPage()
-    const props = componentProps("index", [virtualFile("java/index")])
+    const props = componentProps("index", [
+      physicalFile("java/index", { title: "Java" }),
+      physicalFile("java/topic"),
+    ])
     const sharedFile = props.fileData
-    const sharedFrontmatter = sharedFile.frontmatter
     sharedFile.toc = [{ depth: 2, text: "Root heading", slug: "root-heading" }]
     sharedFile.readingTime = { text: "3 min read", minutes: 3 }
     sharedFile.text = "Authored root prose used by the host's reading-time calculation."
-    sharedFile.other = { retained: true }
+    props.tree = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "h2",
+          properties: { id: "root-heading" },
+          children: [{ type: "text", value: "Root heading" }],
+        },
+        {
+          type: "element",
+          tagName: "p",
+          properties: {},
+          children: [{ type: "text", value: "Authored root prose sentinel." }],
+        },
+      ],
+    }
 
-    const transforms = pageType.treeTransforms?.({} as BuildCtx)
-    expect(transforms).toHaveLength(1)
+    expect(pageType.treeTransforms).toBeUndefined()
     expect(pageType.match({ slug: fullSlug("index"), fileData: sharedFile, cfg: {} })).toBe(true)
-    transforms?.[0]?.({ type: "root", children: [] }, fullSlug("index"), props)
 
-    expect(props.fileData).not.toBe(sharedFile)
-    expect(props.fileData.frontmatter).toBe(sharedFrontmatter)
-    expect(props.fileData.other).toBe(sharedFile.other)
-    expect(props.fileData).not.toHaveProperty("toc")
-    expect(props.fileData).not.toHaveProperty("readingTime")
-    expect(props.fileData).not.toHaveProperty("text")
-    expect(sharedFile).toHaveProperty("toc")
-    expect(sharedFile).toHaveProperty("readingTime")
-    expect(sharedFile).toHaveProperty("text")
-  })
-
-  it("does not clone or suppress component data for a non-root slug", () => {
-    const pageType = RootIndexPanelsPage()
-    const props = componentProps("java/index", [])
-    const sharedFile = props.fileData
-    sharedFile.toc = [{ depth: 2, text: "Java", slug: "java" }]
-    sharedFile.readingTime = { text: "1 min read" }
-    sharedFile.text = "Java content"
-
-    pageType.treeTransforms?.({} as BuildCtx)[0]?.(
-      { type: "root", children: [] },
-      fullSlug("java/index"),
-      props,
-    )
-
+    const html = render(pageType.body()(props) as Parameters<typeof render>[0])
+    expect(html).toContain('id="root-heading"')
+    expect(html).toContain("Authored root prose sentinel.")
+    expect(html).toContain('id="rip-directories"')
     expect(props.fileData).toBe(sharedFile)
     expect(props.fileData).toHaveProperty("toc")
     expect(props.fileData).toHaveProperty("readingTime")
     expect(props.fileData).toHaveProperty("text")
-  })
-
-  it("does not suppress an unowned virtual or higher-priority root record", () => {
-    const pageType = RootIndexPanelsPage()
-    const transforms = pageType.treeTransforms?.({} as BuildCtx)
-    const virtualProps = componentProps("index", [])
-    virtualProps.fileData = virtualFile("index")
-    const higherPriorityProps = componentProps("index", [])
-    expect(
-      pageType.match({ slug: fullSlug("index"), fileData: virtualProps.fileData, cfg: {} }),
-    ).toBe(false)
-
-    for (const props of [virtualProps, higherPriorityProps]) {
-      const sharedFile = props.fileData
-      sharedFile.toc = [{ depth: 2, text: "Other owner's heading", slug: "other" }]
-      sharedFile.readingTime = { text: "2 min read" }
-      sharedFile.text = "Other owner content"
-
-      // Another Page Type owns this record, so this plugin's matcher is never
-      // evaluated by the priority-ordered dispatcher.
-      transforms?.[0]?.({ type: "root", children: [] }, fullSlug("index"), props)
-
-      expect(props.fileData).toBe(sharedFile)
-      expect(props.fileData).toHaveProperty("toc")
-      expect(props.fileData).toHaveProperty("readingTime")
-      expect(props.fileData).toHaveProperty("text")
-    }
   })
 })
 
@@ -210,28 +226,33 @@ describe("manifest and runtime public surface", () => {
     expect(defaults.defaultIcon).toBe("")
     expect(defaults.defaultAccent).toBe("theme")
     expect(defaults.accents).toEqual({})
+    expect(defaults.replaceExplorer).toBe(true)
     expect(defaults).not.toHaveProperty("icons")
     expect(schema.defaultIcon).toEqual({ type: "string" })
     expect(schema.defaultAccent).toEqual({ type: "string" })
+    expect(schema.replaceExplorer).toEqual({ type: "boolean" })
     expect(schema).not.toHaveProperty("icons")
     expect(schema).not.toHaveProperty("accents")
     expect(manifest).not.toHaveProperty("optionSchema")
   })
 
-  it("declares both plugin categories without component layout defaults", () => {
+  it("declares both plugin categories and exactly one left sidebar layout component", () => {
     const manifest = packageJson.quartz
-    const component = manifest.components.RootIndexPanels
+    const component = manifest.components.RootIndexSidebar
 
     expect(manifest.category).toEqual(expect.arrayContaining(["pageType", "component"]))
-    expect(component).not.toHaveProperty("defaultPosition")
-    expect(component).not.toHaveProperty("defaultPriority")
+    expect(Object.keys(manifest.components)).toEqual(["RootIndexSidebar"])
+    expect(component.defaultPosition).toBe("left")
+    expect(component.defaultPriority).toBe(40)
     expect(component.version).toBe(packageJson.version)
     expect(manifest.version).toBe(packageJson.version)
   })
 
   it("exports the component and Page Type from their intended runtime barrels", () => {
     expect(packageExports.RootIndexPanels).toBe(RootIndexPanels)
+    expect(packageExports.RootIndexSidebar).toBe(RootIndexSidebar)
     expect(packageExports.RootIndexPanelsPage).toBe(RootIndexPanelsPage)
     expect(componentExports.RootIndexPanels).toBe(RootIndexPanels)
+    expect(componentExports.RootIndexSidebar).toBe(RootIndexSidebar)
   })
 })

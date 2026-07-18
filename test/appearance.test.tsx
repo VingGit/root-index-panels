@@ -15,6 +15,12 @@ function renderAppearance(panel?: unknown, options?: RootIndexPanelsOptions | un
   return renderPanels(bookFiles(panel), options)
 }
 
+function appearancePanel(html: string): string {
+  const start = html.indexOf('<a href="./alpha/"')
+  const end = html.indexOf("</a>", start)
+  return start >= 0 && end > start ? html.slice(start, end + 4) : ""
+}
+
 const layouts = ["cards", "list"] as const
 const styleSource = readFileSync(
   new URL("../src/components/styles/panels.scss", import.meta.url),
@@ -313,9 +319,10 @@ describe("accent resolution and validation", () => {
     const fromRegistry = renderAppearance({ accent: "unsafe" }, { accents: { unsafe: accent } })
 
     for (const html of [direct, fromDefault, fromRegistry]) {
-      expect(html).not.toContain("data-rip-accent")
-      expect(html).not.toContain("--rip-panel-accent")
-      expect(html).not.toContain(accent)
+      const panel = appearancePanel(html)
+      expect(panel).not.toContain("data-rip-accent")
+      expect(panel).not.toContain("--rip-panel-accent")
+      expect(panel).not.toContain(accent)
     }
   })
 })
@@ -326,24 +333,25 @@ describe.each(layouts)("decorative icon accessibility (%s)", (layout) => {
     ["custom", { defaultIcon: "custom", icons: { custom: CustomIcon } }],
   ] as const)("keeps a %s icon inert and the title as the only link name", (_kind, options) => {
     const html = renderAppearance(undefined, { ...options, layout })
+    const panel = appearancePanel(html)
 
-    expect(countOccurrences(html, "<a ")).toBe(1)
-    expect(countOccurrences(html, "</a>")).toBe(1)
-    expect(html).toContain('aria-labelledby="rip-panel-0-title"')
-    expect(html).toContain('id="rip-panel-0-title">Alpha</span>')
-    expect(html).toContain('aria-describedby="rip-panel-0-count"')
+    expect(countOccurrences(panel, "<a ")).toBe(1)
+    expect(countOccurrences(panel, "</a>")).toBe(1)
+    expect(panel).toContain('aria-labelledby="rip-panel-0-title"')
+    expect(panel).toContain('id="rip-panel-0-title">Alpha</span>')
+    expect(panel).toContain('aria-describedby="rip-panel-0-count"')
     if (layout === "cards") {
-      expect(html).toContain('<span class="rip-count" aria-hidden="true">1</span>')
-      expect(html).toContain('<span class="rip-sr-only" id="rip-panel-0-count">1 note</span>')
+      expect(panel).toContain('<span class="rip-count" aria-hidden="true">1</span>')
+      expect(panel).toContain('<span class="rip-sr-only" id="rip-panel-0-count">1 note</span>')
     } else {
-      expect(html).toContain('<span class="rip-count" id="rip-panel-0-count">1 note</span>')
+      expect(panel).toContain('<span class="rip-count" id="rip-panel-0-count">1 note</span>')
     }
-    expect(html).not.toContain('aria-label="Alpha')
-    expect(html).toContain('<span class="rip-panel-icon" aria-hidden="true" inert>')
-    expect(html).toContain('focusable="false"')
-    expect(html).toContain("Alpha")
-    expect(html).not.toContain("tabindex")
-    expect(html).not.toContain("<button")
-    expect(html).not.toContain("<input")
+    expect(panel).not.toContain('aria-label="Alpha')
+    expect(panel).toContain('<span class="rip-panel-icon" aria-hidden="true" inert>')
+    expect(panel).toContain('focusable="false"')
+    expect(panel).toContain("Alpha")
+    expect(panel).not.toContain("tabindex")
+    expect(panel).not.toContain("<button")
+    expect(panel).not.toContain("<input")
   })
 })

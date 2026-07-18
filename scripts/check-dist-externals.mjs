@@ -3,6 +3,7 @@ import path from "node:path"
 import { builtinModules } from "node:module"
 
 const distDirectory = path.resolve("dist")
+const localNodeModules = path.resolve("node_modules")
 if (!fs.existsSync(distDirectory)) {
   throw new Error("dist/ is missing; run npm run build first")
 }
@@ -28,6 +29,15 @@ const bundledSingletonMarkers = [
 ]
 const bundledSingletons = new Map()
 const importsByFile = new Map()
+const ancestorBundledSources = new Map()
+
+function isWithin(parent, target) {
+  const relative = path.relative(parent, target)
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  )
+}
 
 for (const file of javascriptFiles(distDirectory)) {
   const content = fs.readFileSync(file, "utf8")
@@ -53,6 +63,23 @@ for (const file of javascriptFiles(distDirectory)) {
     const locations = unexpected.get(specifier) ?? []
     locations.push(relativeFile)
     unexpected.set(specifier, locations)
+  }
+
+  const sourceMapPath = `${file}.map`
+  if (fs.existsSync(sourceMapPath)) {
+    const sourceMap = JSON.parse(fs.readFileSync(sourceMapPath, "utf8"))
+    for (const source of Array.isArray(sourceMap.sources) ? sourceMap.sources : []) {
+      if (typeof source !== "string") continue
+      const normalizedSource = source.replaceAll("\\", "/")
+      if (!/(?:^|\/)node_modules\//.test(normalizedSource)) continue
+
+      const resolvedSource = path.resolve(path.dirname(sourceMapPath), source)
+      if (isWithin(localNodeModules, resolvedSource)) continue
+      const relativeMap = path.relative(process.cwd(), sourceMapPath)
+      const locations = ancestorBundledSources.get(source) ?? []
+      locations.push(relativeMap)
+      ancestorBundledSources.set(source, locations)
+    }
   }
 }
 
@@ -85,4 +112,13 @@ if (unexpected.size > 0) {
   throw new Error(`dist/ contains unexpected bare runtime imports:\n${details}`)
 }
 
-console.log("dist/ externals verified across every JavaScript entry")
+if (ancestorBundledSources.size > 0) {
+  const details = [...ancestorBundledSources.entries()]
+    .map(([source, files]) => `  - ${source} (${[...new Set(files)].join(", ")})`)
+    .join("\n")
+  throw new Error(
+    `dist/ bundled dependencies from an ancestor node_modules instead of this package:\n${details}`,
+  )
+}
+
+console.log("dist/ externals and local bundled dependency sources verified")

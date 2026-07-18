@@ -1,5 +1,10 @@
 # Implementation session notes
 
+> [!note]
+> Preserved evidence for the completed appearance increment. Later navigation-shell changes belong
+> in [`topic-navigation-shell/IMPLEMENTATION-NOTES.md`](../topic-navigation-shell/IMPLEMENTATION-NOTES.md);
+> do not rewrite these observations to describe the newer implementation.
+
 Verified on 2026-07-18 before source implementation.
 
 ## Revisions and baseline

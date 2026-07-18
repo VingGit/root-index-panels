@@ -33,7 +33,7 @@ export function validateManifest(): void {
   if (!isRecord(quartz.configSchema)) {
     errors.push("quartz.configSchema is required for Quartz 5 option discovery")
   } else {
-    for (const option of ["defaultIcon", "defaultAccent"]) {
+    for (const option of ["defaultIcon", "defaultAccent", "replaceExplorer"]) {
       if (!isRecord(quartz.configSchema[option])) {
         errors.push(`quartz.configSchema.${option} is required`)
       }
@@ -56,9 +56,16 @@ export function validateManifest(): void {
   if (!isRecord(quartz.components)) {
     errors.push("quartz.components must declare exported components")
   } else {
-    const component = quartz.components.RootIndexPanels
+    const componentNames = Object.keys(quartz.components)
+    if (componentNames.length !== 1 || componentNames[0] !== "RootIndexSidebar") {
+      errors.push(
+        "quartz.components must declare exactly RootIndexSidebar so the CLI installs one left component",
+      )
+    }
+
+    const component = quartz.components.RootIndexSidebar
     if (!isRecord(component)) {
-      errors.push("quartz.components.RootIndexPanels is required")
+      errors.push("quartz.components.RootIndexSidebar is required")
     } else {
       for (const field of [
         "name",
@@ -69,15 +76,16 @@ export function validateManifest(): void {
         "author",
         "homepage",
       ]) {
-        requireString(component[field], `quartz.components.RootIndexPanels.${field}`, errors)
+        requireString(component[field], `quartz.components.RootIndexSidebar.${field}`, errors)
       }
       if (component.version !== pkg.version) {
-        errors.push("quartz.components.RootIndexPanels.version must equal package.version")
+        errors.push("quartz.components.RootIndexSidebar.version must equal package.version")
       }
-      if ("defaultPosition" in component || "defaultPriority" in component) {
-        errors.push(
-          "quartz.components.RootIndexPanels must not define layout defaults for its Page Type body",
-        )
+      if (component.defaultPosition !== "left") {
+        errors.push("quartz.components.RootIndexSidebar.defaultPosition must equal left")
+      }
+      if (component.defaultPriority !== 40) {
+        errors.push("quartz.components.RootIndexSidebar.defaultPriority must equal 40")
       }
     }
   }

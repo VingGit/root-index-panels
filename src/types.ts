@@ -27,9 +27,12 @@ export interface RootIndexPanelsOptions {
   defaultAccent?: string
   /** YAML-safe named accent registry. */
   accents?: Record<string, string>
+  /** Replace only the stock Explorer beside RootIndexSidebar. Default: `true`. */
+  replaceExplorer?: boolean
 }
 
 export type RootIndexPanelsPageOptions = RootIndexPanelsOptions
+export type RootIndexSidebarOptions = RootIndexPanelsOptions
 
 export type {
   BuildCtx,

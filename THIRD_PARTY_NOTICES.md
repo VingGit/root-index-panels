@@ -79,6 +79,57 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## HAST-to-JSX runtime and bundled utility closure
+
+The following bundled packages are distributed under the MIT License:
+
+- `hast-util-to-jsx-runtime`
+- `comma-separated-tokens`
+- `devlop`
+- `estree-util-is-identifier-name`
+- `hast-util-whitespace`
+- `property-information`
+- `space-separated-tokens`
+- `style-to-js`
+- `style-to-object`
+- `inline-style-parser`
+- `unist-util-position`
+- `unist-util-stringify-position`
+- `vfile-message`
+
+Copyright (c) Titus Wormer <tituswormer@gmail.com>
+
+Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com>
+
+Copyright (c) 2023 Titus Wormer <tituswormer@gmail.com>
+
+Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+
+Copyright (c) Titus Wormer <mailto:tituswormer@gmail.com>
+
+Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com>
+
+Copyright (c) 2020 Menglin "Mark" Xu <mark@remarkablemark.org>
+
+Copyright (c) 2017 Menglin "Mark" Xu <mark@remarkablemark.org>
+
+Copyright (c) 2012 TJ Holowaychuk <tj@vision-media.ca>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notices and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 ## github-slugger
 
 ISC License

@@ -1,8 +1,14 @@
 # Prompt 03 — Prove correctness, safety, integration, and accessibility
 
+> [!note]
+> Historical appearance test gate. Its assertions remain regression coverage except where the
+> active [`topic-navigation-shell`](../topic-navigation-shell/README.md) contract deliberately
+> makes root Markdown visible, installs one left sidebar component, and retains a durable three-book
+> fixture under the parent `content/` directory.
+
 ## Objective
 
-Add observable tests at three levels: focused component/Page Type tests, script/DOM lifecycle tests, and a real parent Quartz build fixture. A direct JSX render alone cannot verify loader merging, virtual pages, canonical output paths, prebuilt installation, or GitLab Pages behavior.
+Add observable tests at three levels: focused component/Page Type tests, script/DOM lifecycle tests, and a real parent Quartz build fixture. A direct JSX render alone cannot verify loader merging, virtual pages, canonical output paths, prebuilt installation, or base-path/subdirectory hosting behavior.
 
 ## Component and contract tests
 
@@ -68,7 +74,7 @@ Use a temporary/isolated content and config fixture, never durable user notes. I
 - YAML-safe plugin options plus a `quartz.ts` `ExternalPlugin.RootIndexPanelsPage(...)` override before `loadQuartzConfig()`;
 - SPA enabled and disabled variants;
 - `en-US`, `fi-FI`, and unsupported-locale fallback builds;
-- a GitLab-style group/project subpath/base URL matching the repository deployment pattern.
+- a base-path/subdirectory-hosted URL such as `/quartz-for-gitlab/`, matching the repository deployment pattern without GitLab-specific logic.
 
 Assert generated `public/index.html` contains only the expected books, exact canonical hrefs, localized output, safe hooks, and no virtual Tag Index card. Assert each expected `public/<book>/index.html` destination exists. Verify CSS/resources resolve from the subpath.
 

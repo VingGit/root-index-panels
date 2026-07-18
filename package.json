@@ -1,7 +1,7 @@
 {
   "name": "@quartz-community/root-index-panels",
   "version": "0.1.1",
-  "description": "Quartz 5 plugin that replaces the root index page with a responsive card grid of first-level vault directories.",
+  "description": "Quartz 5 multi-book landing page and route-aware sidebar for first-level content directories.",
   "type": "module",
   "license": "MIT",
   "author": "VingGit",
@@ -18,7 +18,10 @@
     "directory",
     "cards",
     "index",
-    "component"
+    "component",
+    "sidebar",
+    "navigation",
+    "books"
   ],
   "files": [
     "dist",
@@ -70,6 +73,7 @@
     "@quartz-community/types": "github:quartz-community/types",
     "@quartz-community/utils": "github:quartz-community/utils",
     "github-slugger": "^2.0.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
     "lucide-preact": "1.25.0"
   },
   "devDependencies": {
@@ -90,7 +94,7 @@
   "quartz": {
     "name": "root-index-panels",
     "displayName": "Root Index Panels",
-    "description": "Renders first-level vault directories as panels on the root index page.",
+    "description": "Renders first-level content books on the root page and scopes left navigation to the current book.",
     "author": "VingGit",
     "homepage": "https://github.com/VingGit/root-index-panels",
     "keywords": [
@@ -101,7 +105,10 @@
       "directory",
       "cards",
       "index",
-      "component"
+      "component",
+      "sidebar",
+      "navigation",
+      "books"
     ],
     "category": [
       "pageType",
@@ -123,7 +130,8 @@
       "descriptionFallback": "",
       "defaultIcon": "",
       "defaultAccent": "theme",
-      "accents": {}
+      "accents": {},
+      "replaceExplorer": true
     },
     "configSchema": {
       "layout": {
@@ -164,17 +172,22 @@
       },
       "defaultAccent": {
         "type": "string"
+      },
+      "replaceExplorer": {
+        "type": "boolean"
       }
     },
     "components": {
-      "RootIndexPanels": {
-        "name": "RootIndexPanels",
-        "displayName": "Root Index Panels",
-        "description": "Directory panel grid for the root index page.",
+      "RootIndexSidebar": {
+        "name": "RootIndexSidebar",
+        "displayName": "Root Index Sidebar",
+        "description": "Book switcher and route-scoped left navigation.",
         "version": "0.1.1",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
-        "homepage": "https://github.com/VingGit/root-index-panels"
+        "homepage": "https://github.com/VingGit/root-index-panels",
+        "defaultPosition": "left",
+        "defaultPriority": 40
       }
     }
   },
