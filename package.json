@@ -46,7 +46,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/normalize-source-maps.mjs",
     "dev": "tsup --watch",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier . --check",

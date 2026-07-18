@@ -34,6 +34,9 @@ Verified on 2026-07-18 before source implementation.
   `github-slugger` while declaring it only as an optional peer. The nested Windows checkout had
   resolved that import accidentally from the parent Quartz `node_modules`. The plugin now declares
   `github-slugger` directly and validates source checks from an ancestor-free checkout.
+- The same hosted build exposed platform-dependent `sourcesContent` bytes in committed source maps.
+  Production builds normalize embedded CRLF/CR text to LF so Windows and Linux produce the same
+  artifacts without dropping useful source content.
 
 ## Contract revisions from host evidence
 
