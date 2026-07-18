@@ -3,7 +3,8 @@
 ## Purpose
 
 - Quartz 5 community plugin that presents eligible first-level content directories as books on the
-  authored root page and provides route-scoped Home/book navigation in the left layout slot.
+  authored root page and provides a root-manual/book selector with route-scoped Explorer navigation
+  in the left layout slot.
 - This ignored nested Git working tree has its own `.git` directory and remote
   `https://github.com/VingGit/root-index-panels.git`.
 
@@ -19,16 +20,24 @@
 
 - `RootIndexPanelsPage` in `src/pageType.ts` owns only the physical root `index` at priority `100`,
   uses layout key `content` and the host default frame, and supplies `RootIndexPanels` as its body.
-- `RootIndexPanels` renders transformed authored root HAST, semantic overview/browse UI, then the
-  cards/list collection. Preserve root `toc`, `readingTime`, and `text`; never add a suppression
-  transform or mutate shared render data.
+- `RootIndexPanels` renders the semantic overview/browse UI first, transformed authored root HAST
+  second, then the cards/list collection. Preserve root `toc`, `readingTime`, and `text`; never add a
+  suppression transform or mutate shared render data.
 - `package.json#quartz.components` declares exactly one component: `RootIndexSidebar` at left
   priority `40`. Keep `RootIndexPanels` publicly exported but outside manifest component discovery.
-- `RootIndexSidebar` uses native SSR links/disclosures and scopes its tree to listed physical root
-  notes or the current eligible book. Reuse the book collector's eligibility, order, destination,
-  canonical-slug, title, icon, and accent contracts. Cache variants inherit normalized `excludeDirs`,
+- `RootIndexSidebar` uses native SSR links/disclosures. Its selector labels the root manual from the
+  physical root index's authored title, with localized Home fallback, and lists that root plus every
+  eligible book in an absolute popup. Selected-manual state is separate from exact-page
+  `aria-current`; the scoped Explorer shows only listed physical root notes or the current eligible
+  book, places the book Overview first, opens top-level folders by default, and otherwise opens only
+  current ancestry. Reuse the book collector's eligibility, order, destination, canonical-slug,
+  title, icon, and accent contracts. Cache variants inherit normalized `excludeDirs`,
   `descriptionFallback`, `sort`, and `tagCount` inputs. A shell closed on mobile must expose its
   content again above the mobile breakpoint, where its summary is hidden.
+- The sidebar's native selector and links remain complete without JavaScript. Its inline script may
+  add only light-dismiss behavior: one open selector, outside-pointer and switcher-link close, and
+  Escape close with focus restoration. It must initialize on Quartz `nav` and tear down through
+  `window.addCleanup`.
 - Exactly three kinds of narrowly scoped host selector are allowed:
   1. default-frame `#quartz-body` grid containment gated by a direct
      `.left.sidebar > .rip-sidebar` descendant, used at tablet/mobile breakpoints only to replace
@@ -61,7 +70,8 @@
 - Keep styles/scripts under `rip-*`, except the three documented structural selector kinds. The
   default-frame rule may only constrain grid tracks, the mobile left rule may only constrain
   width/wrapping, and the Explorer sibling rule is the only suppression. Sidebar navigation must
-  work without JavaScript; panel `.inline.ts` lifecycle must clean up on SPA navigation.
+  work without JavaScript; both panel and sidebar `.inline.ts` lifecycles must clean up on SPA
+  navigation.
 - Define and test physical-versus-virtual data, `allFiles` cache identity, and partial-watch
   invalidation explicitly. Clean/full builds are authoritative.
 - Do not bump versions, tag, release, publish, or submit to a marketplace without separate user
@@ -76,6 +86,10 @@
 - Run `npm run test:integration` after Page Type, sidebar, loader-facing manifest, routing, locale,
   appearance, Graph composition, base-path, or packaging changes. Temporary workspaces are removed
   unless `RIP_KEEP_INTEGRATION=1` is set.
+- For sidebar popup or card-interaction changes, also verify a real browser at desktop, tablet, and
+  mobile widths: menu overlay without Explorer reflow, outside/Escape close and focus restoration,
+  book-scoped Explorer state, card hover/focus glow, right-rail preservation, and no horizontal
+  overflow.
 - Run `npm run test:watch-integration` when changing aggregate/watch behavior or its documentation;
   stale partial-watch observations are acceptable only when a subsequent clean build corrects them.
 - Validate unpublished work with stock `quartz plugin remove`, `add`, and `enable`; verify the lock

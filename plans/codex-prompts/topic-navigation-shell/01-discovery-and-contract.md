@@ -12,7 +12,7 @@ proof, and do not edit source until every decision gate in this prompt is satisf
 
 - Re-read the root and nested `AGENTS.md` chain and both prompt-set READMEs.
 - Inspect the ignored local `Alternative Landing Page Design.make` archive sufficiently to identify
-  the final desktop shell, switcher, explorer hierarchy, landing overview, directory cards, right
+  the final desktop shell, selector, Explorer hierarchy, landing overview, directory cards, right
   rail, and any interaction/responsive intent. Confirm `git check-ignore` still matches it.
 - Compare the current live/reference render and a local clean build, but distinguish their installed
   plugin commits before attributing a visual defect to current source.
@@ -78,7 +78,8 @@ RootIndexSidebar (public layout component)
   `.markdown-preview-view.markdown-rendered`, including safe frontmatter `cssclasses` behavior.
 - Render no authored article wrapper only when the transformed tree is genuinely empty; never infer
   emptiness from missing `text` alone.
-- The visible body order is authored article, overview, browse anchor, directory heading/list.
+- The visible Page Type body order is overview/browse banner first, authored article second, and
+  directory heading/list third. Quartz-owned PageTitle/ContentMeta remain outside the plugin body.
 - Use one stable directory heading ID, `rip-directories`; the browse link is `#rip-directories`.
 - Reuse one collected/resolved book array within the root body for panels and overview. The sidebar
   is a separately rendered Quartz component, so it may collect once for its own render/cache through
@@ -95,8 +96,9 @@ RootIndexSidebar (public layout component)
 - Format the date deterministically with `Intl.DateTimeFormat` selected from `cfg.locale`, falling
   back to `en-US`; freeze timezone behavior in tests so CI and local output agree.
 - Extend plugin-owned `en-US` and `fi-FI` catalogs with directory-count singular/plural, total-notes,
-  last-updated, browse, switcher, Home, Explorer/navigation, and empty-navigation strings. Keep all
-  existing note-count/empty strings backward compatible and unsupported locales per-render fallback.
+  last-updated, browse, selector, switch-manual, selected-manual, localized Home fallback,
+  Explorer/navigation, Overview, and empty-navigation strings. Keep all existing note-count/empty
+  strings backward compatible and unsupported locales per-render fallback.
 - Statistics are a semantic list/region with readable labels and values. Do not encode meaning only
   in icons, color, tooltip, or CSS-generated content.
 
@@ -116,19 +118,23 @@ separate view over `allFiles` and must not change `docCount`.
 
 - Normalize the current `fileData.slug` into path segments without decoding/re-encoding authored
   names manually.
-- If the first segment exactly matches an eligible book, select book context; otherwise select Home.
-- `index`, root notes, `tags/**`, `404`, and unrelated virtual namespaces are Home context.
-- Home label uses a localized `Home`; the site title may be shown as supporting text from
-  `cfg.pageTitle`. A book label uses its authored/fallback title and resolved safe icon/accent.
-- The switcher menu contains Home once and every eligible book once, in the same configured sort
-  order as the panels. Mark the selected destination with `aria-current="page"` only when it is the
-  exact current landing; expose selection text independently for descendant routes.
+- If the first segment exactly matches an eligible book, select book context; otherwise select root
+  context. `index`, root notes, `tags/**`, `404`, and unrelated virtual namespaces are root context.
+- Capture the authored title from the first listed physical record whose canonical slug is exactly
+  `index`. Ignore accessor-backed title properties and use localized `Home` only when no safe authored
+  title exists. A book label uses its authored/fallback title and resolved safe icon/accent.
+- The selector popup contains the root manual once, a divider, and every eligible book once in the
+  same configured sort order as the panels. Expose selected context through exactly one
+  `data-rip-selected` item, check icon, and hidden selected-status label. Use
+  `aria-current="page"` only for an exact current destination, never merely because its book is the
+  active context.
 
 ### Explorer inventory
 
-- Home explorer includes listed physical root notes with exactly one slug segment, except `index`.
+- Root Explorer includes listed physical root notes with exactly one slug segment, except `index`.
 - Book explorer includes listed physical descendants of the selected book, excluding its own
-  `<book>/index` landing from the chapter list.
+  `<book>/index` landing from the descendant tree. Render that landing separately as the first
+  `Overview` link so the book remains directly reachable.
 - Deduplicate full slugs first occurrence wins, matching the book collector's defensive model.
 - Unlisted/encrypted-as-unlisted entries, `tags`, excluded books, root entries in book mode, and all
   other books are absent.
@@ -144,13 +150,14 @@ separate view over `allFiles` and must not change `docCount`.
 
 ### Markup and destinations
 
-- Use a labelled `<nav>` and nested `<ul>/<li>` lists. Use `<details>/<summary>` for the switcher and
+- Use a labelled `<nav>` and nested `<ul>/<li>` lists. Use `<details>/<summary>` for the selector and
   nested folder disclosure; do not recreate listbox/tree ARIA roles.
 - Every destination is an ordinary `<a>`. No clickable `div`, nested anchor/button, positive
   `tabindex`, or required custom keyboard handling.
-- Mark only the exact current page link with `aria-current="page"`; mark disclosure state through
-  native `open` semantics. Open the current ancestor chain in server output.
-- Resolve Home (`index`), book (`<segment>/index`), notes, and valid folders with public Quartz path
+- Mark only the exact current page link with `aria-current="page"`; selection state is separate.
+  Mark disclosure state through native `open` semantics. Open every first-level folder in server
+  output and open a deeper folder only when it is on the current ancestor chain.
+- Resolve root (`index`), book (`<segment>/index`), notes, and valid folders with public Quartz path
   helpers relative to the current slug. Assert root, nested, dotted, spaced, Unicode, and
   base-path/subdirectory-hosted output.
 - Give stable `rip-*` hooks only; never place raw accent values or unsafe path/title text in class
@@ -196,9 +203,11 @@ separate view over `allFiles` and must not change `docCount`.
 ## SPA, responsive, and accessibility contract
 
 - Useful root and sidebar HTML is server-rendered. All core links/disclosures work without JS.
-- If an inline script is needed, initialize on Quartz navigation events, register cleanup with
-  `window.addCleanup`, avoid duplicate listeners, scope queries to each `.rip-sidebar`, and preserve
-  native link interception. No additional client framework or Motion dependency.
+- The selector's optional inline enhancement initializes on Quartz navigation events, registers
+  cleanup with `window.addCleanup`, avoids duplicate listeners, and scopes queries to each
+  `.rip-sidebar`. It closes on outside `pointerdown`, selected-link activation, and Escape; Escape
+  restores focus to the controlling summary and opening one selector closes another. Preserve native
+  link interception. No additional client framework or Motion dependency.
 - Use Quartz breakpoint variables/conventions where public bundling supports them; otherwise mirror
   the documented mobile/desktop values once and record the compatibility dependency.
 - Desktop/tablet show the navigation in the left column. Mobile exposes it as a compact native
@@ -217,9 +226,24 @@ separate view over `allFiles` and must not change `docCount`.
   does not weaken the Explorer section's one-cross-plugin-suppression rule.
 - Focus indicators use host/system colors, survive forced colors and custom accents, and are not
   removed. Reduced motion removes nonessential lift/slide/scroll animation.
-- Verify keyboard-only switcher/folder operation, focus order, focus restoration after SPA
+- The popup is absolutely positioned and opaque, remains inside the viewport, and causes no Explorer
+  layout shift. While open, the visually covered Explorer scope must be hidden from interaction and
+  focus as well as sight; closing restores it.
+- Verify keyboard-only selector/folder operation, focus order, focus restoration after SPA
   navigation, 200%/400% zoom/reflow, touch target sizing, long/Unicode labels, screen-reader names,
   and hidden-state focusability.
+
+## Follow-up appearance contract — 2026-07-18
+
+The Make card interaction is exact rather than impressionistic:
+
+- card `::before`: `radial-gradient(ellipse 120% 80% at 50% 0%, <safe accent at 8%>, transparent 70%)`;
+- card `::after`: one-pixel horizontal gradient `transparent → accent at 50% → transparent`;
+- both layers transition opacity from `0` to `1` over `300ms` on hover and keyboard focus within;
+- the card lifts by two pixels when motion is allowed;
+- the old accent border and title-color hover are absent;
+- reduced-motion and forced-colors modes retain usable focus/state feedback without depending on
+  the decorative effect.
 
 ## Durable fixture contract
 
@@ -252,6 +276,11 @@ Before Prompt 02, fill the baseline/decision sections of `IMPLEMENTATION-NOTES.m
 - navigation cache variants cover the four normalized inventory options without cross-contamination;
 - browser measurements prove the default-frame grid and direct-plugin mobile width/wrap rules remove
   tablet/mobile horizontal overflow without suppressing host components or matching custom frames;
+- selector measurements prove the popup causes no Explorer layout shift, stays in the viewport, and
+  its covered underlay cannot receive pointer or keyboard focus while open;
+- root and book route output proves authored-root labeling, selected-versus-current semantics,
+  first `Overview`, first-level-open/deeper-active disclosure behavior, and mutually disjoint scoped
+  Explorer inventories;
 - root/side navigation data has unambiguous physical/listed/virtual provenance;
 - Graph remains a host right-slot component on root and book notes;
 - expected fixture counts match a clean build and the frozen book model;

@@ -3,6 +3,7 @@ import render from "preact-render-to-string"
 import { describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "sidebar-style" }))
+vi.mock("../src/components/scripts/sidebar.inline.ts", () => ({ default: "sidebar-script" }))
 
 import RootIndexSidebar, { type RootIndexSidebarOptions } from "../src/components/RootIndexSidebar"
 import {
@@ -11,7 +12,25 @@ import {
   getSidebarNavigationModel,
   selectSidebarNavigationScope,
 } from "../src/navigation"
-import { componentProps, physicalFile, virtualFile, type PluginFile } from "./helpers"
+import {
+  componentProps,
+  countOccurrences,
+  physicalFile,
+  virtualFile,
+  type PluginFile,
+} from "./helpers"
+
+function sidebarScope(html: string): string {
+  const start = html.indexOf('<section class="rip-sidebar-scope"')
+  const end = html.indexOf("</section>", start)
+  return start >= 0 && end > start ? html.slice(start, end + "</section>".length) : ""
+}
+
+function switcherMenu(html: string): string {
+  const start = html.indexOf('<div class="rip-sidebar-switcher-menu"')
+  const end = html.indexOf('<section class="rip-sidebar-scope"', start)
+  return start >= 0 ? html.slice(start, end >= 0 ? end : undefined) : ""
+}
 
 function fixture(): PluginFile[] {
   return [
@@ -54,6 +73,7 @@ describe("sidebar navigation model", () => {
       ["Java root note", "java"],
       ["Loose note", "loose"],
     ])
+    expect(model.rootTitle).toBe("Home")
     expect(model.books.map((book) => book.title)).toEqual(["Git", "Java"])
 
     const java = model.books.find((book) => book.segment === "java")
@@ -70,6 +90,29 @@ describe("sidebar navigation model", () => {
     expect(JSON.stringify(model)).not.toContain("Tags Manual")
     expect(Object.isFrozen(model)).toBe(true)
     expect(Object.isFrozen(java?.children)).toBe(true)
+  })
+
+  it("uses the first listed physical root title and omits unsafe or missing titles", () => {
+    const rootTitle = Object.defineProperty({}, "title", {
+      enumerable: true,
+      get() {
+        throw new Error("must not execute")
+      },
+    })
+    const unsafeRoot = physicalFile("index")
+    unsafeRoot.frontmatter = rootTitle as PluginFile["frontmatter"]
+
+    expect(
+      buildSidebarNavigationModel([
+        virtualFile("index", { title: "Virtual root" }),
+        physicalFile("index", { title: "Knowledge Base" }),
+        physicalFile("index", { title: "Duplicate root" }),
+      ]).rootTitle,
+    ).toBe("Knowledge Base")
+    expect(buildSidebarNavigationModel([unsafeRoot]).rootTitle).toBeUndefined()
+    expect(
+      buildSidebarNavigationModel([physicalFile("index", { title: "   " })]).rootTitle,
+    ).toBeUndefined()
   })
 
   it("requires listed physical content and a physical or generated book destination", () => {
@@ -105,6 +148,29 @@ describe("sidebar navigation model", () => {
     expect(generated.slug).toBe("book/generated/index")
     expect(generated.children.map((node) => node.title)).toEqual(["Topic"])
     expect(JSON.stringify(model)).not.toContain("Empty generated folder")
+  })
+
+  it("rejects nested Canvas and Bases indexes as folder destinations", () => {
+    const model = buildSidebarNavigationModel([
+      physicalFile("book/index", { title: "Book" }),
+      virtualFile("book/canvas/index", { title: "Canvas destination" }, { canvasData: {} }),
+      physicalFile("book/canvas/topic", { title: "Canvas topic" }),
+      virtualFile("book/bases/index", { title: "Bases destination" }, { basesData: {} }),
+      physicalFile("book/bases/topic", { title: "Bases topic" }),
+    ])
+
+    const folders = model.books[0]?.children
+    expect(folders?.map((node) => [node.kind, node.title])).toEqual([
+      ["folder", "Bases"],
+      ["folder", "Canvas"],
+    ])
+    for (const folder of folders ?? []) {
+      expect(folder.kind).toBe("folder")
+      if (folder.kind !== "folder") continue
+      expect(folder.slug).toBeUndefined()
+      expect(folder.children).toHaveLength(1)
+    }
+    expect(JSON.stringify(model)).not.toContain("destination")
   })
 
   it("caches by allFiles identity without conflating option variants", () => {
@@ -216,6 +282,8 @@ describe("sidebar navigation model", () => {
 describe("RootIndexSidebar SSR", () => {
   it("renders native Home/book switching and only root physical notes on root routes", () => {
     const html = renderSidebar("index", fixture())
+    const menu = switcherMenu(html)
+    const scope = sidebarScope(html)
 
     expect(html).toContain('<nav class="rip-sidebar"')
     expect(html).toContain('aria-label="Book navigation"')
@@ -225,16 +293,27 @@ describe("RootIndexSidebar SSR", () => {
     expect(html).toMatch(/class="rip-sidebar-home" href="\.\/" aria-current="page"/)
     expect(html).toContain('<details class="rip-sidebar-switcher">')
     expect(html).toContain('<span class="rip-sidebar-switcher-label">Home</span>')
-    expect(html).toMatch(
-      /<summary><span class="rip-sidebar-switcher-label">Home<\/span><\/summary>/,
+    expect(html).toContain('class="rip-sidebar-root-icon" aria-hidden="true" inert')
+    expect(html).toContain('class="rip-sidebar-switcher-chevron" aria-hidden="true" inert')
+    expect(menu).toContain('<p class="rip-sidebar-switcher-heading">Switch manual</p>')
+    expect(menu.indexOf('class="rip-sidebar-home-list"')).toBeLessThan(
+      menu.indexOf('class="rip-sidebar-switcher-divider"'),
     )
-    expect(html).toContain('href="./java/"')
-    expect(html).toContain('href="./git/"')
-    expect(html).toContain('href="./loose"')
-    expect(html).toContain("Java root note")
-    expect(html).not.toContain("Java Topic")
-    expect(html).not.toContain("Git Topic")
+    expect(menu.indexOf('class="rip-sidebar-switcher-divider"')).toBeLessThan(
+      menu.indexOf('class="rip-sidebar-books"'),
+    )
+    expect(menu).toContain('data-rip-selected="true"')
+    expect(menu).toContain('class="rip-sidebar-selected-check"')
+    expect(countOccurrences(menu, 'class="rip-sidebar-selected-check"')).toBe(1)
+    expect(menu).toContain('href="./java/"')
+    expect(menu).toContain('href="./git/"')
+    expect(scope).toContain('aria-label="Explorer"')
+    expect(scope).toContain('href="./loose"')
+    expect(scope).toContain("Java root note")
+    expect(scope).not.toContain("Java Topic")
+    expect(scope).not.toContain("Git Topic")
     expect(html).not.toContain("Private")
+    expect(html).not.toContain('class="rip-sidebar-switcher" open')
   })
 
   it("renders only the current book tree with canonical links and active ancestors", () => {
@@ -242,28 +321,92 @@ describe("RootIndexSidebar SSR", () => {
       accents: { ocean: "#0f766e" },
       defaultAccent: "theme",
     })
+    const menu = switcherMenu(html)
+    const scope = sidebarScope(html)
 
     expect(html).toContain('data-rip-scope="book"')
     expect(html).toContain('<span class="rip-sidebar-switcher-label">Java</span>')
-    expect(html).toMatch(
-      /class="rip-sidebar-book-link" href="\.\.\/\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
+    expect(menu).toMatch(
+      /class="rip-sidebar-book-link" href="\.\.\/\.\.\/java\/"[^>]*data-rip-state="ancestor"[^>]*data-rip-selected="true"/,
     )
+    expect(menu).toContain('class="rip-sidebar-selected-check"')
+    expect(menu).toContain(", selected manual</span>")
     expect(html).toContain('data-rip-icon="coffee"')
     expect(html).toContain('data-rip-accent="ocean"')
     expect(html).toContain("--rip-sidebar-accent: #0f766e")
-    expect(html).toMatch(/<details open>\s*<summary data-rip-state="ancestor">/)
-    expect(html).toMatch(
+    expect(scope).toMatch(/<details open>\s*<summary data-rip-state="ancestor">/)
+    expect(scope).toMatch(
       /href="\.\.\/\.\.\/java\/setup\/install" aria-current="page" data-rip-state="current"/,
     )
-    expect(html).toContain("Java Topic")
-    expect(html).not.toContain("Git Topic")
-    expect(html).not.toContain("Loose note")
+    expect(scope).toMatch(
+      /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
+    )
+    expect(scope).toContain("Overview")
+    expect(scope).toContain("Java Topic")
+    expect(scope).toContain('class="rip-sidebar-node-icon" aria-hidden="true" inert')
+    expect(scope).not.toContain("Git Topic")
+    expect(scope).not.toContain("Loose note")
+  })
+
+  it("separates selected-manual context from the exact current page", () => {
+    const rootNote = renderSidebar("loose", fixture())
+    const rootMenu = switcherMenu(rootNote)
+    expect(rootMenu).toMatch(/class="rip-sidebar-home" href="\.\/" data-rip-selected="true"/)
+    expect(rootMenu).not.toMatch(/class="rip-sidebar-home"[^>]*aria-current=/)
+
+    const bookIndex = renderSidebar("java/index", fixture())
+    const bookScope = sidebarScope(bookIndex)
+    expect(bookScope).toMatch(
+      /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/java\/" aria-current="page" data-rip-state="current"/,
+    )
+    expect(switcherMenu(bookIndex)).toMatch(
+      /class="rip-sidebar-book-link" href="\.\.\/java\/" aria-current="page" data-rip-state="current" data-rip-selected="true"/,
+    )
+  })
+
+  it("switches the Explorer inventory completely between books", () => {
+    const javaScope = sidebarScope(renderSidebar("java/topic", fixture()))
+    const gitScope = sidebarScope(renderSidebar("git/topic", fixture()))
+
+    expect(javaScope).toContain("Java Topic")
+    expect(javaScope).not.toContain("Git Topic")
+    expect(gitScope).toContain("Git Topic")
+    expect(gitScope).not.toContain("Java Topic")
+    expect(gitScope).not.toContain("Loose note")
+  })
+
+  it("opens every top-level folder while keeping inactive nested folders collapsed", () => {
+    const files = [
+      physicalFile("index", { title: "Knowledge Base" }),
+      physicalFile("book/index", { title: "Book" }),
+      physicalFile("book/active/index", { title: "Active" }),
+      physicalFile("book/active/current", { title: "Current" }),
+      physicalFile("book/active/deep/index", { title: "Deep" }),
+      physicalFile("book/active/deep/page", { title: "Deep page" }),
+      physicalFile("book/inactive/index", { title: "Inactive" }),
+      physicalFile("book/inactive/page", { title: "Inactive page" }),
+    ]
+    const scope = sidebarScope(renderSidebar("book/active/current", files))
+
+    expect(scope).toMatch(
+      /<li class="rip-sidebar-folder"><details open><summary data-rip-state="ancestor">[\s\S]*?Active<\/span>/,
+    )
+    expect(scope).toMatch(
+      /<li class="rip-sidebar-folder"><details open><summary>[\s\S]*?Inactive<\/span>/,
+    )
+    expect(scope).toMatch(/<li class="rip-sidebar-folder"><details><summary>[\s\S]*?Deep<\/span>/)
+    expect(countOccurrences(scope, 'class="rip-sidebar-node-icon"')).toBeGreaterThan(4)
   })
 
   it("localizes labels, preserves display classes, and exposes Explorer opt-out", () => {
     const html = renderSidebar(
       "index",
-      fixture(),
+      [
+        physicalFile("index"),
+        physicalFile("loose", { title: "Loose" }),
+        physicalFile("book/index", { title: "Book" }),
+        physicalFile("book/topic", { title: "Topic" }),
+      ],
       { replaceExplorer: false },
       "fi-FI",
       "desktop-only",
@@ -274,7 +417,9 @@ describe("RootIndexSidebar SSR", () => {
     expect(html).not.toContain("data-rip-replace-explorer")
     expect(html).toContain(">Etusivu</span>")
     expect(html).toContain(">Kirjojen navigointi</summary>")
-    expect(html).toContain(">Muistiinpanot</h2>")
+    expect(html).toContain(">Vaihda käsikirjaa</p>")
+    expect(html).toContain('aria-label="Sisältöselain"')
+    expect(html).toContain(">Sisältöselain</h2>")
   })
 
   it("escapes authored text and fails malformed appearance data softly", () => {
@@ -302,6 +447,6 @@ describe("RootIndexSidebar SSR", () => {
   it("attaches only the scoped stylesheet to the component", () => {
     const Sidebar = RootIndexSidebar()
     expect(Sidebar.css).toBe("sidebar-style")
-    expect(Sidebar.afterDOMLoaded).toBeUndefined()
+    expect(Sidebar.afterDOMLoaded).toBe("sidebar-script")
   })
 })

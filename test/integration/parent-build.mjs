@@ -512,8 +512,9 @@ title: Integration Root
 ---
 # ROOT BODY SENTINEL
 
-This authored prose must remain above the overview and panels. It is intentionally long enough to
-produce a reading-time label in the host ContentMeta component when the root Page Type renders.
+This authored prose must remain after the overview and before the panels. It is intentionally long
+enough to produce a reading-time label in the host ContentMeta component when the root Page Type
+renders.
 
 ## Root stale section one
 
@@ -658,6 +659,29 @@ function sidebarHtml(html) {
   )
   assert.ok(match, "missing RootIndexSidebar navigation")
   return match[0]
+}
+
+function sidebarScopeHtml(html) {
+  const sidebar = sidebarHtml(html)
+  const start = sidebar.indexOf('<section class="rip-sidebar-scope"')
+  const end = sidebar.indexOf("</section>", start)
+  assert.ok(start >= 0 && end > start, "missing RootIndexSidebar Explorer scope")
+  return sidebar.slice(start, end + "</section>".length)
+}
+
+function sidebarSwitcherHtml(html) {
+  const sidebar = sidebarHtml(html)
+  const start = sidebar.indexOf('<details class="rip-sidebar-switcher"')
+  const end = sidebar.indexOf('<section class="rip-sidebar-scope"', start)
+  assert.ok(start >= 0, "missing RootIndexSidebar manual switcher")
+  return sidebar.slice(start, end >= 0 ? end : undefined)
+}
+
+function assertResolvesBelowBase(href, pagePath, expectedPath, label) {
+  const pageUrl = new URL(pagePath, `https://example.test${BASE_PATH}/`)
+  const resolved = new URL(href, pageUrl)
+  assert.equal(resolved.origin, "https://example.test", `${label} escaped the fixture origin`)
+  assert.equal(resolved.pathname, `${BASE_PATH}${expectedPath}`, `${label} resolved incorrectly`)
 }
 
 function sidebarBookAnchorForHref(html, href) {
@@ -841,6 +865,42 @@ function assertResponsiveContainmentCss(outputRoot) {
   }
 }
 
+function assertDesignCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const menuRules = ruleBodies(css, ".rip-sidebar-switcher-menu")
+  assert.ok(
+    menuRules.some(
+      (body) =>
+        body.includes("position:absolute") &&
+        body.includes("z-index:20") &&
+        (body.includes("top:calc(100%+0.35rem)") || body.includes("top:calc(100%+.35rem)")) &&
+        body.includes("overflow:hidden"),
+    ),
+    "emitted switcher menu is no longer an overlay",
+  )
+
+  const hiddenScopeRules = ruleBodies(css, ".rip-sidebar-switcher[open]+.rip-sidebar-scope")
+  assert.ok(
+    hiddenScopeRules.some(
+      (body) => body.includes("visibility:hidden") && body.includes("pointer-events:none"),
+    ),
+    "open switcher must remove its covered Explorer from focus and pointer order",
+  )
+
+  assert.ok(
+    css.includes("radial-gradient(ellipse120%80%at50%0%"),
+    "emitted card CSS lost the Make radial glow",
+  )
+  assert.ok(
+    css.includes("color-mix(insrgb,var(--rip-panel-accent,var(--secondary))8%,transparent)"),
+    "emitted card CSS lost the per-book radial accent",
+  )
+  assert.ok(
+    css.includes("color-mix(insrgb,var(--rip-panel-accent,var(--secondary))50%,transparent)"),
+    "emitted card CSS lost the bottom accent hairline",
+  )
+}
+
 function assertAssetReferencesResolve(htmlPath, outputRoot) {
   const html = fs.readFileSync(htmlPath, "utf8")
   const references = [...html.matchAll(/\b(?:href|src)="([^"]+\.(?:css|js)(?:\?[^"#]*)?)"/g)].map(
@@ -865,7 +925,7 @@ function assertAssetReferencesResolve(htmlPath, outputRoot) {
   }
 }
 
-function assertCommonRoot(outputRoot, expectedCountText) {
+function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expectedLabels) {
   const rootPath = path.join(outputRoot, "index.html")
   const rootHtml = fs.readFileSync(rootPath, "utf8")
   const headHtml = rootHtml.slice(rootHtml.indexOf("<head>"), rootHtml.indexOf("</head>") + 7)
@@ -897,10 +957,32 @@ function assertCommonRoot(outputRoot, expectedCountText) {
     "stock Explorer must remain in root SSR for scoped CSS replacement",
   )
   const rootSidebar = assertRelativeSidebarLinks(rootHtml, "root")
+  const rootSwitcher = sidebarSwitcherHtml(rootHtml)
+  const rootScope = sidebarScopeHtml(rootHtml)
   assert.match(rootSidebar, /data-rip-replace-explorer="true"/)
   assert.match(rootSidebar, /data-rip-scope="root"/)
+  assert.match(rootSwitcher, /class="rip-sidebar-switcher-label">Integration Root<\/span>/)
+  assert.ok(
+    rootSwitcher.includes(
+      `<p class="rip-sidebar-switcher-heading">${expectedLabels.switchManual}</p>`,
+    ),
+    "manual-switcher heading was not localized",
+  )
   assert.match(rootSidebar, /class="rip-sidebar-home" href="\.\/" aria-current="page"/)
+  assert.match(
+    rootSwitcher,
+    /class="rip-sidebar-home"[^>]*data-rip-selected="true"/,
+    "root manual must be selected on the root page",
+  )
   assert.match(rootSidebar, /class="rip-sidebar-book-link" href="\.\/java\/"/)
+  assert.ok(
+    rootScope.includes(`aria-label="${expectedLabels.explorer}"`),
+    "Explorer label was not localized",
+  )
+  assert.match(rootScope, /Loose root note/)
+  assert.match(rootScope, /WRONG ROOT JAVA METADATA/)
+  assert.doesNotMatch(rootScope, /Java Topic|Dotted directory guide/)
+  assertResolvesBelowBase("./java/", "./", "/java/", "root Java manual link")
   assertLeftCompanions(rootHtml, "root")
   assertRightGraph(rootHtml, "root")
   assert.match(
@@ -921,9 +1003,15 @@ function assertCommonRoot(outputRoot, expectedCountText) {
   )
   assert.match(bodyHtml, /ROOT BODY SENTINEL/)
   assert.match(bodyHtml, /Root stale section one/)
+  assert.match(
+    bodyHtml,
+    /<article class="[^"]*\brip\b[^"]*"><div class="rip-overview">/,
+    "root overview must be the first direct child of the plugin body",
+  )
   assert.ok(
-    bodyHtml.indexOf("ROOT BODY SENTINEL") < bodyHtml.indexOf('class="rip-overview"'),
-    "authored root Markdown must render before the overview",
+    bodyHtml.indexOf('class="rip-overview"') < bodyHtml.indexOf("ROOT BODY SENTINEL") &&
+      bodyHtml.indexOf("ROOT BODY SENTINEL") < bodyHtml.indexOf('id="rip-directories"'),
+    "root order must be overview, authored Markdown, then directories",
   )
   assert.match(
     headHtml,
@@ -944,6 +1032,10 @@ function assertCommonRoot(outputRoot, expectedCountText) {
   assert.match(bodyHtml, /class="rip-browse-link" href="#rip-directories"/)
   assert.match(bodyHtml, /<dd>6<\/dd>/, "root directory statistic drifted")
   assert.match(bodyHtml, /<dd>4<\/dd>/, "root total-note statistic drifted")
+  assert.ok(
+    bodyHtml.includes(`<dd>${expectedUpdated}</dd>`),
+    `root last-updated statistic drifted: ${expectedUpdated}`,
+  )
   assert.equal(classCount(bodyHtml, "toc"), 1, "root authored Markdown lost its TOC")
   assert.equal(classCount(bodyHtml, "content-meta"), 1, "root authored Markdown lost ContentMeta")
   const rootMeta = bodyHtml.match(
@@ -1008,21 +1100,75 @@ function assertCommonRoot(outputRoot, expectedCountText) {
     "stock Explorer must remain in regular-page SSR for scoped CSS replacement",
   )
   const topicSidebar = assertRelativeSidebarLinks(topicHtml, "regular book page")
+  const topicSwitcher = sidebarSwitcherHtml(topicHtml)
+  const topicScope = sidebarScopeHtml(topicHtml)
   assert.match(topicSidebar, /data-rip-replace-explorer="true"/)
   assert.match(topicSidebar, /data-rip-scope="book"/)
+  assert.match(topicSwitcher, /class="rip-sidebar-switcher-label">iOS<\/span>/)
+  assert.match(topicSwitcher, /class="rip-sidebar-link-label">Integration Root<\/span>/)
   assert.match(topicSidebar, /class="rip-sidebar-home" href="\.\.\/"/)
-  assert.match(topicSidebar, /class="rip-sidebar-book-link" href="\.\.\/java\/"/)
   assert.match(
-    topicSidebar,
+    topicSwitcher,
+    /class="rip-sidebar-book-link" href="\.\.\/java\/"[^>]*data-rip-state="ancestor"[^>]*data-rip-selected="true"/,
+  )
+  assert.equal(
+    classCount(topicSwitcher, "rip-sidebar-selected-check"),
+    1,
+    "book route must mark exactly one selected manual",
+  )
+  assert.match(
+    topicScope,
     /class="rip-sidebar-note-link" href="\.\.\/java\/topic" aria-current="page"/,
   )
+  assert.match(
+    topicScope,
+    /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
+  )
+  assert.match(
+    topicScope,
+    /<li class="rip-sidebar-folder"><details open><summary>[\s\S]*?Authored nested index<\/span>/,
+    "inactive top-level folders must remain expanded",
+  )
+  assert.doesNotMatch(topicScope, /Dotted directory guide|Loose root note/)
+  assertResolvesBelowBase("../java/", "java/topic", "/java/", "book Overview link")
+  assertResolvesBelowBase("../java/topic", "java/topic", "/java/topic", "current book note link")
   assertLeftCompanions(topicHtml, "regular book page")
   assertRightGraph(topicHtml, "regular book page")
 
+  const dottedPath = path.join(outputRoot, "git.md", "guide.html")
+  const dottedHtml = fs.readFileSync(dottedPath, "utf8")
+  const dottedSidebar = assertRelativeSidebarLinks(dottedHtml, "second book page")
+  const dottedSwitcher = sidebarSwitcherHtml(dottedHtml)
+  const dottedScope = sidebarScopeHtml(dottedHtml)
+  assert.match(dottedSidebar, /data-rip-scope="book"/)
+  assert.match(
+    dottedSwitcher,
+    /class="rip-sidebar-book-link" href="\.\.\/git\.md\/"[^>]*data-rip-state="ancestor"[^>]*data-rip-selected="true"/,
+  )
+  assert.match(
+    dottedScope,
+    /class="rip-sidebar-note-link" href="\.\.\/git\.md\/guide" aria-current="page"/,
+  )
+  assert.match(dottedScope, /Dotted directory guide/)
+  assert.doesNotMatch(dottedScope, /Java Topic|Loose root note/)
+  assert.equal(classCount(dottedHtml, "rip"), 0, "root Page Type leaked onto a second book")
+  assertLeftCompanions(dottedHtml, "second book page")
+  assertRightGraph(dottedHtml, "second book page")
+  assertResolvesBelowBase("../git.md/", "git.md/guide", "/git.md/", "second book Overview link")
+
   assertAssetReferencesResolve(rootPath, outputRoot)
   assertAssetReferencesResolve(topicPath, outputRoot)
+  assertAssetReferencesResolve(dottedPath, outputRoot)
   assertExplorerReplacementCss(outputRoot)
   assertResponsiveContainmentCss(outputRoot)
+  assertDesignCss(outputRoot)
+  const clientScripts = emittedJavaScript(outputRoot)
+  assert.match(
+    clientScripts,
+    /rip-sidebar-switcher/,
+    "sidebar dropdown enhancement was not emitted",
+  )
+  assert.match(clientScripts, /Escape/, "sidebar Escape light-dismiss behavior was not emitted")
   return rootHtml
 }
 
@@ -1099,12 +1245,17 @@ function runIntegration() {
       accents: { ocean: "#0f766e" },
     },
     assertVariant(outputRoot) {
-      const rootHtml = assertCommonRoot(outputRoot, {
-        "./custom/": ">0 notes</span>",
-        "./generated/": ">1 note</span>",
-        "./git.md/": ">1 note</span>",
-        "./java/": ">2 notes</span>",
-      })
+      const rootHtml = assertCommonRoot(
+        outputRoot,
+        {
+          "./custom/": ">0 notes</span>",
+          "./generated/": ">1 note</span>",
+          "./git.md/": ">1 note</span>",
+          "./java/": ">2 notes</span>",
+        },
+        "Jul 18, 2026",
+        { switchManual: "Switch manual", explorer: "Explorer" },
+      )
       assert.match(anchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(anchorForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)
@@ -1131,12 +1282,17 @@ function runIntegration() {
       accents: { ocean: "#0f766e" },
     },
     assertVariant(outputRoot) {
-      const rootHtml = assertCommonRoot(outputRoot, {
-        "./custom/": "0 muistiinpanoa",
-        "./generated/": "1 muistiinpano",
-        "./git.md/": "1 muistiinpano",
-        "./java/": "2 muistiinpanoa",
-      })
+      const rootHtml = assertCommonRoot(
+        outputRoot,
+        {
+          "./custom/": "0 muistiinpanoa",
+          "./generated/": "1 muistiinpano",
+          "./git.md/": "1 muistiinpano",
+          "./java/": "2 muistiinpanoa",
+        },
+        "18.7.2026",
+        { switchManual: "Vaihda käsikirjaa", explorer: "Sisältöselain" },
+      )
       const custom = anchorForHref(rootHtml, "./custom/")
       assert.match(custom, /data-rip-icon="custom-mark"/)
       assert.match(custom, /data-rip-test-icon="ts-custom"/)
@@ -1173,12 +1329,17 @@ function runIntegration() {
       accents: { ocean: "#0f766e" },
     },
     assertVariant(outputRoot) {
-      const rootHtml = assertCommonRoot(outputRoot, {
-        "./custom/": ">0 notes</span>",
-        "./generated/": ">1 note</span>",
-        "./git.md/": ">1 note</span>",
-        "./java/": ">2 notes</span>",
-      })
+      const rootHtml = assertCommonRoot(
+        outputRoot,
+        {
+          "./custom/": ">0 notes</span>",
+          "./generated/": ">1 note</span>",
+          "./git.md/": ">1 note</span>",
+          "./java/": ">2 notes</span>",
+        },
+        "18 Jul 2026",
+        { switchManual: "Switch manual", explorer: "Explorer" },
+      )
       assert.doesNotMatch(anchorForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
       assert.doesNotMatch(
         sidebarBookAnchorForHref(rootHtml, "./custom/"),

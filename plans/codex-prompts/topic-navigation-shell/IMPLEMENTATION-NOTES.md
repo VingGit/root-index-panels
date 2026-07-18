@@ -2,6 +2,75 @@
 
 Populate this file during the implementation run. It is evidence, not a substitute for tests.
 
+## 2026-07-18 follow-up design alignment
+
+### Resolved contract
+
+- The local `Alternative Landing Page Design.make` archive was re-audited against the supplied
+  screenshots and deployed reference. The deployment's stock Explorer-only appearance was traced to
+  its older installed plugin/config state, not to a need for a Quartz-core patch. A fresh stock CLI
+  remove/add integration now proves the plugin manifest generates the one left
+  `RootIndexSidebar` layout stanza.
+- The selector's root/manual label is authored data: the first listed physical exact `index` title,
+  with accessor properties ignored and localized Home used only as a fallback. The selector popup
+  separates active manual/book selection from exact-page state: exactly one item exposes selected
+  status/check, while only the exact destination receives `aria-current="page"`.
+- Root mode lists only physical root notes. Book mode renders `Overview` first and then only that
+  book's descendants. First-level folders start open; deeper folders start open only on the current
+  ancestry. Root, Java, and dotted-segment Git inventories were observed to be mutually disjoint.
+- The overview/statistics/browse banner is the first direct child of the plugin Page Type body,
+  followed by transformed authored root HAST and then the directory collection. Quartz-owned title
+  and metadata remain outside and before the plugin body.
+- The selector remains useful without JavaScript. Its scoped enhancement closes on outside
+  `pointerdown`, selected-link activation, or Escape; Escape restores summary focus, one selector
+  stays open, and Quartz navigation cleanup removes listeners. The absolute opaque popup causes no
+  Explorer layout shift, and the covered Explorer scope is non-interactive while it is open.
+- The previous accent border/title card hover was replaced by the Make-aligned effect: a
+  `120% 80%` radial ellipse at `50% 0%` using the validated accent at 8% and transparent at 70%, a
+  one-pixel transparent/accent/transparent bottom hairline, `300ms` opacity, focus-visible parity,
+  and a two-pixel lift where motion is allowed.
+
+### Local and browser evidence
+
+- `npm run typecheck`, `npm run lint`, `npm run format`, `npm test`, and `npm run build` passed. The
+  expanded Vitest result is 199 passing tests across 7 files, including the dedicated sidebar
+  light-dismiss/cleanup suite.
+- Final hardening rejects nested virtual Canvas/Bases indexes as folder overview destinations,
+  exercises cleanup followed by SPA re-initialization, and makes the packed-package verifier require
+  both the sidebar stylesheet and executable inline script.
+- `npm run test:integration` passed mixed-Preact rendering, fresh stock CLI remove/add, SPA `en-US`
+  YAML, no-SPA `fi-FI` TypeScript, unsupported `en-GB` fallback below `/group/project/`, and parent
+  boundary assertions. Generated output proves the one sidebar stanza, banner-first body order,
+  authored root selector label, selected-versus-current semantics, scoped trees, `Overview`, open
+  first-level folders, exact locale dates, base-path-safe links, Graph/TOC coexistence, stock Explorer
+  replacement, popup CSS/script, and Make glow resources.
+- Real Edge 150 inspection passed at desktop `1440px`, tablet `900px`, and mobile `390px`. The root
+  banner was first inside the plugin body; the authored-root selector and root-only tree rendered;
+  stock Explorer was replaced; Graph stayed present; no tested viewport overflowed or raised a
+  runtime error. Opening the selector left the Explorer top coordinate unchanged at `346.34375px`,
+  kept the popup inside the viewport, and disabled the covered scope. Escape closed the popup and
+  restored summary focus.
+- Computed card interaction showed the radial layer and bottom hairline at opacity `1`, the exact
+  accent alpha, and a `-2px` Y transform. SPA navigation to Java selected its authored iOS-titled
+  manual, made `Overview` exact-current on the landing, and showed only Java descendants; a second
+  dotted `Git.md` book likewise showed only its own tree. Graph remained visible and console errors
+  remained zero. Mobile retained an in-viewport selector/shell toggle and tablet retained a
+  `256px` sidebar without horizontal overflow.
+
+### Follow-up closeout state
+
+- Local implementation, distribution generation, isolated CLI insertion, integration, responsive,
+  subdirectory-hosting, light-dismiss, focus-restoration, and visual-computed-style gates pass.
+- The final follow-up commit/push, green CI result, and clean remote-pin add/enable/build must be
+  recorded externally after this containing revision is created. No version bump, tag, release,
+  npm publication, marketplace action, or parent push is authorized by this follow-up.
+
+## Original navigation-shell increment (historical evidence)
+
+The remaining sections record the completed increment that preceded the follow-up above. Their
+revision hashes, test totals, browser measurements, and push statements are point-in-time evidence;
+the follow-up section supersedes them where behavior or totals changed.
+
 ## Revisions and baseline
 
 - Parent Quartz revision: `a6878f323eed859a686a164809830a38180fd10d`.
@@ -30,9 +99,10 @@ Populate this file during the implementation run. It is evidence, not a substitu
   exactly one left component, `RootIndexSidebar`, priority `40`; `RootIndexPanels` remains a public
   component export but is not separately discoverable. Isolated CLI remove/add/enable checks prove
   one generated layout stanza and one rendered sidebar.
-- Public HAST-to-JSX API and root-content wrapper: the root body renders transformed `file.data.htmlAst`
-  once through `@quartz-community/utils/jsx`'s public `htmlToJsx`, inside normal Quartz article and
-  Markdown wrappers, before overview and panels. No suppression transform clears `toc`,
+- Public HAST-to-JSX API and root-content wrapper: the root body renders its overview/browse banner
+  first, then transformed `file.data.htmlAst` once through `@quartz-community/utils/jsx`'s public
+  `htmlToJsx`, inside normal Quartz article and Markdown wrappers, before panels. No suppression
+  transform clears `toc`,
   `readingTime`, or `text`. `hast-util-to-jsx-runtime` is now a direct dependency because the public
   utility subpath imports it as an optional peer.
 - Sidebar route and visibility model: one SSR `<nav aria-label="Book navigation">` uses native
@@ -124,10 +194,9 @@ Populate this file during the implementation run. It is evidence, not a substitu
   or parent push is authorized or performed. Explicit browser/ancestor-free audit workspaces remain
   outside both repositories under system temporary directories because the command policy rejected
   recursive cleanup; they are untracked, unpackaged, and contain only disposable verification copies.
-- DOX/document closeout: the root, plugin, integration, and content DOX chains were re-read after
-  implementation; their ownership, topology, fixture, and verification contracts already match the
-  delivered behavior. This evidence-only pass changes only `IMPLEMENTATION-NOTES.md` and
-  `05-final-review.md`; other plugin docs, parent DOX/general plugin guidance, content DOX/checklist,
-  and explicitly superseded appearance evidence are intentionally unchanged because no durable
-  contract changed after the implementation commit. Official Quartz upstream files outside the
-  explicit disposable-`content/` fixture exception remain untouched.
+- Original increment DOX/document closeout: the root, plugin, integration, and content DOX chains
+  were re-read after that implementation and matched its delivered behavior. The 2026-07-18
+  follow-up reconciles every active `topic-navigation-shell` prompt file with the new behavior;
+  source/public-doc/DOX closeout is tracked by the surrounding implementation review. Official
+  Quartz upstream files outside the explicit disposable-`content/` fixture exception remain
+  untouched.

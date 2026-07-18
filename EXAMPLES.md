@@ -16,7 +16,8 @@ content/
     └── branching.md
 ```
 
-Authored root Markdown stays visible above the aggregate overview and book collection:
+The aggregate overview is the first element in the Page Type body. Authored root Markdown stays
+visible immediately after it and before the book collection:
 
 ```markdown
 ---
@@ -71,6 +72,11 @@ Use `theme` to opt one book out of a site-wide default accent:
 panel:
   accent: theme
 ```
+
+In card layout, the resolved accent colors a subtle top radial glow and one-pixel bottom hairline on
+hover and keyboard focus. Hover also lifts the card by two pixels. The border and title color remain
+stable; reduced-motion removes the lift/transitions and forced-color mode removes the decorative
+glow while keeping explicit focus cues.
 
 ## Complete YAML-safe configuration
 
@@ -131,18 +137,25 @@ All registry names must be lower-case kebab identifiers. Named accents should no
 
 ## Route-scoped navigation
 
-The generated left component uses native disclosures and ordinary links:
+The generated left component uses native disclosures and ordinary links. Its boxed selector shows
+the authored title from `content/index.md` (here, `Knowledge Base`) or the localized Home fallback,
+and opens an absolute manual menu without moving the Explorer tree:
 
 - on `/`, `/loose-note`, `/tags/...`, `/404`, and unrecognized namespaces, its note list contains
   only listed physical root notes;
 - on `/java/` and descendants such as `/java/collections`, it contains only the Java hierarchy; and
-- the switcher always offers Home plus every eligible book using the same safe title, icon, accent,
-  exclusion, and destination rules as the root collection.
+- the switcher always offers the root manual plus every eligible book using the same safe title,
+  icon, accent, exclusion, and destination rules as the root collection.
 
-All destinations are resolved relative to the current Quartz slug. The active page receives
-`aria-current="page"`, and native folder disclosures open the current ancestry in server output.
-At narrow widths, the navigation shell itself becomes a native disclosure; it does not need a
-JavaScript-created menu.
+All destinations are resolved relative to the current Quartz slug. A visible check and
+`data-rip-selected="true"` mark the manual whose tree is being browsed, while
+`aria-current="page"` marks only the exact current destination. Book scope starts with `Overview`;
+top-level folders are open in server output, while deeper folders open only for their current path.
+
+The complete selector and tree work without JavaScript. A progressive enhancement closes the menu
+after a link, an outside pointer press, or Escape; Escape restores focus to its summary and Quartz
+SPA cleanup removes the listeners. At narrow widths, the navigation shell itself becomes a native
+disclosure.
 
 The responsive stylesheet has two structural containment responsibilities. A
 default-frame `#quartz-body` rule, gated by a direct `.left.sidebar > .rip-sidebar` descendant,
@@ -287,10 +300,10 @@ configuration:
 ```
 
 Root Index Panels contains no GitLab-specific path branch and does not prepend or hard-code this
-value. It resolves root panels and every Home/book/note/folder sidebar link through Quartz's public
-path utilities. A directory such as `content/git.md/` therefore emits `href="./git.md/"` from the
-root and reaches `git.md/index.html` below `/project/`; deep, spaced, dotted, and Unicode routes use
-the same relative-resolution contract on other hosting providers.
+value. It resolves root panels and every root-manual/book/note/folder sidebar link through Quartz's
+public path utilities. A directory such as `content/git.md/` therefore emits `href="./git.md/"` from
+the root and reaches `git.md/index.html` below `/project/`; deep, spaced, dotted, and Unicode routes
+use the same relative-resolution contract on other hosting providers.
 
 ## Visibility and disclosure
 
@@ -371,6 +384,13 @@ Verify `quartz.lock.json` has `commit: "local"` and the generated plugin entry h
 `layout: { position: left, priority: 40 }` declaration. Local source changes are then available
 without replacing a remotely pinned cache by hand. After pushing a revision, remove/add/enable
 `github:VingGit/root-index-panels` to verify the remote prebuilt package.
+
+`npm run test:integration` automates isolated fresh install and output checks for overview-first body
+order, authored root selector title, selected-manual/current-page state, root/book Explorer isolation,
+top-folder opening, Graph/TOC coexistence, locale fallback, SPA/no-SPA assets, and non-root base paths.
+Use a real browser as well when changing popup geometry or card interactions so desktop, tablet, and
+mobile overlay/reflow, focus restoration, glow, right-rail flow, and horizontal overflow remain
+observable.
 
 Full builds are authoritative. During `npx quartz build --serve`, nested add/change/delete events can
 leave the root panels/overview or sidebar aggregate stale because Quartz does not invalidate the

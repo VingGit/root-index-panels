@@ -8,6 +8,24 @@ const styleSource = readFileSync(
 )
 
 describe("RootIndexSidebar Explorer replacement styles", () => {
+  it("renders the native manual switcher as a bounded overlay surface", () => {
+    expect(styleSource).toMatch(
+      /\.rip-sidebar-switcher\s*{[\s\S]*?position:\s*relative;[\s\S]*?z-index:\s*5;/,
+    )
+    expect(styleSource).toMatch(
+      /\.rip-sidebar-switcher\s*>\s*summary\s*{[\s\S]*?border:\s*1px solid var\(--lightgray\);[\s\S]*?border-radius:\s*0\.5rem;[\s\S]*?background:/,
+    )
+    expect(styleSource).toMatch(
+      /\.rip-sidebar-switcher-menu\s*{[\s\S]*?position:\s*absolute;[\s\S]*?z-index:\s*20;[\s\S]*?top:\s*calc\(100% \+ 0\.35rem\);[\s\S]*?inset-inline:\s*0;[\s\S]*?overflow:\s*hidden;[\s\S]*?background:\s*var\(--light\);[\s\S]*?box-shadow:/,
+    )
+    expect(styleSource).toMatch(
+      /\.rip-sidebar-books\s*{[\s\S]*?max-height:\s*min\(14rem, calc\(100dvh - 12rem\)\);[\s\S]*?overflow-y:\s*auto;[\s\S]*?overscroll-behavior:\s*contain;/,
+    )
+    expect(styleSource).toMatch(
+      /\.rip-sidebar-switcher\[open\] \+ \.rip-sidebar-scope\s*{[\s\S]*?visibility:\s*hidden;[\s\S]*?pointer-events:\s*none;/,
+    )
+  })
+
   it("hides only a direct Explorer sibling in the same left layout slot", () => {
     expect(styleSource).toContain(
       '.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer',

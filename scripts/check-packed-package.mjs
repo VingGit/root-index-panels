@@ -73,7 +73,14 @@ try {
         throw new Error("missing component sidebar entry")
       }
       if (typeof root.RootIndexPanels().afterDOMLoaded !== "string") {
-        throw new Error("built inline script is unavailable")
+        throw new Error("built panel inline script is unavailable")
+      }
+      const sidebar = root.RootIndexSidebar()
+      if (typeof sidebar.css !== "string" || !sidebar.css.includes(".rip-sidebar")) {
+        throw new Error("built sidebar stylesheet is unavailable")
+      }
+      if (typeof sidebar.afterDOMLoaded !== "string") {
+        throw new Error("built sidebar inline script is unavailable")
       }
     `,
   )

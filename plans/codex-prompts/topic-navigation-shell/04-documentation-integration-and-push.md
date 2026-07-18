@@ -27,8 +27,9 @@ Update the README around real user workflows, not internal file names alone.
 
 ### Writer/root behavior
 
-- Document `content/index.md` as authored visible landing prose, followed by calculated statistics,
-  browse affordance, and panels. Remove the obsolete recommendation that root content be metadata-only.
+- Document the calculated statistics/browse banner as the first plugin-body content, followed by
+  visible authored `content/index.md` prose and panels. Clarify that Quartz PageTitle/ContentMeta stay
+  before the plugin body, and remove the obsolete recommendation that root content be metadata-only.
 - Define exact directory/total-note/last-updated calculations and the no-date behavior.
 - Retain the complete physical/listed book, destination, count, sort, watch, icon/accent, locale, and
   security contracts from the appearance documentation.
@@ -37,11 +38,15 @@ Update the README around real user workflows, not internal file names alone.
 
 ### Navigation and hosting
 
-- Define Home versus recognized-book context, root-note/book-descendant inventories, nested folders,
-  current state, and `replaceExplorer` behavior.
-- Explain native/progressive interaction, no-JS links, SPA behavior, desktop/tablet/mobile flow, and
-  accessibility/reduced-motion/forced-colors guarantees, including why a mobile-collapsed native
-  shell remains visible after widening past its hidden-summary breakpoint.
+- Define authored-root versus recognized-book context, root-note/book-descendant inventories, the
+  book `Overview` link, first-level-open/deeper-active folder defaults, selected-context versus exact
+  `aria-current` state, and `replaceExplorer` behavior. Document localized Home only as the root-title
+  fallback.
+- Explain native/progressive interaction, no-JS links, SPA behavior, absolute popup/no-layout-shift
+  behavior, covered-underlay focus protection, outside/Escape light-dismiss with focus restoration,
+  desktop/tablet/mobile flow, and accessibility/reduced-motion/forced-colors guarantees, including
+  why a mobile-collapsed native shell remains visible after widening past its hidden-summary
+  breakpoint.
 - Explain that sidebar book ordering/eligibility inherits normalized `excludeDirs`,
   `descriptionFallback`, `sort`, and `tagCount` inventory inputs from the panel model. Document the
   exactly three host-selector kinds separately: default-frame/direct-plugin-gated grid-track
@@ -52,6 +57,8 @@ Update the README around real user workflows, not internal file names alone.
   example and explain that public Quartz path resolution—not GitLab-specific logic—keeps links valid.
 - Document Canvas/Bases as cross-plugin destinations without claiming they are physical book counts
   unless the final recorded host evidence changes that contract.
+- Document the card's Make-aligned radial glow, accent-centered bottom hairline, focus parity, and
+  motion fallback; remove claims or screenshots that imply the superseded accent border/title hover.
 
 ## Examples, architecture, changelog, and maintainer docs
 
@@ -66,6 +73,9 @@ Update the README around real user workflows, not internal file names alone.
   calculations, browser-proven default-frame grid containment, mobile left width/wrap containment,
   Explorer selector coupling/opt-out, SPA/resource lifecycle, Graph non-ownership, base-path
   resolution, and watch invalidation boundary.
+- Include the authored-root-title provenance, selected-versus-current semantics, `Overview`/folder
+  defaults, sidebar inline-script lifecycle, popup underlay contract, root banner-first order, and
+  exact Make glow in the relevant public/maintainer documents.
 - Add an `Unreleased` changelog entry for authored root restoration, overview/browse UI, sidebar,
   default Explorer replacement/opt-out, responsive/accessibility work, manifest/API changes, tests,
   and compatibility fixture. Do not invent a release date/version.
@@ -124,8 +134,9 @@ GitHub release, npm publication, or marketplace submission.
 
 - A new user can install/enable the plugin normally and gets one left sidebar plus one root body.
 - A writer understands visible root content and can customize each book safely.
-- A site owner understands Explorer replacement/opt-out, Search composition, always-present right
-  Graph, cross-book edges, responsive behavior, and subdirectory hosting.
+- A site owner understands the authored-root/book selector, scoped Explorer and Overview behavior,
+  Explorer replacement/opt-out, Search composition, always-present right Graph, cross-book edges,
+  responsive behavior, and subdirectory hosting.
 - A maintainer can trace data, layout, selector coupling, watch limitation, package artifacts, and
   tests from architecture/DOX without relying on chat history.
 - The nested pushed commit, green CI, and exact remote fresh-install result are recorded; no release

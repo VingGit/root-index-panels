@@ -80,8 +80,8 @@ Markdown wrapper.
 
 The body order is fixed:
 
-1. authored root HAST;
-2. `.rip-overview`, containing statistics and a no-JavaScript browse link when books exist; and
+1. `.rip-overview`, containing statistics and a no-JavaScript browse link when books exist;
+2. authored root HAST; and
 3. the `#rip-directories` section containing the heading and cards/list/empty state.
 
 The overview is a semantic definition list:
@@ -100,7 +100,9 @@ and can consume the same authored source.
 `src/navigation.ts` treats navigation inventory as a separate view over `allFiles`; it never changes
 book `docCount`:
 
-- Home notes are listed physical slugs with exactly one segment, excluding `index`.
+- The first listed physical root `index` contributes its non-empty authored title to the selector;
+  accessor-backed/missing titles are ignored and the component uses its localized Home fallback.
+- Root notes are listed physical slugs with exactly one segment, excluding `index`.
 - A book tree contains only listed physical descendants of that eligible book and excludes the
   book's own `<book>/index` landing from its chapter list.
 - Full slugs are deduplicated before insertion. Reserved/excluded books, `tags`, unlisted entries,
@@ -114,17 +116,25 @@ The immutable model is cached in a `WeakMap` by `allFiles` identity and the norm
 build therefore avoid rescanning the complete vault while distinct option variants remain isolated.
 A new clean build/all-files identity is the invalidation boundary.
 
-`selectSidebarNavigationScope` maps the current slug to either Home or one book. Root/index, root
-notes, tags, 404, and unrecognized first segments use Home. A current slug whose first segment
-exactly matches an eligible book uses only that book's hierarchy.
+`selectSidebarNavigationScope` maps the current slug to either the root manual or one book. The root
+index, root notes, tags, 404, and unrecognized first segments use the root scope. A current slug whose
+first segment exactly matches an eligible book uses only that book's hierarchy.
 
 `RootIndexSidebar` server-renders a labelled `<nav>` with native `<details>/<summary>`, nested
-`<ul>/<li>`, and ordinary anchors. The switcher always exposes Home and eligible books. Nested
-folders open the current ancestry; only the exact current link receives `aria-current="page"`.
-Sidebar operation requires no client script. At the `800px` breakpoint, its shell summary becomes a
-native mobile disclosure; sidebar summaries and links have a minimum 2.75rem touch target. Above the
-mobile breakpoint, a plugin-local rule displays shell content even if the native `<details>` remains
-closed after a narrow-to-wide resize, because its reopening summary is hidden there.
+`<ul>/<li>`, and ordinary anchors. Its boxed native-details selector shows the selected book title or
+authored root title. The absolute popup contains a labelled root-manual row, separator, and scrollable
+eligible-book list; it overlays rather than reflows the Explorer scope.
+
+The selected manual is represented separately from link state: `data-rip-selected="true"`, a visible
+check, and visually hidden selected text identify the active root/book scope, while only the exact
+current destination receives `aria-current="page"`. Book scope begins with one Overview link.
+Top-level folders are open in SSR output; deeper folders open only for their current/ancestor path.
+
+The native selector and links remain complete without JavaScript. At the `800px` breakpoint, the
+sidebar shell summary becomes a native mobile disclosure; sidebar summaries and links have a minimum
+2.75rem touch target. Above the mobile breakpoint, a plugin-local rule displays shell content even if
+the native `<details>` remains closed after a narrow-to-wide resize, because its reopening summary is
+hidden there.
 
 The stylesheet permits exactly three kinds of host selector. Two are structural containment, not
 cross-plugin suppression:
@@ -174,7 +184,7 @@ while sidebar navigation is scoped to one book.
 
 ## Path and deployment contract
 
-Panel, Home, book, note, and valid folder destinations are generated with public
+Panel, root-manual, book, note, and valid folder destinations are generated with public
 `@quartz-community/utils/path` helpers (`resolveRelative`, `isFullSlug`, and `simplifySlug`) relative
 to the current full slug. The plugin never concatenates an origin-relative route or duplicates a
 configured base path.
@@ -216,19 +226,31 @@ attributes. Accent color remains decorative and never replaces current/focus/for
 
 ## Localization, accessibility, and SPA lifecycle
 
-Plugin-owned `en-US` and `fi-FI` strings cover count, overview, browse, empty-state, and sidebar
-labels. Locale selection occurs per render; unsupported locales fall back to English. Overview dates
-also fall back safely when the requested locale is invalid.
+Plugin-owned `en-US` and `fi-FI` strings cover count, overview, browse, empty-state, Explorer,
+manual-switcher, selected-manual, and sidebar-navigation labels. Locale selection occurs per render;
+unsupported locales fall back to English. Overview dates also fall back safely when the requested
+locale is invalid.
 
 Cards and list rows each contain one whole-panel anchor. The visible title supplies the accessible
 name; counts, descriptions, and card tags supply descriptions. Icons are inert, `aria-hidden`, and
 non-focusable. Styles stay under `rip-*`, use Quartz tokens, reflow to one card column, and include
 forced-color/reduced-motion behavior.
 
+Card hover and focus-visible share a Make-derived decorative layer: a `120% 80%` top-centered radial
+accent glow at eight-percent color mix, plus a one-pixel bottom accent hairline. Hover translates the
+card up two pixels; focus retains the host-controlled outline. The effect does not replace the card
+border or title color, reduced-motion removes the transition/lift, and forced-color mode removes both
+pseudo-elements.
+
 `src/components/scripts/panels.inline.ts` handles Arrow, Home, and End movement only while a panel
 link has focus. It initializes on Quartz `nav`, ignores modified shortcuts, and registers teardown
-with `window.addCleanup`. The sidebar intentionally has no client script because native disclosure
-and links provide its complete interaction model.
+with `window.addCleanup`.
+
+`src/components/scripts/sidebar.inline.ts` progressively enhances the native manual selector. It
+allows only one plugin switcher to remain open, closes on an inside link or outside pointer press,
+and closes on Escape while restoring focus to the summary. It also initializes on Quartz `nav` and
+registers every listener for `window.addCleanup`; navigation remains complete if the script never
+runs.
 
 ## Public API
 
@@ -274,15 +296,20 @@ a version bump, tag, or release.
   metadata, out-of-range dates, Page Type ownership, exactly-one-sidebar manifest topology, and
   public barrels.
 - `test/sidebar-navigation.test.tsx` covers inventory/scope/cache behavior, native SSR markup,
-  canonical links, appearance, locale, malformed input, and Explorer opt-out.
+  authored root selector title, selected-manual versus exact-current semantics, book Overview-first
+  ordering, top-folder disclosure state, canonical links, appearance, locale, malformed input, and
+  Explorer opt-out.
 - `test/sidebar-style.test.ts` freezes the default-frame grid containment, mobile left width/wrap
-  containment, narrow Explorer selector, forbidden right-rail selectors, and native mobile
-  disclosure including the closed-mobile-to-wide escape.
+  containment, absolute menu overlay/underlay protection, narrow Explorer selector, forbidden
+  right-rail selectors, and native mobile disclosure including the closed-mobile-to-wide escape.
 - `test/panels-script.test.ts` covers initial/repeated SPA navigation, cleanup, keyboard boundaries,
   and zero/one-panel behavior.
+- `test/sidebar-script.test.ts` covers repeated initialization, listener cleanup, one-open behavior,
+  outside/inside close, and Escape focus restoration.
 - `test/integration/parent-build.mjs` uses isolated Quartz workspaces for fresh CLI install/layout,
   mixed-Preact rendering, YAML/TypeScript variants, SPA/no-SPA assets, authored root/TOC/reading time,
-  root/book sidebar scope, right Graph, Explorer replacement, and non-root base-path output.
+  overview-first body order, authored-root selector state, disjoint root/book sidebar scope,
+  right Graph, Explorer replacement, locale fallback, and non-root base-path output.
 - `test/integration/watch-build.mjs` separately reproduces aggregate watch staleness and requires the
   clean full-build correction.
 - package scripts verify deterministic maps, generated externals, packed installs, and committed
@@ -306,15 +333,16 @@ host invalidation API can remove this limitation without changing the public con
 
 - `src/pageType.ts`: physical-root Page Type and body ownership.
 - `src/books.ts`: shared physical book inventory, metadata, counts, dates, and sorting.
-- `src/navigation.ts`: cached Home/book inventory, hierarchy, scope, and link state.
+- `src/navigation.ts`: cached root-manual/book inventory, authored root title, hierarchy, scope, and
+  link state.
 - `src/options.ts`: option/registry validation and normalization.
 - `src/icons.ts` and `src/appearance.ts`: safe icon/accent resolution.
 - `src/i18n/`: plugin-owned catalogs and locale selector.
-- `src/components/RootIndexPanels.tsx`: authored root, overview, browse, cards/list body.
-- `src/components/RootIndexSidebar.tsx`: native route-aware left navigation.
+- `src/components/RootIndexPanels.tsx`: overview, authored root, browse, cards/list body.
+- `src/components/RootIndexSidebar.tsx`: native manual selector and route-aware Explorer navigation.
 - `src/components/styles/`: scoped body/sidebar styles, default-frame responsive grid containment,
   mobile left width/wrap containment, and Explorer sibling replacement.
-- `src/components/scripts/`: panel-only SPA keyboard lifecycle.
+- `src/components/scripts/`: panel keyboard and sidebar light-dismiss SPA lifecycles.
 - `src/build/validate-manifest.ts`: exactly-one-sidebar manifest contract.
 - `src/index.ts`, `src/types.ts`, `src/components/index.ts`: public barrels.
 - `test/`: focused rendering, API, manifest, locale, DOM, style, and isolated host tests.

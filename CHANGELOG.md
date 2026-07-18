@@ -9,24 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `RootIndexSidebar`, a server-rendered Home/book switcher and route-scoped hierarchy built
-  from native disclosures, lists, and links, with responsive, forced-color, and reduced-motion
-  behavior.
-- Added authored root HAST composition above a semantic directory/note/last-updated overview,
-  no-JavaScript browse anchor, and the existing cards/list collection.
+- Added `RootIndexSidebar`, a server-rendered root-manual/book selector and route-scoped Explorer
+  hierarchy built from native disclosures, lists, and links, with responsive, forced-color, and
+  reduced-motion behavior. The root selector label comes from the authored root index title with a
+  localized Home fallback.
+- Added a semantic directory/note/last-updated overview and no-JavaScript browse anchor as the first
+  Page Type body element, followed by authored root HAST and the existing cards/list collection.
+- Added a progressively enhanced absolute manual popup with selected-manual checks, outside/link
+  light-dismiss, one-open behavior, Escape close with focus restoration, and Quartz SPA cleanup; the
+  native no-JavaScript interaction remains complete.
 - Added `replaceExplorer`, defaulting to `true`, with a narrowly scoped direct-sibling selector and a
   `false` opt-out that preserves stock Explorer.
 - Added public `RootIndexSidebar` and `RootIndexSidebarOptions` exports and declared the sidebar as
   the manifest's only layout component at left priority `40`.
 - Added optional book-index `panel.icon` and `panel.accent` metadata with 13 statically bundled Lucide icons, TypeScript custom icon aliases, YAML-safe named accents, and theme/direct accent fallbacks.
 - Added public `PanelIconComponent`, extended `RootIndexPanelsOptions`, and consistent root, `./types`, and `./components` declarations.
-- Added plugin-owned `en-US` and `fi-FI` count, overview, browse, empty-state, and sidebar labels with
-  per-render English fallback for unsupported locales.
+- Added plugin-owned `en-US` and `fi-FI` count, overview, browse, empty-state, Explorer,
+  manual-switcher, selected-manual, and sidebar-navigation labels with per-render English fallback
+  for unsupported locales.
 - Added reduced-motion, forced-color, decorative-icon, localized count-label, and SPA keyboard lifecycle coverage.
 - Added packed-package and generated-runtime verification, including ancestor-dependency detection,
   plus notices for the shipped Lucide/Feather, Quartz utility, and HAST-to-JSX dependency closure.
 - Added isolated stock-Quartz integration matrices for fresh CLI layout installation,
-  mixed-Preact rendering, YAML/TypeScript options, authored root metadata, sidebar/Explorer/Graph
+  mixed-Preact rendering, YAML/TypeScript options, authored root metadata and body order,
+  selected-manual/current-page state, disjoint root/book Explorer scope, sidebar/Explorer/Graph
   composition, SPA/no-SPA assets, base-path/subdirectory hosting, and watch invalidation evidence.
 - Added a durable JavaScript/Git/SQL compatibility-lab contract with physical/listed counts of
   `8`/`5`/`6`, distinct writer-selected icons/accents, cross-book edges, and Quartz feature specimens.
@@ -35,16 +41,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Defined books from listed physical first-level content only, with the physical book index as the sole metadata source and a physical or FolderPage-generated index required as the destination.
 - Counts now include listed physical descendants once, exclude the book's own index, include authored nested indexes, and ignore virtual pages. Date sorting now uses the newest eligible physical entry across the book.
-- Root panels plus all Home/book/note/folder sidebar destinations now use Quartz public path
+- Root panels plus all root-manual/book/note/folder sidebar destinations now use Quartz public path
   utilities, producing canonical relative links under both domain-root and subdirectory-hosted sites.
 - Runtime options, registry maps, sort ties, and duplicate slugs are normalized deterministically at the plugin boundary. YAML and TypeScript map overrides remain intentionally shallow.
-- Restyled both layouts around Quartz theme tokens with responsive cards, scoped appearance hooks, subtle optional accents, and host-controlled focus behavior.
+- Restyled both layouts around Quartz theme tokens with responsive cards, scoped appearance hooks,
+  subtle optional accents, and host-controlled focus behavior. Card hover/focus now uses the
+  Make-derived top radial glow and bottom accent hairline without the previous accent border/title
+  highlight.
 - Bundled non-singleton runtime dependencies into the committed prebuilt output while keeping Preact/Quartz host packages external.
 - The manifest now declares exactly one installable component, `RootIndexSidebar`; the Page Type body
   remains public but outside component discovery, preventing duplicate root rendering.
-- Sidebar scoping replaces only the stock Explorer navigation role. The right layout slot remains
-  host-owned; CanvasPage's fullscreen no-right-slot frame remains an explicit host-controlled
-  exception.
+- Sidebar scoping replaces only the stock Explorer navigation role. Each book scope starts with
+  Overview, opens top-level folders by default, and opens deeper folders only for current ancestry.
+  The right layout slot remains host-owned; CanvasPage's fullscreen no-right-slot frame remains an
+  explicit host-controlled exception.
 - Responsive host coupling is limited to three narrowly scoped selector kinds: default-frame grid
   track containment, direct-plugin mobile left-container containment, and direct Explorer sibling
   replacement. Explorer remains the only cross-plugin suppression.

@@ -2539,6 +2539,9 @@ var enUS = {
   lastUpdatedLabel: "last updated",
   browseDirectories: "Browse directories",
   sidebarNavigation: "Book navigation",
+  switchManual: "Switch manual",
+  selectedManual: "selected manual",
+  explorer: "Explorer",
   home: "Home",
   notes: "Notes",
   contents: "Contents",
@@ -2554,6 +2557,9 @@ var fiFI = {
   lastUpdatedLabel: "p\xE4ivitetty",
   browseDirectories: "Selaa hakemistoja",
   sidebarNavigation: "Kirjojen navigointi",
+  switchManual: "Vaihda k\xE4sikirjaa",
+  selectedManual: "valittu k\xE4sikirja",
+  explorer: "Sis\xE4lt\xF6selain",
   home: "Etusivu",
   notes: "Muistiinpanot",
   contents: "Sis\xE4llys",
@@ -2688,6 +2694,15 @@ var BookOpen = createLucideIcon("book-open", [
   ]
 ]);
 
+// node_modules/lucide-preact/dist/esm/icons/check.mjs
+var Check = createLucideIcon("check", [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]]);
+
+// node_modules/lucide-preact/dist/esm/icons/chevrons-up-down.mjs
+var ChevronsUpDown = createLucideIcon("chevrons-up-down", [
+  ["path", { d: "m7 15 5 5 5-5", key: "1hf1tw" }],
+  ["path", { d: "m7 9 5-5 5 5", key: "sgt6xg" }]
+]);
+
 // node_modules/lucide-preact/dist/esm/icons/code-xml.mjs
 var CodeXml = createLucideIcon("code-xml", [
   ["path", { d: "m18 16 4-4-4-4", key: "1inbqp" }],
@@ -2763,6 +2778,32 @@ var FileCode = createLucideIcon("file-code", [
   ["path", { d: "m14 12.5 2 2.5-2 2.5", key: "yinavb" }]
 ]);
 
+// node_modules/lucide-preact/dist/esm/icons/file-text.mjs
+var FileText = createLucideIcon("file-text", [
+  [
+    "path",
+    {
+      d: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z",
+      key: "1oefj6"
+    }
+  ],
+  ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5", key: "wfsgrz" }],
+  ["path", { d: "M10 9H8", key: "b1mrlr" }],
+  ["path", { d: "M16 13H8", key: "t4e002" }],
+  ["path", { d: "M16 17H8", key: "z1uh3a" }]
+]);
+
+// node_modules/lucide-preact/dist/esm/icons/folder.mjs
+var Folder = createLucideIcon("folder", [
+  [
+    "path",
+    {
+      d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z",
+      key: "1kt360"
+    }
+  ]
+]);
+
 // node_modules/lucide-preact/dist/esm/icons/git-branch.mjs
 var GitBranch = createLucideIcon("git-branch", [
   ["path", { d: "M15 6a9 9 0 0 0-9 9V3", key: "1cii5b" }],
@@ -2775,6 +2816,18 @@ var Globe = createLucideIcon("globe", [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
   ["path", { d: "M2 12h20", key: "9i4pu4" }]
+]);
+
+// node_modules/lucide-preact/dist/esm/icons/house.mjs
+var House = createLucideIcon("house", [
+  ["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" }],
+  [
+    "path",
+    {
+      d: "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+      key: "r6nss1"
+    }
+  ]
 ]);
 
 // node_modules/lucide-preact/dist/esm/icons/layers.mjs
@@ -2854,6 +2907,13 @@ function adaptLucideIcon(icon) {
     children
   );
 }
+var sidebarIcons = Object.freeze({
+  check: adaptLucideIcon(Check),
+  chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
+  file: adaptLucideIcon(FileText),
+  folder: adaptLucideIcon(Folder),
+  home: adaptLucideIcon(House)
+});
 var builtInIcons = {
   "book-open": adaptLucideIcon(BookOpen),
   coffee: adaptLucideIcon(Coffee),
@@ -2901,7 +2961,7 @@ function resolvePanelIcon(panelIcon, options) {
 var panels_inline_default = 'function f(){let o=document.querySelectorAll(".rip-grid, .rip-list");if(o.length===0)return;let c=[];for(let r of o){let e=Array.from(r.querySelectorAll(".rip-card, .rip-list-item"));if(e.length===0)continue;let l=n=>{if(n.altKey||n.ctrlKey||n.metaKey||n.shiftKey)return;let a=document.activeElement;if(!a)return;let d=a.closest(".rip-card-link, .rip-list-link");if(!d)return;let s=d.closest(".rip-card, .rip-list-item");if(!s)return;let i=e.indexOf(s);if(i===-1)return;let t;switch(n.key){case"ArrowRight":case"ArrowDown":t=e[i+1];break;case"ArrowLeft":case"ArrowUp":t=e[i-1];break;case"Home":t=e[0];break;case"End":t=e[e.length-1];break}t&&(n.preventDefault(),t.querySelector(".rip-card-link, .rip-list-link")?.focus())};r.addEventListener("keydown",l),c.push(()=>r.removeEventListener("keydown",l))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{c.forEach(r=>r())})}document.addEventListener("nav",()=>{f()});\n';
 
 // src/components/styles/panels.scss
-var panels_default = '.rip {\n  width: 100%;\n  margin: 1.5rem 0 2.5rem;\n}\n.rip * {\n  box-sizing: border-box;\n}\n\n.rip-root-content {\n  margin-bottom: 1.75rem;\n}\n\n.rip-overview {\n  display: flex;\n  align-items: flex-end;\n  justify-content: space-between;\n  gap: 1.25rem;\n  padding: 1.15rem 0 1.35rem;\n  border-top: 1px solid var(--lightgray);\n}\n\n.rip-stats {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 1.25rem 2.5rem;\n  margin: 0;\n}\n\n.rip-stat {\n  display: flex;\n  min-width: 5.5rem;\n  flex-direction: column;\n}\n.rip-stat dt {\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  letter-spacing: 0.03em;\n  line-height: 1.45;\n  text-transform: lowercase;\n}\n.rip-stat dd {\n  order: -1;\n  margin: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1.15rem;\n  font-weight: 700;\n  line-height: 1.35;\n}\n\n.rip-browse-link {\n  display: inline-flex;\n  flex: 0 0 auto;\n  align-items: center;\n  gap: 0.55rem;\n  padding: 0.55rem 0.75rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.45rem;\n  color: var(--gray);\n  background: var(--light);\n  font-size: 0.8rem;\n  text-decoration: none;\n}\n.rip-browse-link:hover {\n  border-color: var(--secondary);\n  color: var(--secondary);\n}\n.rip-browse-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n\n.rip-directories {\n  scroll-margin-top: 1rem;\n}\n\n.rip-section-heading {\n  display: flex;\n  align-items: center;\n  gap: 0.8rem;\n  margin: 0 0 1rem;\n}\n.rip-section-heading::after {\n  height: 1px;\n  flex: 1 1 auto;\n  background: var(--lightgray);\n  content: "";\n}\n.rip-section-heading h2 {\n  margin: 0;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  font-weight: 500;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n.rip-section-heading span {\n  order: 2;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n}\n\n.rip-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-empty {\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.9rem;\n  font-style: italic;\n}\n\n.rip-desc {\n  flex: 1 1 auto;\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.84rem;\n  line-height: 1.55;\n  overflow-wrap: anywhere;\n}\n\n.rip-panel-heading {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  gap: 0.65rem;\n}\n\n.rip-panel-icon {\n  display: inline-grid;\n  width: 2.35rem;\n  height: 2.35rem;\n  flex: 0 0 2.35rem;\n  place-items: center;\n  border: 1px solid var(--rip-panel-accent, var(--lightgray));\n  border-radius: 0.65rem;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  pointer-events: none;\n}\n.rip-panel-icon svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-count {\n  display: inline-block;\n  flex-shrink: 0;\n  padding: 0.1em 0.45em;\n  border: 1px solid var(--lightgray);\n  border-radius: 999px;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  line-height: 1.6;\n  white-space: nowrap;\n}\n\n.rip-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 0.3rem;\n  margin-top: auto;\n  padding-top: 0.4rem;\n}\n\n.rip-tag {\n  padding: 0.12em 0.48em;\n  border-radius: 999px;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  font-family: var(--codeFont);\n  font-size: 0.67rem;\n  overflow-wrap: anywhere;\n}\n\n.rip--cards .rip-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));\n  gap: 0.85rem;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.rip--cards .rip-card {\n  min-width: 0;\n  margin: 0;\n}\n.rip--cards .rip-card-link {\n  display: flex;\n  min-height: 10.5rem;\n  height: 100%;\n  flex-direction: column;\n  gap: 0.65rem;\n  padding: 1.05rem 1.1rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.8rem;\n  color: var(--darkgray);\n  background: transparent;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n  text-decoration: none;\n  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;\n}\n.rip--cards .rip-card-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n.rip--cards .rip-card-top {\n  display: flex;\n  min-width: 0;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 0.65rem;\n}\n.rip--cards .rip-card-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1rem;\n  font-weight: 650;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n  transition: color 150ms ease;\n}\n@media (hover: hover) {\n  .rip--cards .rip-card-link:hover {\n    border-color: var(--rip-panel-accent, var(--secondary));\n    box-shadow: 0 0.45rem 1.5rem rgba(0, 0, 0, 0.09);\n    transform: translateY(-2px);\n  }\n  .rip--cards .rip-card-link:hover .rip-card-title {\n    color: var(--rip-panel-accent, var(--secondary));\n  }\n}\n\n.rip--list .rip-list {\n  margin: 0;\n  padding: 0;\n  border-top: 1px solid var(--lightgray);\n  list-style: none;\n}\n.rip--list .rip-list-item {\n  margin: 0;\n  border-bottom: 1px solid var(--lightgray);\n}\n.rip--list .rip-list-link {\n  display: flex;\n  flex-direction: column;\n  gap: 0.35rem;\n  padding: 0.8rem 0.35rem 0.8rem 0.55rem;\n  border-inline-start: 0.2rem solid transparent;\n  color: var(--darkgray);\n  text-decoration: none;\n  transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;\n}\n.rip--list .rip-list-link[data-rip-accent] {\n  border-inline-start-color: var(--rip-panel-accent);\n}\n.rip--list .rip-list-link:hover {\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n}\n.rip--list .rip-list-link:hover .rip-list-title {\n  color: var(--rip-panel-accent, var(--secondary));\n}\n.rip--list .rip-list-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n.rip--list .rip-list-row {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  justify-content: space-between;\n  gap: 1rem;\n}\n.rip--list .rip-list-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 0.96rem;\n  font-weight: 650;\n  overflow-wrap: anywhere;\n}\n.rip--list .rip-panel-icon {\n  width: 2rem;\n  height: 2rem;\n  flex-basis: 2rem;\n  border-radius: 0.55rem;\n}\n\n@media (max-width: 600px) {\n  .rip-overview {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .rip-stats {\n    gap: 1rem 1.5rem;\n  }\n  .rip-browse-link {\n    align-self: flex-start;\n  }\n  .rip--cards .rip-grid {\n    grid-template-columns: 1fr;\n  }\n  .rip--cards .rip-card-link {\n    min-height: 0;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip .rip-card-link,\n  .rip .rip-card-title,\n  .rip .rip-list-link {\n    transition: none;\n  }\n  .rip--cards .rip-card-link:hover {\n    transform: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip .rip-overview,\n  .rip .rip-browse-link,\n  .rip .rip-card-link,\n  .rip .rip-list,\n  .rip .rip-list-item,\n  .rip .rip-count,\n  .rip .rip-panel-icon {\n    border-color: CanvasText;\n  }\n  .rip .rip-card-link:focus-visible,\n  .rip .rip-list-link:focus-visible {\n    outline-color: Highlight;\n  }\n  .rip .rip-panel-icon,\n  .rip .rip-tag {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip .rip-list-link[data-rip-accent] {\n    border-inline-start-color: LinkText;\n  }\n}';
+var panels_default = '.rip {\n  width: 100%;\n  margin: 1.5rem 0 2.5rem;\n}\n.rip * {\n  box-sizing: border-box;\n}\n\n.rip-root-content {\n  margin-top: 1.25rem;\n  margin-bottom: 1.75rem;\n}\n\n.rip-overview {\n  display: flex;\n  align-items: flex-end;\n  justify-content: space-between;\n  gap: 1.25rem;\n  padding: 1.15rem 0 1.35rem;\n  border-top: 1px solid var(--lightgray);\n}\n\n.rip-stats {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 1.25rem 2.5rem;\n  margin: 0;\n}\n\n.rip-stat {\n  display: flex;\n  min-width: 5.5rem;\n  flex-direction: column;\n}\n.rip-stat dt {\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  letter-spacing: 0.03em;\n  line-height: 1.45;\n  text-transform: lowercase;\n}\n.rip-stat dd {\n  order: -1;\n  margin: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1.15rem;\n  font-weight: 700;\n  line-height: 1.35;\n}\n\n.rip-browse-link {\n  display: inline-flex;\n  flex: 0 0 auto;\n  align-items: center;\n  gap: 0.55rem;\n  padding: 0.55rem 0.75rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.45rem;\n  color: var(--gray);\n  background: var(--light);\n  font-size: 0.8rem;\n  text-decoration: none;\n}\n.rip-browse-link:hover {\n  border-color: var(--secondary);\n  color: var(--secondary);\n}\n.rip-browse-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n\n.rip-directories {\n  scroll-margin-top: 1rem;\n}\n\n.rip-section-heading {\n  display: flex;\n  align-items: center;\n  gap: 0.8rem;\n  margin: 0 0 1rem;\n}\n.rip-section-heading::after {\n  height: 1px;\n  flex: 1 1 auto;\n  background: var(--lightgray);\n  content: "";\n}\n.rip-section-heading h2 {\n  margin: 0;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  font-weight: 500;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n.rip-section-heading span {\n  order: 2;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n}\n\n.rip-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-empty {\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.9rem;\n  font-style: italic;\n}\n\n.rip-desc {\n  flex: 1 1 auto;\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.84rem;\n  line-height: 1.55;\n  overflow-wrap: anywhere;\n}\n\n.rip-panel-heading {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  gap: 0.65rem;\n}\n\n.rip-panel-icon {\n  display: inline-grid;\n  width: 2.35rem;\n  height: 2.35rem;\n  flex: 0 0 2.35rem;\n  place-items: center;\n  border: 1px solid var(--rip-panel-accent, var(--lightgray));\n  border-radius: 0.65rem;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  pointer-events: none;\n}\n.rip-panel-icon svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-count {\n  display: inline-block;\n  flex-shrink: 0;\n  padding: 0.1em 0.45em;\n  border: 1px solid var(--lightgray);\n  border-radius: 999px;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  line-height: 1.6;\n  white-space: nowrap;\n}\n\n.rip-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 0.3rem;\n  margin-top: auto;\n  padding-top: 0.4rem;\n}\n\n.rip-tag {\n  padding: 0.12em 0.48em;\n  border-radius: 999px;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  font-family: var(--codeFont);\n  font-size: 0.67rem;\n  overflow-wrap: anywhere;\n}\n\n.rip--cards .rip-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));\n  gap: 0.85rem;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.rip--cards .rip-card {\n  min-width: 0;\n  margin: 0;\n}\n.rip--cards .rip-card-link {\n  position: relative;\n  isolation: isolate;\n  display: flex;\n  min-height: 10.5rem;\n  height: 100%;\n  flex-direction: column;\n  gap: 0.65rem;\n  padding: 1.05rem 1.1rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.8rem;\n  overflow: hidden;\n  color: var(--darkgray);\n  background: transparent;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n  text-decoration: none;\n  transition: transform 150ms ease-out;\n}\n.rip--cards .rip-card-link::before, .rip--cards .rip-card-link::after {\n  position: absolute;\n  z-index: 0;\n  opacity: 0;\n  content: "";\n  pointer-events: none;\n  transition: opacity 300ms ease;\n}\n.rip--cards .rip-card-link::before {\n  inset: 0;\n  border-radius: inherit;\n  background: radial-gradient(ellipse 120% 80% at 50% 0%, var(--highlight) 0%, transparent 70%);\n  background: radial-gradient(ellipse 120% 80% at 50% 0%, color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 8%, transparent) 0%, transparent 70%);\n}\n.rip--cards .rip-card-link::after {\n  right: 0;\n  bottom: 0;\n  left: 0;\n  height: 1px;\n  background: linear-gradient(90deg, transparent, var(--secondary), transparent);\n  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 50%, transparent), transparent);\n}\n.rip--cards .rip-card-link > * {\n  position: relative;\n  z-index: 1;\n}\n.rip--cards .rip-card-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n.rip--cards .rip-card-link:focus-visible::before, .rip--cards .rip-card-link:focus-visible::after {\n  opacity: 1;\n}\n.rip--cards .rip-card-top {\n  display: flex;\n  min-width: 0;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 0.65rem;\n}\n.rip--cards .rip-card-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1rem;\n  font-weight: 650;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n  transition: color 150ms ease;\n}\n@media (hover: hover) {\n  .rip--cards .rip-card-link:hover {\n    transform: translateY(-2px);\n  }\n  .rip--cards .rip-card-link:hover::before, .rip--cards .rip-card-link:hover::after {\n    opacity: 1;\n  }\n}\n\n.rip--list .rip-list {\n  margin: 0;\n  padding: 0;\n  border-top: 1px solid var(--lightgray);\n  list-style: none;\n}\n.rip--list .rip-list-item {\n  margin: 0;\n  border-bottom: 1px solid var(--lightgray);\n}\n.rip--list .rip-list-link {\n  display: flex;\n  flex-direction: column;\n  gap: 0.35rem;\n  padding: 0.8rem 0.35rem 0.8rem 0.55rem;\n  border-inline-start: 0.2rem solid transparent;\n  color: var(--darkgray);\n  text-decoration: none;\n  transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;\n}\n.rip--list .rip-list-link[data-rip-accent] {\n  border-inline-start-color: var(--rip-panel-accent);\n}\n.rip--list .rip-list-link:hover {\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n}\n.rip--list .rip-list-link:hover .rip-list-title {\n  color: var(--rip-panel-accent, var(--secondary));\n}\n.rip--list .rip-list-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n.rip--list .rip-list-row {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  justify-content: space-between;\n  gap: 1rem;\n}\n.rip--list .rip-list-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 0.96rem;\n  font-weight: 650;\n  overflow-wrap: anywhere;\n}\n.rip--list .rip-panel-icon {\n  width: 2rem;\n  height: 2rem;\n  flex-basis: 2rem;\n  border-radius: 0.55rem;\n}\n\n@media (max-width: 600px) {\n  .rip-overview {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .rip-stats {\n    gap: 1rem 1.5rem;\n  }\n  .rip-browse-link {\n    align-self: flex-start;\n  }\n  .rip--cards .rip-grid {\n    grid-template-columns: 1fr;\n  }\n  .rip--cards .rip-card-link {\n    min-height: 0;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip .rip-card-link,\n  .rip .rip-card-link::before,\n  .rip .rip-card-link::after,\n  .rip .rip-card-title,\n  .rip .rip-list-link {\n    transition: none;\n  }\n  .rip--cards .rip-card-link:hover {\n    transform: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip .rip-overview,\n  .rip .rip-browse-link,\n  .rip .rip-card-link,\n  .rip .rip-list,\n  .rip .rip-list-item,\n  .rip .rip-count,\n  .rip .rip-panel-icon {\n    border-color: CanvasText;\n  }\n  .rip .rip-card-link:focus-visible,\n  .rip .rip-list-link:focus-visible {\n    outline-color: Highlight;\n  }\n  .rip .rip-panel-icon,\n  .rip .rip-tag {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip .rip-list-link[data-rip-accent] {\n    border-inline-start-color: LinkText;\n  }\n  .rip .rip-card-link::before,\n  .rip .rip-card-link::after {\n    display: none;\n  }\n}';
 var maximumDateTimestamp2 = 864e13;
 function formatUpdatedDate(timestamp, locale) {
   if (!Number.isFinite(timestamp) || Math.abs(timestamp) > maximumDateTimestamp2) return void 0;
@@ -3107,8 +3167,8 @@ var RootIndexPanels_default = ((userOptions) => {
     const showRootContent = hasRootContent(tree);
     const rootContent = showRootContent ? htmlToJsx(tree) : void 0;
     return /* @__PURE__ */ jsxs("article", { class: rootArticleClass(fileData, options.layout), children: [
-      showRootContent && /* @__PURE__ */ jsx("div", { class: "rip-root-content markdown-preview-view markdown-rendered", children: rootContent }),
       /* @__PURE__ */ jsx(RootOverview, { entries, locale: cfg.locale, translation }),
+      showRootContent && /* @__PURE__ */ jsx("div", { class: "rip-root-content markdown-preview-view markdown-rendered", children: rootContent }),
       /* @__PURE__ */ jsxs(
         "section",
         {
@@ -3256,8 +3316,14 @@ function parseSlug(file) {
   return parseCanonicalSlug(ownDataValue5(file, "slug"));
 }
 function isListedPhysical(file) {
+  return isPhysical2(file) && ownDataValue5(file, "unlisted") !== true;
+}
+function isPhysical2(file) {
   const filePath = ownDataValue5(file, "filePath");
-  return typeof filePath === "string" && filePath.length > 0 && ownDataValue5(file, "unlisted") !== true;
+  return typeof filePath === "string" && filePath.length > 0;
+}
+function isSyntheticVirtualIndex(file) {
+  return !isPhysical2(file) && (hasOwnDataProperty2(file, "canvasData") || hasOwnDataProperty2(file, "basesData"));
 }
 function humanizeSegment2(segment) {
   const text2 = segment.replace(/-/g, " ");
@@ -3267,6 +3333,11 @@ function fileTitle(file, fallbackSegment) {
   const frontmatter = ownDataValue5(file, "frontmatter");
   const title = ownDataValue5(frontmatter, "title");
   return typeof title === "string" ? title : humanizeSegment2(fallbackSegment);
+}
+function authoredTitle(file) {
+  const frontmatter = ownDataValue5(file, "frontmatter");
+  const title = ownDataValue5(frontmatter, "title");
+  return typeof title === "string" && title.trim().length > 0 ? title : void 0;
 }
 function compareNodes(a, b) {
   if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1;
@@ -3383,11 +3454,12 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
     books.map((book) => [book.segment, /* @__PURE__ */ new Map()])
   );
   const rootNotes = [];
+  let rootTitle;
   const seenSlugs = /* @__PURE__ */ new Set();
   const folderDestinations = /* @__PURE__ */ new Map();
   for (const file of validFiles) {
     const parsed = parseSlug(file);
-    if (!parsed || parsed.parts.length < 3 || parsed.parts.at(-1) !== "index" || ownDataValue5(file, "unlisted") === true || !bookTrees.has(parsed.parts[0]) || folderDestinations.has(parsed.slug)) {
+    if (!parsed || parsed.parts.length < 3 || parsed.parts.at(-1) !== "index" || ownDataValue5(file, "unlisted") === true || isSyntheticVirtualIndex(file) || !bookTrees.has(parsed.parts[0]) || folderDestinations.has(parsed.slug)) {
       continue;
     }
     folderDestinations.set(parsed.slug, file);
@@ -3398,7 +3470,10 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
     if (!parsed || seenSlugs.has(parsed.slug)) continue;
     seenSlugs.add(parsed.slug);
     if (parsed.parts.length === 1) {
-      if (parsed.slug === "index") continue;
+      if (parsed.slug === "index") {
+        rootTitle ??= authoredTitle(file);
+        continue;
+      }
       rootNotes.push(
         Object.freeze({
           kind: "note",
@@ -3431,6 +3506,7 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
   }
   return Object.freeze({
     books: Object.freeze(frozenBooks),
+    ...rootTitle ? { rootTitle } : {},
     rootNotes: Object.freeze(rootNotes)
   });
 }
@@ -3477,8 +3553,18 @@ function selectSidebarNavigationScope(model, currentSlug2) {
   return book ? { kind: "book", book, children: book.children } : { kind: "root", children: model.rootNotes };
 }
 
+// src/components/scripts/sidebar.inline.ts
+var sidebar_inline_default = 'function c(){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));if(r.length===0)return;let s=[];for(let e of r){let n=()=>{if(e.open)for(let o of r)o!==e&&(o.open=!1)},t=o=>{o.target?.closest?.("a")&&(e.open=!1)};e.addEventListener("toggle",n),e.addEventListener("click",t),s.push(()=>{e.removeEventListener("toggle",n),e.removeEventListener("click",t)})}let i=e=>{let n=e.target;if(n)for(let t of r)t.open&&!t.contains(n)&&(t.open=!1)},d=e=>{if(e.key!=="Escape")return;let n=r.find(o=>o.open);if(!n)return;e.preventDefault(),n.open=!1,n.firstElementChild?.focus?.()};document.addEventListener("pointerdown",i),document.addEventListener("keydown",d),s.push(()=>{document.removeEventListener("pointerdown",i),document.removeEventListener("keydown",d)}),typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{s.forEach(e=>e())})}typeof document<"u"&&document.addEventListener("nav",()=>{c()});\n';
+
 // src/components/styles/sidebar.scss
-var sidebar_default = '.rip-sidebar {\n  width: 100%;\n  min-width: 0;\n  color: var(--darkgray);\n  font-size: 0.9rem;\n}\n.rip-sidebar *,\n.rip-sidebar *::before,\n.rip-sidebar *::after {\n  box-sizing: border-box;\n}\n.rip-sidebar a {\n  color: inherit;\n  text-decoration: none;\n}\n.rip-sidebar a:hover {\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n.rip-sidebar a:focus-visible,\n.rip-sidebar summary:focus-visible {\n  border-radius: 0.35rem;\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home,\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-shell,\n.rip-sidebar-content {\n  width: 100%;\n  min-width: 0;\n}\n\n.rip-sidebar-toggle {\n  display: none;\n}\n\n.rip-sidebar-home {\n  padding: 0.5rem 0.6rem;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=ancestor] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-switcher {\n  margin-top: 0.35rem;\n  border-block: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-switcher > summary,\n.rip-sidebar-folder > details > summary {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  padding: 0.6rem;\n  color: var(--dark);\n  cursor: pointer;\n  font-family: var(--headerFont);\n  font-weight: 650;\n  list-style: none;\n  user-select: none;\n}\n\n.rip-sidebar-switcher > summary::-webkit-details-marker,\n.rip-sidebar-folder > details > summary::-webkit-details-marker {\n  display: none;\n}\n\n.rip-sidebar-switcher > summary::after,\n.rip-sidebar-folder > details > summary::after {\n  width: 0.5rem;\n  height: 0.5rem;\n  flex: 0 0 0.5rem;\n  margin-inline-start: auto;\n  border-inline-end: 1.5px solid currentColor;\n  border-block-end: 1.5px solid currentColor;\n  content: "";\n  transform: rotate(45deg) translate(-0.1rem, -0.1rem);\n  transition: transform 120ms ease;\n}\n\n.rip-sidebar-switcher[open] > summary::after,\n.rip-sidebar-folder > details[open] > summary::after {\n  transform: rotate(225deg) translate(-0.05rem, -0.05rem);\n}\n\n.rip-sidebar-switcher-label,\n.rip-sidebar-link-label,\n.rip-sidebar-folder-label {\n  min-width: 0;\n  overflow-wrap: anywhere;\n}\n\n.rip-sidebar-book-icon {\n  display: inline-grid;\n  width: 1.75rem;\n  height: 1.75rem;\n  flex: 0 0 1.75rem;\n  place-items: center;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 0.45rem;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  pointer-events: none;\n}\n\n.rip-sidebar-book-icon svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-sidebar-books,\n.rip-sidebar-tree,\n.rip-sidebar-children {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.rip-sidebar-books {\n  padding: 0.25rem 0 0.45rem;\n}\n\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  padding: 0.42rem 0.6rem;\n}\n\n.rip-sidebar-scope {\n  min-height: 0;\n  margin-top: 0.8rem;\n}\n\n.rip-sidebar-scope-title {\n  margin: 0 0 0.35rem;\n  padding-inline: 0.6rem;\n  color: var(--gray);\n  font-family: var(--headerFont);\n  font-size: 0.72rem;\n  font-weight: 700;\n  letter-spacing: 0.08em;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-tree {\n  max-height: calc(100dvh - 19rem);\n  overflow: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-folder > details > summary {\n  padding-block: 0.42rem;\n  font-family: var(--bodyFont);\n  font-weight: 550;\n}\n\n.rip-sidebar-children {\n  margin-inline-start: 0.72rem;\n  padding-inline-start: 0.55rem;\n  border-inline-start: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-overview-link {\n  margin-inline-start: 0.72rem;\n  color: var(--gray);\n  font-size: 0.82rem;\n}\n\n.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n@media (min-width: 801px) {\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: block;\n  }\n}\n@media (min-width: 800px) and (max-width: 1200px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);\n  }\n}\n@media (max-width: 800px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 1fr) !important;\n  }\n  .left.sidebar:has(> .rip-sidebar) {\n    min-width: 0;\n    width: 100%;\n    max-width: 100%;\n    flex-wrap: wrap;\n    overflow-wrap: anywhere;\n  }\n  .rip-sidebar {\n    width: 100%;\n    flex: 1 0 100%;\n    order: 100;\n    padding-top: 0.5rem;\n  }\n  .rip-sidebar-toggle {\n    display: flex;\n    min-height: 2.75rem;\n    align-items: center;\n    padding: 0.55rem 0.65rem;\n    border: 1px solid var(--lightgray);\n    border-radius: 0.45rem;\n    color: var(--dark);\n    cursor: pointer;\n    font-family: var(--headerFont);\n    font-weight: 650;\n  }\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: none;\n  }\n  .rip-sidebar-content {\n    padding-top: 0.35rem;\n  }\n  .rip-sidebar-tree {\n    max-height: min(45dvh, 24rem);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-switcher > summary::after,\n  .rip-sidebar-folder > details > summary::after {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-switcher,\n  .rip-sidebar-children,\n  .rip-sidebar-book-icon {\n    border-color: CanvasText;\n  }\n  .rip-sidebar a:focus-visible,\n  .rip-sidebar summary:focus-visible {\n    outline-color: Highlight;\n  }\n}';
+var sidebar_default = '.rip-sidebar {\n  width: 100%;\n  min-width: 0;\n  color: var(--darkgray);\n  font-size: 0.9rem;\n}\n.rip-sidebar *,\n.rip-sidebar *::before,\n.rip-sidebar *::after {\n  box-sizing: border-box;\n}\n.rip-sidebar a {\n  color: inherit;\n  text-decoration: none;\n}\n.rip-sidebar a:hover {\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n.rip-sidebar a:focus-visible,\n.rip-sidebar summary:focus-visible {\n  border-radius: 0.35rem;\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home,\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-shell,\n.rip-sidebar-content {\n  width: 100%;\n  min-width: 0;\n}\n\n.rip-sidebar-content {\n  position: relative;\n}\n\n.rip-sidebar-toggle {\n  display: none;\n}\n\n.rip-sidebar-home {\n  padding: 0.45rem 0.55rem;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=ancestor] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-switcher {\n  position: relative;\n  z-index: 5;\n  margin-top: 0.35rem;\n}\n\n.rip-sidebar-switcher[open] {\n  z-index: 30;\n}\n\n.rip-sidebar-switcher > summary,\n.rip-sidebar-folder > details > summary {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  color: var(--dark);\n  cursor: pointer;\n  list-style: none;\n  user-select: none;\n}\n\n.rip-sidebar-switcher > summary {\n  padding: 0.5rem 0.6rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.5rem;\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);\n  font-family: var(--headerFont);\n  font-weight: 600;\n  transition: border-color 120ms ease, background-color 120ms ease;\n}\n\n.rip-sidebar-switcher > summary:hover {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-switcher > summary::-webkit-details-marker,\n.rip-sidebar-folder > details > summary::-webkit-details-marker,\n.rip-sidebar-toggle::-webkit-details-marker {\n  display: none;\n}\n\n.rip-sidebar-switcher-label,\n.rip-sidebar-link-label,\n.rip-sidebar-folder-label {\n  min-width: 0;\n  overflow-wrap: anywhere;\n}\n\n.rip-sidebar-switcher-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rip-sidebar-switcher-chevron {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--gray);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon,\n.rip-sidebar-book-icon {\n  display: inline-grid;\n  width: 1.4rem;\n  height: 1.4rem;\n  flex: 0 0 1.4rem;\n  place-items: center;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 0.38rem;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 15%, transparent);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon svg,\n.rip-sidebar-book-icon svg,\n.rip-sidebar-node-icon svg,\n.rip-sidebar-selected-check svg,\n.rip-sidebar-switcher-chevron svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-sidebar-switcher-menu {\n  position: absolute;\n  z-index: 20;\n  top: calc(100% + 0.35rem);\n  inset-inline: 0;\n  overflow: hidden;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.55rem;\n  color: var(--darkgray);\n  background: var(--light);\n  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);\n}\n\n.rip-sidebar-switcher-heading {\n  margin: 0;\n  padding: 0.5rem 0.7rem;\n  border-bottom: 1px solid var(--lightgray);\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  line-height: 1.4;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-home-list,\n.rip-sidebar-books,\n.rip-sidebar-tree,\n.rip-sidebar-children {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.rip-sidebar-home-list {\n  padding: 0.3rem 0.35rem;\n}\n\n.rip-sidebar-switcher-divider {\n  height: 1px;\n  margin-inline: 0.7rem;\n  background: var(--lightgray);\n}\n\n.rip-sidebar-books {\n  max-height: min(14rem, 100dvh - 12rem);\n  padding: 0.3rem 0.35rem 0.4rem;\n  overflow-y: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-switcher-menu [data-rip-selected=true] {\n  color: var(--rip-sidebar-accent, var(--dark));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 10%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar-selected-check {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  pointer-events: none;\n}\n\n.rip-sidebar-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  padding: 0.42rem 0.6rem;\n}\n\n.rip-sidebar-switcher[open] + .rip-sidebar-scope {\n  visibility: hidden;\n  pointer-events: none;\n}\n\n.rip-sidebar-scope {\n  min-height: 0;\n  margin-top: 0.95rem;\n}\n\n.rip-sidebar-scope-title {\n  margin: 0 0 0.35rem;\n  padding-inline: 0.6rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.72rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-tree {\n  max-height: calc(100dvh - 19rem);\n  overflow: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-node-icon {\n  display: inline-grid;\n  width: 1rem;\n  height: 1rem;\n  flex: 0 0 1rem;\n  place-items: center;\n  color: inherit;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder > details > summary {\n  padding: 0.42rem 0.6rem;\n  font-family: var(--bodyFont);\n  font-weight: 550;\n}\n\n.rip-sidebar-folder > details > summary::before {\n  width: 0.42rem;\n  height: 0.42rem;\n  flex: 0 0 0.42rem;\n  border-inline-end: 1.5px solid currentColor;\n  border-block-end: 1.5px solid currentColor;\n  content: "";\n  transform: rotate(-45deg);\n  transition: transform 120ms ease;\n}\n\n.rip-sidebar-folder > details[open] > summary::before {\n  transform: rotate(45deg);\n}\n\n.rip-sidebar-children {\n  margin-inline-start: 1rem;\n  padding-inline-start: 0.55rem;\n  border-inline-start: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-overview-link {\n  margin-inline-start: 1rem;\n  color: var(--gray);\n  font-size: 0.82rem;\n}\n\n.rip-sidebar-book-overview-link {\n  margin: 0 0 0.15rem;\n}\n\n.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n@media (min-width: 801px) {\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: block;\n  }\n}\n@media (min-width: 800px) and (max-width: 1200px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);\n  }\n}\n@media (max-width: 800px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 1fr) !important;\n  }\n  .left.sidebar:has(> .rip-sidebar) {\n    min-width: 0;\n    width: 100%;\n    max-width: 100%;\n    flex-wrap: wrap;\n    overflow-wrap: anywhere;\n  }\n  .rip-sidebar {\n    width: 100%;\n    flex: 1 0 100%;\n    order: 100;\n    padding-top: 0.5rem;\n  }\n  .rip-sidebar-toggle {\n    display: flex;\n    min-height: 2.75rem;\n    align-items: center;\n    padding: 0.55rem 0.65rem;\n    border: 1px solid var(--lightgray);\n    border-radius: 0.45rem;\n    color: var(--dark);\n    cursor: pointer;\n    font-family: var(--headerFont);\n    font-weight: 650;\n    list-style: none;\n  }\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: none;\n  }\n  .rip-sidebar-content {\n    padding-top: 0.35rem;\n  }\n  .rip-sidebar-tree {\n    max-height: min(45dvh, 24rem);\n  }\n  .rip-sidebar-books {\n    max-height: min(14rem, 45dvh);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-folder > details > summary::before {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-switcher-menu,\n  .rip-sidebar-switcher-heading,\n  .rip-sidebar-switcher-divider,\n  .rip-sidebar-children,\n  .rip-sidebar-root-icon,\n  .rip-sidebar-book-icon {\n    border-color: CanvasText;\n  }\n  .rip-sidebar-switcher-menu {\n    background: Canvas;\n    box-shadow: none;\n  }\n  .rip-sidebar-switcher-divider {\n    background: CanvasText;\n  }\n  .rip-sidebar [data-rip-state=current],\n  .rip-sidebar-switcher-menu [data-rip-selected=true] {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip-sidebar a:focus-visible,\n  .rip-sidebar summary:focus-visible {\n    outline-color: Highlight;\n  }\n}';
+function SidebarGlyph({
+  className,
+  icon: Icon2,
+  size = 15
+}) {
+  return /* @__PURE__ */ jsx("span", { class: className, "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: size, height: size, "stroke-width": 1.8 }) });
+}
 function ownDataValue6(value, key) {
   try {
     if (typeof value !== "object" || value === null || Array.isArray(value)) return void 0;
@@ -3505,12 +3591,14 @@ function BookIcon({
   const icon = resolvePanelIcon(ownDataValue6(panel, "icon"), options);
   if (!icon) return null;
   const Icon2 = icon.component;
-  return /* @__PURE__ */ jsx("span", { class: "rip-sidebar-book-icon", "data-rip-icon": icon.name, "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: 17, height: 17, "stroke-width": 1.8 }) });
+  return /* @__PURE__ */ jsx("span", { class: "rip-sidebar-book-icon", "data-rip-icon": icon.name, "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: 14, height: 14, "stroke-width": 1.8 }) });
 }
 function BookLink({
   book,
   current,
-  options
+  options,
+  selected,
+  translation
 }) {
   const state = getSidebarLinkState(book.slug, current);
   return /* @__PURE__ */ jsxs(
@@ -3520,10 +3608,25 @@ function BookLink({
       href: resolveRelative(current, book.slug),
       "aria-current": state === "current" ? "page" : void 0,
       "data-rip-state": state,
+      "data-rip-selected": selected ? "true" : void 0,
       ...panelAttributes2(book.panel, options),
       children: [
         /* @__PURE__ */ jsx(BookIcon, { panel: book.panel, options }),
-        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: book.title })
+        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: book.title }),
+        selected && /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsxs("span", { class: "rip-sidebar-sr-only", children: [
+            ", ",
+            translation.selectedManual
+          ] }),
+          /* @__PURE__ */ jsx(
+            SidebarGlyph,
+            {
+              className: "rip-sidebar-selected-check",
+              icon: sidebarIcons.check,
+              size: 13
+            }
+          )
+        ] })
       ]
     }
   );
@@ -3535,20 +3638,24 @@ function NavigationLink({
   className
 }) {
   const state = getSidebarLinkState(slug2, current);
-  return /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs(
     "a",
     {
       class: className,
       href: resolveRelative(current, slug2),
       "aria-current": state === "current" ? "page" : void 0,
       "data-rip-state": state,
-      children: /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: title })
+      children: [
+        /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.file }),
+        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: title })
+      ]
     }
   );
 }
 function NavigationNode({
   node,
   current,
+  depth,
   translation
 }) {
   if (node.kind === "note") {
@@ -3565,8 +3672,11 @@ function NavigationNode({
   const state = node.slug ? getSidebarLinkState(node.slug, current) : void 0;
   const descendantIsActive = node.children.some((child) => nodeContainsSlug(child, current));
   const summaryState = state ?? (descendantIsActive ? "ancestor" : void 0);
-  return /* @__PURE__ */ jsx("li", { class: "rip-sidebar-folder", children: /* @__PURE__ */ jsxs("details", { open: state !== void 0 || descendantIsActive || void 0, children: [
-    /* @__PURE__ */ jsx("summary", { "data-rip-state": summaryState, children: /* @__PURE__ */ jsx("span", { class: "rip-sidebar-folder-label", children: node.title }) }),
+  return /* @__PURE__ */ jsx("li", { class: "rip-sidebar-folder", children: /* @__PURE__ */ jsxs("details", { open: depth === 0 || state !== void 0 || descendantIsActive || void 0, children: [
+    /* @__PURE__ */ jsxs("summary", { "data-rip-state": summaryState, children: [
+      /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.folder }),
+      /* @__PURE__ */ jsx("span", { class: "rip-sidebar-folder-label", children: node.title })
+    ] }),
     node.slug && /* @__PURE__ */ jsx(
       NavigationLink,
       {
@@ -3581,6 +3691,7 @@ function NavigationNode({
       {
         node: child,
         current,
+        depth: depth + 1,
         translation
       },
       child.key
@@ -3609,6 +3720,8 @@ var RootIndexSidebar_default = ((userOptions) => {
     const scope = selectSidebarNavigationScope(model, current);
     const translation = i18n(ownDataValue6(props.cfg, "locale"));
     const selectedBook = scope.kind === "book" ? scope.book : void 0;
+    const rootTitle = model.rootTitle ?? translation.home;
+    const rootSelected = selectedBook === void 0;
     const homeState = getSidebarLinkState("index", current);
     return /* @__PURE__ */ jsx(
       "nav",
@@ -3621,49 +3734,99 @@ var RootIndexSidebar_default = ((userOptions) => {
           /* @__PURE__ */ jsx("summary", { class: "rip-sidebar-toggle", children: translation.sidebarNavigation }),
           /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-content", children: [
             /* @__PURE__ */ jsxs("details", { class: "rip-sidebar-switcher", children: [
-              /* @__PURE__ */ jsxs("summary", { ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {}, children: [
-                selectedBook && /* @__PURE__ */ jsx(BookIcon, { panel: selectedBook.panel, options }),
-                /* @__PURE__ */ jsx("span", { class: "rip-sidebar-switcher-label", children: selectedBook?.title ?? translation.home })
-              ] }),
-              /* @__PURE__ */ jsxs("ul", { class: "rip-sidebar-books", children: [
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsxs(
+                "summary",
+                {
+                  "data-rip-selected": "true",
+                  ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {},
+                  children: [
+                    selectedBook ? /* @__PURE__ */ jsx(BookIcon, { panel: selectedBook.panel, options }) : /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
+                    /* @__PURE__ */ jsx("span", { class: "rip-sidebar-switcher-label", children: selectedBook?.title ?? rootTitle }),
+                    /* @__PURE__ */ jsx(
+                      SidebarGlyph,
+                      {
+                        className: "rip-sidebar-switcher-chevron",
+                        icon: sidebarIcons.chevronsUpDown,
+                        size: 13
+                      }
+                    )
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-switcher-menu", children: [
+                /* @__PURE__ */ jsx("p", { class: "rip-sidebar-switcher-heading", children: translation.switchManual }),
+                /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-home-list", children: /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsxs(
                   "a",
                   {
                     class: "rip-sidebar-home",
                     href: resolveRelative(current, "index"),
                     "aria-current": homeState === "current" ? "page" : void 0,
                     "data-rip-state": homeState,
-                    children: /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: translation.home })
+                    "data-rip-selected": rootSelected ? "true" : void 0,
+                    children: [
+                      /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
+                      /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: rootTitle }),
+                      rootSelected && /* @__PURE__ */ jsxs(Fragment, { children: [
+                        /* @__PURE__ */ jsxs("span", { class: "rip-sidebar-sr-only", children: [
+                          ", ",
+                          translation.selectedManual
+                        ] }),
+                        /* @__PURE__ */ jsx(
+                          SidebarGlyph,
+                          {
+                            className: "rip-sidebar-selected-check",
+                            icon: sidebarIcons.check,
+                            size: 13
+                          }
+                        )
+                      ] })
+                    ]
                   }
-                ) }),
-                model.books.map((book) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(BookLink, { book, current, options }) }, book.segment))
+                ) }) }),
+                /* @__PURE__ */ jsx("div", { class: "rip-sidebar-switcher-divider", role: "separator" }),
+                /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-books", children: model.books.map((book) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+                  BookLink,
+                  {
+                    book,
+                    current,
+                    options,
+                    selected: book.segment === selectedBook?.segment,
+                    translation
+                  }
+                ) }, book.segment)) })
               ] })
             ] }),
-            scope.children.length > 0 && /* @__PURE__ */ jsxs(
-              "section",
-              {
-                class: "rip-sidebar-scope",
-                "aria-label": scope.kind === "book" ? translation.contents : translation.notes,
-                children: [
-                  /* @__PURE__ */ jsx("h2", { class: "rip-sidebar-scope-title", children: scope.kind === "book" ? translation.contents : translation.notes }),
-                  /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-tree", children: scope.children.map((node) => /* @__PURE__ */ jsx(
-                    NavigationNode,
-                    {
-                      node,
-                      current,
-                      translation
-                    },
-                    node.key
-                  )) })
-                ]
-              }
-            )
+            (scope.kind === "book" || scope.children.length > 0) && /* @__PURE__ */ jsxs("section", { class: "rip-sidebar-scope", "aria-label": translation.explorer, children: [
+              /* @__PURE__ */ jsx("h2", { class: "rip-sidebar-scope-title", children: translation.explorer }),
+              /* @__PURE__ */ jsxs("ul", { class: "rip-sidebar-tree", children: [
+                scope.kind === "book" && /* @__PURE__ */ jsx("li", { class: "rip-sidebar-book-overview", children: /* @__PURE__ */ jsx(
+                  NavigationLink,
+                  {
+                    slug: scope.book.slug,
+                    title: translation.overview,
+                    current,
+                    className: "rip-sidebar-note-link rip-sidebar-book-overview-link"
+                  }
+                ) }),
+                scope.children.map((node) => /* @__PURE__ */ jsx(
+                  NavigationNode,
+                  {
+                    node,
+                    current,
+                    depth: 0,
+                    translation
+                  },
+                  node.key
+                ))
+              ] })
+            ] })
           ] })
         ] })
       }
     );
   };
   RootIndexSidebar.css = sidebar_default;
+  RootIndexSidebar.afterDOMLoaded = sidebar_inline_default;
   return RootIndexSidebar;
 });
 
@@ -3699,14 +3862,19 @@ lucide-preact/dist/esm/shared/src/utils/hasA11yProp.mjs:
 lucide-preact/dist/esm/Icon.mjs:
 lucide-preact/dist/esm/createLucideIcon.mjs:
 lucide-preact/dist/esm/icons/book-open.mjs:
+lucide-preact/dist/esm/icons/check.mjs:
+lucide-preact/dist/esm/icons/chevrons-up-down.mjs:
 lucide-preact/dist/esm/icons/code-xml.mjs:
 lucide-preact/dist/esm/icons/coffee.mjs:
 lucide-preact/dist/esm/icons/container.mjs:
 lucide-preact/dist/esm/icons/cpu.mjs:
 lucide-preact/dist/esm/icons/database.mjs:
 lucide-preact/dist/esm/icons/file-code.mjs:
+lucide-preact/dist/esm/icons/file-text.mjs:
+lucide-preact/dist/esm/icons/folder.mjs:
 lucide-preact/dist/esm/icons/git-branch.mjs:
 lucide-preact/dist/esm/icons/globe.mjs:
+lucide-preact/dist/esm/icons/house.mjs:
 lucide-preact/dist/esm/icons/layers.mjs:
 lucide-preact/dist/esm/icons/network.mjs:
 lucide-preact/dist/esm/icons/shield.mjs:

@@ -8,6 +8,7 @@
 }
 
 .rip-root-content {
+  margin-top: 1.25rem;
   margin-bottom: 1.75rem;
 }
 
@@ -211,6 +212,8 @@
   }
 
   .rip-card-link {
+    position: relative;
+    isolation: isolate;
     display: flex;
     min-height: 10.5rem;
     height: 100%;
@@ -219,18 +222,61 @@
     padding: 1.05rem 1.1rem;
     border: 1px solid var(--lightgray);
     border-radius: 0.8rem;
+    overflow: hidden;
     color: var(--darkgray);
     background: transparent;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     text-decoration: none;
-    transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease,
-      transform 150ms ease;
+    transition: transform 150ms ease-out;
+
+    &::before,
+    &::after {
+      position: absolute;
+      z-index: 0;
+      opacity: 0;
+      content: "";
+      pointer-events: none;
+      transition: opacity 300ms ease;
+    }
+
+    &::before {
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(ellipse 120% 80% at 50% 0%, var(--highlight) 0%, transparent 70%);
+      background: radial-gradient(
+        ellipse 120% 80% at 50% 0%,
+        color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 8%, transparent) 0%,
+        transparent 70%
+      );
+    }
+
+    &::after {
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 50%, transparent),
+        transparent
+      );
+    }
+
+    > * {
+      position: relative;
+      z-index: 1;
+    }
 
     &:focus-visible {
       outline: 3px solid var(--secondary);
       outline-offset: 3px;
+
+      &::before,
+      &::after {
+        opacity: 1;
+      }
     }
   }
 
@@ -255,12 +301,11 @@
 
   @media (hover: hover) {
     .rip-card-link:hover {
-      border-color: var(--rip-panel-accent, var(--secondary));
-      box-shadow: 0 0.45rem 1.5rem rgba(0, 0, 0, 0.09);
       transform: translateY(-2px);
 
-      .rip-card-title {
-        color: var(--rip-panel-accent, var(--secondary));
+      &::before,
+      &::after {
+        opacity: 1;
       }
     }
   }
@@ -361,6 +406,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .rip .rip-card-link,
+  .rip .rip-card-link::before,
+  .rip .rip-card-link::after,
   .rip .rip-card-title,
   .rip .rip-list-link {
     transition: none;
@@ -395,5 +442,10 @@
 
   .rip .rip-list-link[data-rip-accent] {
     border-inline-start-color: LinkText;
+  }
+
+  .rip .rip-card-link::before,
+  .rip .rip-card-link::after {
+    display: none;
   }
 }

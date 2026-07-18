@@ -1,13 +1,18 @@
 import {
   BookOpen,
+  Check,
+  ChevronsUpDown,
   CodeXml,
   Coffee,
   Container,
   Cpu,
   Database,
   FileCode,
+  FileText,
+  Folder,
   GitBranch,
   Globe,
+  House,
   Layers,
   Network,
   Shield,
@@ -71,6 +76,15 @@ function adaptLucideIcon(icon: typeof BookOpen): PanelIconComponent {
       children,
     )
 }
+
+/** Decorative glyphs used by the plugin-owned sidebar chrome. */
+export const sidebarIcons = Object.freeze({
+  check: adaptLucideIcon(Check),
+  chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
+  file: adaptLucideIcon(FileText),
+  folder: adaptLucideIcon(Folder),
+  home: adaptLucideIcon(House),
+})
 
 const builtInIcons = {
   "book-open": adaptLucideIcon(BookOpen),

@@ -37,8 +37,9 @@ failure is not proof.
 
 ## Authored root and overview
 
-- [x] Authored transformed root content is visible exactly once in standard safe article/Markdown
-      wrappers and precedes overview/browse/panels.
+- [x] The overview/browse banner is the first direct child of the plugin Page Type body. Authored
+      transformed root content is visible exactly once after it in standard safe article/Markdown
+      wrappers and before the directory collection; host PageTitle/ContentMeta remain host-owned.
 - [x] Root TOC, reading time, text/Search, RSS, sitemap, and social behavior is no longer suppressed by
       this Page Type; shared file/tree objects are not mutated.
 - [x] Directory count, total notes, last-updated/no-date behavior, localized labels/date, semantic
@@ -48,13 +49,16 @@ failure is not proof.
 
 ## Navigation shell
 
-- [x] Home/root-note/tags/404/unrecognized contexts and eligible book/descendant contexts select the
-      exact frozen switcher/explorer view.
+- [x] Root/root-note/tags/404/unrecognized contexts and eligible book/descendant contexts select the
+      exact frozen selector/Explorer view; the root label comes from authored physical `index` title
+      data with a localized Home fallback.
 - [x] Root notes, selected-book descendants, unlisted/drafts, duplicates, folder destinations,
       current page/ancestors, sort, casing, long titles, spaces, Unicode, and malformed input all
       match Prompt 01.
-- [x] Switcher/folders use native disclosure/list/link semantics, core operation needs no JS, current
-      links have correct `aria-current`, and every URL uses public relative path resolution.
+- [x] Selector/folders use native disclosure/list/link semantics, core operation needs no JS,
+      selected context is independent from exact `aria-current`, each book begins with `Overview`,
+      first-level/deeper disclosure defaults are correct, and every URL uses public relative path
+      resolution.
 - [x] Desktop, tablet, and mobile behavior is usable with keyboard, pointer, touch, no-JS, SPA,
       200%/400% zoom, screen-reader names, forced colors, and reduced motion; no focus trap/hidden
       focusable content exists.
@@ -70,6 +74,12 @@ failure is not proof.
 - [x] CSS/script review finds exactly the three permitted host-selector kinds and no
       suppression/mutation of Search, PageTitle, toolbar components, right slot, Graph, TOC,
       Backlinks, Canvas/custom frames, or other unrelated plugins; Explorer is the only suppression.
+- [x] The absolute selector popup causes no Explorer layout shift, stays inside the viewport, and
+      disables the visually covered Explorer scope while open. Outside pointer and selected-link
+      activation close it; Escape closes and restores summary focus; SPA cleanup prevents duplicates.
+- [x] Cards use the frozen Make radial wash, accent-centered bottom hairline, `300ms` opacity,
+      focus-visible parity, and allowed two-pixel lift. The superseded accent border/title hover is
+      absent, with reduced-motion and forced-colors fallbacks retained.
 
 ## Right Graph and plugin interoperability
 
@@ -81,9 +91,9 @@ failure is not proof.
       Backlinks, Footer, FolderPage, TagPage, Canvas, Bases, encryption, aliases, RSS, sitemap, and
       social output have concrete passing fixture observations or an accurately scoped configured-off
       note.
-- [x] Live root → book → root SPA navigation and Back/Forward keep correct shell/current state with no
-      duplicate listeners/components or browser errors; component/integration route coverage proves
-      the nested-note and other-book states use the same model.
+- [x] Live root → book → root SPA navigation and Back/Forward keep correct selector/current state with
+      no duplicate listeners/components or browser errors; component/integration route coverage
+      proves the nested-note and other-book states use the same model.
 
 ## Durable content lab
 
@@ -117,13 +127,15 @@ failure is not proof.
 
 ## Commit, push, CI, and release boundary
 
-- [x] Nested status/diff contains the complete intentional change and no `.make`, cache, tarball,
+- [x] The prior navigation-shell implementation revision was pushed and remotely verified as
+      recorded in `IMPLEMENTATION-NOTES.md`; that evidence remains historical baseline context.
+- [ ] The 2026-07-18 design-alignment follow-up status/diff contains the complete intentional change
+      and no `.make`, cache, tarball,
       screenshot, secret, parent content, or unrelated user/agent edit.
-- [x] The implementation commit is pushed; its exact hash and green GitHub CI run are recorded. The
-      exact hash/CI for this later evidence-only containing revision is reported externally because
-      recording its own hash here would be self-referential.
-- [x] A clean stock-shaped host remotely adds/enables that exact pushed implementation revision and passes the
-      rendered body/sidebar/Graph/base-path checks; its lock records the same hash.
+- [ ] The follow-up implementation commit is pushed; its exact hash and green GitHub CI run are
+      recorded externally (the containing commit hash cannot be self-recorded).
+- [ ] A clean stock-shaped host remotely adds/enables that exact pushed follow-up revision and passes
+      the rendered body/sidebar/Graph/subdirectory-path checks; its lock records the same hash.
 - [x] Parent status is reported separately. No parent GitLab push occurred without authorization.
 - [x] No version-only bump, tag, release, npm publish, or marketplace side effect occurred.
 
@@ -142,7 +154,7 @@ failure is not proof.
 
 Lead with the achieved user-visible result and the exact pushed plugin revision. Then report:
 
-1. authored root/overview behavior;
+1. banner-first overview and authored-root behavior;
 2. sidebar/Explorer replacement and responsive/accessibility behavior;
 3. always-present right Graph and cross-plugin evidence;
 4. the three content books and observed counts/feature matrix;

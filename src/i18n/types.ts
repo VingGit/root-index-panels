@@ -5,6 +5,9 @@ export interface RootIndexPanelsTranslation {
   lastUpdatedLabel: string
   browseDirectories: string
   sidebarNavigation: string
+  switchManual: string
+  selectedManual: string
+  explorer: string
   home: string
   notes: string
   contents: string

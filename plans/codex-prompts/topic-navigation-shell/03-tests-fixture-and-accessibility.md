@@ -31,17 +31,21 @@ render-scoped collection rather than rescanning per book/node. Neither path may 
 
 Parameterize these against different `allFiles` orders and duplicates:
 
-- `index`, a listed root note, tags/404/unrecognized namespaces select Home context.
+- `index`, a listed root note, tags/404/unrecognized namespaces select root context.
 - An eligible book landing, descendant, nested descendant, Canvas/Bases route slug, dotted segment,
   space, and Unicode slug select the correct book context.
-- A first segment without an eligible/destination-backed book remains Home context.
-- Home shows only listed physical root notes and never root `index`, books, tags, virtual folders,
+- A first segment without an eligible/destination-backed book remains root context.
+- Root mode shows only listed physical root notes and never root `index`, books, tags, virtual folders,
   unlisted/drafts, or duplicate slugs.
 - Book mode shows only listed physical descendants of that book; it omits the book landing from the
   chapter list, root notes, sibling books, reserved tags, and unlisted data.
 - Explicit titles including unusual casing/Unicode remain exact. Missing titles use the documented
   fallback without leaking path markup into hooks.
-- Nested folder nodes are deterministic; current ancestors are open; generated folder destinations
+- The selector's root title comes from the first listed physical exact `index` record; absent,
+  accessor-backed, or malformed title data falls back to localized Home without invoking accessors.
+- Book mode exposes its landing once as the first localized `Overview` link, outside the descendant
+  tree. Nested folder nodes are deterministic; first-level folders start open, deeper current
+  ancestors start open, and unrelated deeper folders start closed. Generated folder destinations
   can add a valid link but not a note/count; missing folder destinations remain disclosures only.
 - A Canvas/Bases virtual record colliding at `<book>/index` cannot prove a landing destination even
   when the same first-level directory has a physical Markdown descendant.
@@ -56,8 +60,9 @@ Parameterize these against different `allFiles` orders and duplicates:
 
 ### Root body
 
-- A non-empty transformed tree appears exactly once inside the standard article/Markdown wrappers,
-  before overview and `#rip-directories`.
+- The overview/browse banner is the first direct child of the plugin root body. A non-empty
+  transformed tree appears exactly once inside the standard article/Markdown wrappers after that
+  banner and before `#rip-directories`.
 - Headings, links, callouts, tables, code, transclusion output, inline style/script nodes supported by
   the public JSX helper, and frontmatter `cssclasses` render safely; malformed classes do not inject.
 - An empty tree omits only the article while overview/panels still render.
@@ -73,12 +78,13 @@ Parameterize these against different `allFiles` orders and duplicates:
 ### Sidebar
 
 - Manifest-loaded constructor server-renders one labelled navigation region.
-- Switcher uses native disclosure/list/link markup; selected Home/book text and menu contents are
+- Selector uses native disclosure/list/link markup; authored-root/book labels and menu contents are
   correct. It does not use listbox/tree/application roles or custom tabindex.
 - Root, root-note, book landing, nested book note, tags, Canvas/Bases, and 404 examples produce the
   correct context/tree.
-- Exact current links have `aria-current="page"`; descendants do not falsely mark the book landing;
-  current ancestor disclosures start open.
+- Exactly one root/book entry exposes selected context/check/status independently of
+  `aria-current`. Exact current links have `aria-current="page"`; descendants do not falsely mark
+  the book landing; the first-level-open/deeper-current disclosure defaults are exact.
 - Icons are decorative/non-focusable, accent hooks are validated, and links retain readable names.
 - Root, book, folder, dotted, spaced, Unicode, and deep links use public relative resolution and
   preserve encoded/output-safe destinations.
@@ -111,9 +117,15 @@ Parameterize these against different `allFiles` orders and duplicates:
 - Verify desktop/tablet/mobile display rules, long-label overflow, native details open/closed display,
   a mobile-close then tablet/desktop resize, print, forced colors, and reduced motion from compiled
   CSS. The wide state must expose content even if the narrow shell's `open` attribute stays absent.
-- If sidebar script exists, test initial render, SPA `nav`/re-entry, repeated events, cleanup, multiple
-  sidebars, no matching sidebar, focus behavior, disclosure closing, and no queries/mutations of
-  Explorer or right components. Also prove the same links/disclosures work with the script absent.
+- Test the sidebar script's initial render, SPA `nav`/re-entry, repeated events, cleanup, multiple
+  sidebars, no matching sidebar, outside-pointer close, selected-link close, Escape close with
+  summary-focus restoration, one-open-selector behavior, and no queries/mutations of Explorer or
+  right components. Also prove the same links/disclosures work with the script absent.
+- Assert the popup is absolute/opaque, has bounded scrolling/z-index, causes no Explorer layout
+  shift, and disables the covered Explorer scope while open. Closing must restore the scope.
+- Assert the compiled panel CSS contains the exact frozen Make radial gradient and bottom hairline,
+  `300ms` opacity, focus parity, and allowed two-pixel lift; reject the superseded accent
+  border/title-color hover. Test reduced-motion and forced-colors fallbacks.
 - Retain all existing panel keyboard/SPA lifecycle tests.
 
 ## Manifest, API, and package tests
@@ -148,7 +160,7 @@ The checklist must map each configured Quartz feature to a concrete page and obs
 | Page Types          | ordinary content, FolderPage, TagPage, Canvas, Bases                                                |
 | Assets              | local image/SVG with alt text; no required remote resource                                          |
 | Host UI             | Search token, TOC, Graph, Backlinks, Breadcrumbs, PageTitle, modes, Footer                          |
-| Navigation          | Home/root-note mode, each book mode, nested current state, switcher, mobile disclosure              |
+| Navigation          | Authored-root/root-note mode, each book mode, Overview, scoped tree, selector, mobile disclosure    |
 | Accessibility       | landmark/headings, keyboard order, focus, contrast/forced colors, reduced motion, zoom              |
 
 - Each book index uses its distinct safe icon/accent and links to its specimens.
@@ -179,11 +191,12 @@ rewrite parent upstream files for a test. Exercise at least:
 
 Inspect generated HTML and resources, not only exit codes:
 
-- root contains the authored sentinel once, one overview, one browse target, and one `.rip` panels
-  body;
+- root contains one overview/browse banner as the first direct plugin-body child, the authored
+  sentinel once after it, one directory target, and one `.rip` panels body;
 - root TOC/reading-time/Search/RSS/sitemap/social evidence reflects authored root content where the
   host normally exposes it;
-- sidebar context, current state, links, safe hooks, and expected books/notes are exact;
+- sidebar authored-root label, selected-versus-current context, `Overview`, disclosure defaults,
+  scoped links, safe hooks, and expected books/notes are exact;
 - all expected destinations exist and resources/links retain the hosting subdirectory;
 - the right sidebar contains the current Graph component marker on root and representative book
   notes; plugin CSS does not hide it at any tested width;
@@ -219,11 +232,18 @@ Do not junction over a locked cache or infer remote usability from a local workt
   bounds. Require no plugin-induced horizontal overflow, a shrinkable center/right responsive flow,
   and no containment-rule match on Canvas/custom frames.
 - Compare functional hierarchy to the Make source and inspect the right Graph at every width.
-- Keyboard-test switcher, folder disclosures, all links, browse anchor, cards/list, Search, modes,
+- Measure the selector closed/open Explorer position and require zero layout shift. Verify the popup
+  stays within the viewport, covered Explorer content is non-interactive while open, outside pointer
+  closes it, and Escape closes it and restores summary focus.
+- Keyboard-test selector, folder disclosures, all links, browse anchor, cards/list, Search, modes,
   TOC, and Backlinks through SPA navigation.
+- Inspect card hover/focus computed styles for the frozen radial wash, bottom line, alpha,
+  `translateY(-2px)`, and absence of the old border/title highlight.
 - Inspect accessibility tree/names where available; test forced colors/high contrast, reduced motion,
   touch/coarse pointer, 200% and 400% zoom/reflow, long labels, and Unicode.
 - Check browser console and network requests after root → book → nested note → other book → root.
+- Include a subdirectory-hosted SPA build such as `/group/project/`; verify root and deep selector,
+  Overview, Explorer, and resource links without describing this as GitLab-specific routing.
 
 ## Command gate
 

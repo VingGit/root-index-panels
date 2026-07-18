@@ -84,6 +84,37 @@ describe("appearance style contract", () => {
       /forced-colors:\s*active[\s\S]*?\.rip \.rip-list-link\[data-rip-accent\][\s\S]*?border-inline-start-color:\s*LinkText/,
     )
   })
+
+  it("uses the Make radial and bottom-line glow instead of an accent border hover", () => {
+    expect(styleSource).toContain("ellipse 120% 80% at 50% 0%")
+    expect(styleSource).toMatch(
+      /color-mix\(in srgb, var\(--rip-panel-accent, var\(--secondary\)\) 8%, transparent\)/,
+    )
+    expect(styleSource).toMatch(
+      /linear-gradient\([\s\S]*?color-mix\(in srgb, var\(--rip-panel-accent, var\(--secondary\)\) 50%, transparent\)[\s\S]*?transparent/,
+    )
+    expect(styleSource).toMatch(
+      /&::before,[\s\S]*?&::after[\s\S]*?opacity:\s*0;[\s\S]*?pointer-events:\s*none;[\s\S]*?transition:\s*opacity 300ms ease/,
+    )
+    expect(styleSource).toMatch(
+      /&:focus-visible[\s\S]*?&::before,[\s\S]*?&::after[\s\S]*?opacity:\s*1/,
+    )
+    expect(styleSource).toMatch(
+      /@media \(hover: hover\)[\s\S]*?\.rip-card-link:hover[\s\S]*?transform:\s*translateY\(-2px\);[\s\S]*?opacity:\s*1/,
+    )
+
+    const hoverStart = styleSource.indexOf(".rip-card-link:hover")
+    const hoverEnd = styleSource.indexOf("\n    }", hoverStart)
+    const hoverBlock = styleSource.slice(hoverStart, hoverEnd)
+    expect(hoverBlock).not.toContain("border-color")
+    expect(hoverBlock).not.toContain(".rip-card-title")
+    expect(styleSource).toMatch(
+      /prefers-reduced-motion:\s*reduce[\s\S]*?\.rip \.rip-card-link::before,[\s\S]*?\.rip \.rip-card-link::after/,
+    )
+    expect(styleSource).toMatch(
+      /forced-colors:\s*active[\s\S]*?\.rip \.rip-card-link::before,[\s\S]*?\.rip \.rip-card-link::after[\s\S]*?display:\s*none/,
+    )
+  })
 })
 
 describe("icon resolution", () => {

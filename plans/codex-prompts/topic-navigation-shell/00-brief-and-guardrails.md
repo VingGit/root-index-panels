@@ -4,18 +4,20 @@
 
 Turn the existing multi-book root Page Type into a coherent Quartz-native knowledge-base shell:
 
-1. The root landing page shows authored Markdown, useful aggregate context, and the established
-   first-level-book panels.
-2. A left navigation component lets readers switch between Home and books, then browse only the
-   root-note or current-book hierarchy.
+1. The root landing page shows aggregate/browse context first, then authored Markdown and the
+   established first-level-book panels.
+2. A left navigation component lets readers switch between the authored root manual and books,
+   then browse only the root-note or current-book hierarchy.
 3. The rest of Quartz continues to behave normally, especially Search and the always-present right
    Graph slot.
 4. Three small technical books remain in `content/` as an observable compatibility laboratory.
 
-Functional fidelity to the local Figma Make source matters more than exact pixel measurements. Keep
-the icon tiles, restrained accents, compact hierarchy, switcher, explorer label, useful landing-page
-context, and responsive behavior. Spacing, card column counts, and glow radius may follow Quartz
-tokens and robust CSS rather than literal prototype values.
+Functional fidelity to the local Figma Make source matters. Keep the icon tiles, restrained accents,
+compact hierarchy, popup selector, Explorer label, useful landing-page context, and responsive
+behavior. Spacing and card column counts may follow Quartz tokens and robust CSS, but the card hover
+effect is frozen to the Make evidence: a `120% 80%` radial ellipse at `50% 0%`, the validated accent
+at 8% fading to transparent at 70%, a one-pixel transparent/accent/transparent bottom hairline,
+`300ms` opacity, and `translateY(-2px)`. Do not restore the old accent border or title-color hover.
 
 ## Ownership boundary
 
@@ -68,14 +70,17 @@ manual Page Type body layout registration.
 
 ## Authored root and overview
 
-The root body renders in this order:
+The plugin-owned root body renders in this order:
 
-1. the transformed authored `content/index.md` HAST using Quartz's public HAST-to-JSX utility and
+1. an overview banner with calculated book count, total note count, last-updated value when one
+   exists, and an accessible local "Browse directories" link targeting the directory-section
+   heading;
+2. the transformed authored `content/index.md` HAST using Quartz's public HAST-to-JSX utility and
    standard `article.popover-hint > .markdown-preview-view.markdown-rendered` structure;
-2. an overview region with calculated book count, total note count, and last-updated value when one
-   exists;
-3. an accessible local "Browse directories" link targeting the directory-section heading;
-4. the existing cards/list book collection.
+3. the existing cards/list book collection.
+
+The banner is the first direct child of the Page Type body. Quartz-owned PageTitle and ContentMeta
+remain in their normal host positions before that body; this contract does not move host chrome.
 
 Preserve root `toc`, `readingTime`, and `text`; remove the appearance increment's root-only deletion
 transform. Host TOC, ContentMeta, Search, RSS, sitemap, and social metadata may consume the authored
@@ -96,25 +101,34 @@ Overview semantics:
 
 ## Navigation model
 
-- The switcher is semantic native HTML, progressively enhanced at most. Home and every eligible
-  book are ordinary links; core navigation works with JavaScript disabled and Quartz SPA enabled.
-- Home/root context applies to `index`, listed root notes, tags, 404, and paths whose first segment is
-  not an eligible book. Its explorer lists only listed physical root notes, excluding `index`.
+- The selector is semantic native `<details>/<summary>` HTML with an absolutely positioned popup.
+  The root and every eligible book are ordinary links; core navigation works with JavaScript
+  disabled and Quartz SPA enabled.
+- Root context applies to `index`, listed root notes, tags, 404, and paths whose first segment is not
+  an eligible book. Its Explorer lists only listed physical root notes, excluding `index`.
+- The root selector/menu label comes from the authored title of the first listed physical exact
+  `index` record. Accessors are ignored and a localized Home label is the safe fallback; do not
+  hard-code a site name such as `Knowledge Base`.
 - Book context applies when the current slug begins with an eligible first segment. The selected
-  switcher label uses that book's resolved title/accent/icon; the explorer lists only that book's
+  selector label uses that book's resolved title/accent/icon; the Explorer lists only that book's
   navigable descendants and does not repeat other books.
 - Build sidebar books through the same collector and the same normalized `excludeDirs`,
   `descriptionFallback`, `sort`, and `tagCount` inventory options as the panels. The two independently
   rendered components need equivalent results and ordering, not shared array identity.
 - Deduplicate by canonical slug. Exclude unlisted content and the reserved `tags` namespace. Preserve
   authored titles; use the established fallback only when a title is absent.
-- Build nested semantic lists from path segments. Use native disclosure for nested directories,
-  open the current ancestry on initial render, and mark only the current page link with
-  `aria-current="page"`.
-- Resolve every Home, book, note, and folder destination with public Quartz path helpers relative to
+- In book context, render the book landing first as `Overview`, then the scoped descendant tree. Use
+  native disclosure for directories: first-level folders start open; deeper folders start open only
+  when they contain the current route, while readers may change either state.
+- Mark the selected root/book context independently from exact-page state. The popup shows exactly
+  one selected check/status, while only the exact current destination receives
+  `aria-current="page"`; a descendant route must not falsely mark the book landing current.
+- Resolve every root, book, note, and folder destination with public Quartz path helpers relative to
   the current slug. Never concatenate origin-relative `/book/...` URLs.
-- Server-render useful navigation. Client code may close disclosures or restore focus during SPA
-  navigation, but must not fetch/reconstruct the content index or become necessary for links.
+- Server-render useful navigation. A small lifecycle-safe enhancement may close the selector on an
+  outside pointer action, selected-link activation, or Escape; Escape restores focus to the summary,
+  only one selector stays open, and Quartz SPA cleanup removes listeners. It must not fetch or
+  reconstruct the content index or become necessary for links.
 
 ## Responsive and inclusive interaction
 
@@ -122,6 +136,8 @@ Overview semantics:
   the Make prototype's fixed-width overflow.
 - At narrow widths, expose the navigation through a native disclosure/toggle with a clear accessible
   name and a usable touch target. Hidden content must leave neither focusable nor audible remnants.
+- Opening the absolutely positioned selector popup must not move the Explorer tree. Any visually
+  covered Explorer underlay must also become non-interactive/non-focusable until the popup closes.
 - Keep DOM order, focus order, and visual order aligned. Do not add keyboard traps or application
   arrow-key semantics to native links/disclosures.
 - Support long titles, long descriptions, Unicode paths, zoom/reflow, forced colors, light/dark

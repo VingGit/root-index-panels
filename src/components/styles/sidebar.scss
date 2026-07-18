@@ -45,12 +45,16 @@
   min-width: 0;
 }
 
+.rip-sidebar-content {
+  position: relative;
+}
+
 .rip-sidebar-toggle {
   display: none;
 }
 
 .rip-sidebar-home {
-  padding: 0.5rem 0.6rem;
+  padding: 0.45rem 0.55rem;
   color: var(--dark);
   font-family: var(--headerFont);
   font-weight: 650;
@@ -59,6 +63,7 @@
 .rip-sidebar [data-rip-state="current"] {
   color: var(--rip-sidebar-accent, var(--secondary));
   background: var(--highlight);
+  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);
   font-weight: 650;
 }
 
@@ -68,8 +73,13 @@
 }
 
 .rip-sidebar-switcher {
+  position: relative;
+  z-index: 5;
   margin-top: 0.35rem;
-  border-block: 1px solid var(--lightgray);
+}
+
+.rip-sidebar-switcher[open] {
+  z-index: 30;
 }
 
 .rip-sidebar-switcher > summary,
@@ -79,36 +89,33 @@
   min-width: 0;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.6rem;
   color: var(--dark);
   cursor: pointer;
-  font-family: var(--headerFont);
-  font-weight: 650;
   list-style: none;
   user-select: none;
 }
 
+.rip-sidebar-switcher > summary {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 0.5rem;
+  background: var(--highlight);
+  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);
+  font-family: var(--headerFont);
+  font-weight: 600;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.rip-sidebar-switcher > summary:hover {
+  border-color: var(--rip-sidebar-accent, var(--secondary));
+}
+
 .rip-sidebar-switcher > summary::-webkit-details-marker,
-.rip-sidebar-folder > details > summary::-webkit-details-marker {
+.rip-sidebar-folder > details > summary::-webkit-details-marker,
+.rip-sidebar-toggle::-webkit-details-marker {
   display: none;
-}
-
-.rip-sidebar-switcher > summary::after,
-.rip-sidebar-folder > details > summary::after {
-  width: 0.5rem;
-  height: 0.5rem;
-  flex: 0 0 0.5rem;
-  margin-inline-start: auto;
-  border-inline-end: 1.5px solid currentColor;
-  border-block-end: 1.5px solid currentColor;
-  content: "";
-  transform: rotate(45deg) translate(-0.1rem, -0.1rem);
-  transition: transform 120ms ease;
-}
-
-.rip-sidebar-switcher[open] > summary::after,
-.rip-sidebar-folder > details[open] > summary::after {
-  transform: rotate(225deg) translate(-0.05rem, -0.05rem);
 }
 
 .rip-sidebar-switcher-label,
@@ -118,24 +125,72 @@
   overflow-wrap: anywhere;
 }
 
-.rip-sidebar-book-icon {
+.rip-sidebar-switcher-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rip-sidebar-switcher-chevron {
   display: inline-grid;
-  width: 1.75rem;
-  height: 1.75rem;
-  flex: 0 0 1.75rem;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
   place-items: center;
-  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));
-  border-radius: 0.45rem;
-  color: var(--rip-sidebar-accent, var(--secondary));
-  background: var(--highlight);
+  color: var(--gray);
   pointer-events: none;
 }
 
-.rip-sidebar-book-icon svg {
+.rip-sidebar-root-icon,
+.rip-sidebar-book-icon {
+  display: inline-grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: 0 0 1.4rem;
+  place-items: center;
+  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));
+  border-radius: 0.38rem;
+  color: var(--rip-sidebar-accent, var(--secondary));
+  background: var(--highlight);
+  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 15%, transparent);
+  pointer-events: none;
+}
+
+.rip-sidebar-root-icon svg,
+.rip-sidebar-book-icon svg,
+.rip-sidebar-node-icon svg,
+.rip-sidebar-selected-check svg,
+.rip-sidebar-switcher-chevron svg {
   display: block;
   pointer-events: none;
 }
 
+.rip-sidebar-switcher-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  inset-inline: 0;
+  overflow: hidden;
+  border: 1px solid var(--lightgray);
+  border-radius: 0.55rem;
+  color: var(--darkgray);
+  background: var(--light);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);
+}
+
+.rip-sidebar-switcher-heading {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--lightgray);
+  color: var(--gray);
+  font-family: var(--codeFont);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.rip-sidebar-home-list,
 .rip-sidebar-books,
 .rip-sidebar-tree,
 .rip-sidebar-children {
@@ -144,8 +199,50 @@
   list-style: none;
 }
 
+.rip-sidebar-home-list {
+  padding: 0.3rem 0.35rem;
+}
+
+.rip-sidebar-switcher-divider {
+  height: 1px;
+  margin-inline: 0.7rem;
+  background: var(--lightgray);
+}
+
 .rip-sidebar-books {
-  padding: 0.25rem 0 0.45rem;
+  max-height: min(14rem, calc(100dvh - 12rem));
+  padding: 0.3rem 0.35rem 0.4rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.rip-sidebar-switcher-menu [data-rip-selected="true"] {
+  color: var(--rip-sidebar-accent, var(--dark));
+  background: var(--highlight);
+  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 10%, transparent);
+  font-weight: 650;
+}
+
+.rip-sidebar-selected-check {
+  display: inline-grid;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  place-items: center;
+  color: var(--rip-sidebar-accent, var(--secondary));
+  pointer-events: none;
+}
+
+.rip-sidebar-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .rip-sidebar-book-link,
@@ -154,19 +251,24 @@
   padding: 0.42rem 0.6rem;
 }
 
+.rip-sidebar-switcher[open] + .rip-sidebar-scope {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .rip-sidebar-scope {
   min-height: 0;
-  margin-top: 0.8rem;
+  margin-top: 0.95rem;
 }
 
 .rip-sidebar-scope-title {
   margin: 0 0 0.35rem;
   padding-inline: 0.6rem;
   color: var(--gray);
-  font-family: var(--headerFont);
+  font-family: var(--codeFont);
   font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -177,22 +279,51 @@
   scrollbar-width: thin;
 }
 
+.rip-sidebar-node-icon {
+  display: inline-grid;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+  place-items: center;
+  color: inherit;
+  pointer-events: none;
+}
+
 .rip-sidebar-folder > details > summary {
-  padding-block: 0.42rem;
+  padding: 0.42rem 0.6rem;
   font-family: var(--bodyFont);
   font-weight: 550;
 }
 
+.rip-sidebar-folder > details > summary::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 0.42rem;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  content: "";
+  transform: rotate(-45deg);
+  transition: transform 120ms ease;
+}
+
+.rip-sidebar-folder > details[open] > summary::before {
+  transform: rotate(45deg);
+}
+
 .rip-sidebar-children {
-  margin-inline-start: 0.72rem;
+  margin-inline-start: 1rem;
   padding-inline-start: 0.55rem;
   border-inline-start: 1px solid var(--lightgray);
 }
 
 .rip-sidebar-overview-link {
-  margin-inline-start: 0.72rem;
+  margin-inline-start: 1rem;
   color: var(--gray);
   font-size: 0.82rem;
+}
+
+.rip-sidebar-book-overview-link {
+  margin: 0 0 0.15rem;
 }
 
 .left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer {
@@ -242,6 +373,7 @@
     cursor: pointer;
     font-family: var(--headerFont);
     font-weight: 650;
+    list-style: none;
   }
 
   .rip-sidebar-shell:not([open]) > .rip-sidebar-content {
@@ -255,20 +387,43 @@
   .rip-sidebar-tree {
     max-height: min(45dvh, 24rem);
   }
+
+  .rip-sidebar-books {
+    max-height: min(14rem, 45dvh);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rip-sidebar-switcher > summary::after,
-  .rip-sidebar-folder > details > summary::after {
+  .rip-sidebar-switcher > summary,
+  .rip-sidebar-folder > details > summary::before {
     transition: none;
   }
 }
 
 @media (forced-colors: active) {
-  .rip-sidebar-switcher,
+  .rip-sidebar-switcher > summary,
+  .rip-sidebar-switcher-menu,
+  .rip-sidebar-switcher-heading,
+  .rip-sidebar-switcher-divider,
   .rip-sidebar-children,
+  .rip-sidebar-root-icon,
   .rip-sidebar-book-icon {
     border-color: CanvasText;
+  }
+
+  .rip-sidebar-switcher-menu {
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .rip-sidebar-switcher-divider {
+    background: CanvasText;
+  }
+
+  .rip-sidebar [data-rip-state="current"],
+  .rip-sidebar-switcher-menu [data-rip-selected="true"] {
+    color: LinkText;
+    background: Canvas;
   }
 
   .rip-sidebar a:focus-visible,

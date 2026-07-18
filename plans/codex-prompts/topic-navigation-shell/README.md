@@ -1,10 +1,11 @@
 # Codex prompt set — navigation shell, authored root, and compatibility books
 
-This is the active implementation contract for the next
-`@quartz-community/root-index-panels` increment. It extends the completed
+This is the active implementation contract for
+`@quartz-community/root-index-panels`. It extends the completed
 [`topic-appearance`](../topic-appearance/README.md) work with a route-aware book navigation
 component, visible authored root content, landing-page overview controls, and a durable parent
-Quartz compatibility fixture.
+Quartz compatibility fixture. The 2026-07-18 design-alignment follow-up in this set supersedes the
+original root-order, selector-label, book-overview, disclosure-default, and card-hover details.
 
 Prompt 01 is the authoritative technical contract for this increment. The appearance prompt set
 remains authoritative for book discovery/counting, destinations, panel icons/accents, option
@@ -43,10 +44,11 @@ contract item.
 ## Scope summary
 
 - Keep `RootIndexPanelsPage` as the root Page Type and `RootIndexPanels` as its body.
-- Render authored root Markdown, then calculated overview statistics and a browse affordance, then
-  the existing cards/list directory panels.
-- Add one plugin-owned left layout component, `RootIndexSidebar`, containing a native book switcher
-  and route-aware root/book navigation.
+- Render the calculated overview/browse banner as the first direct child of the plugin root body,
+  then authored root Markdown, then the existing cards/list directory panels. Host PageTitle and
+  ContentMeta remain outside and before the plugin body in Quartz's default frame.
+- Add one plugin-owned left layout component, `RootIndexSidebar`, containing an authored-root/book
+  popup selector and a route-scoped Explorer tree.
 - Derive sidebar books through the same normalized `excludeDirs`, `descriptionFallback`, `sort`, and
   `tagCount` inventory inputs as panels; isolate cached variants by those values and `allFiles`
   identity.
@@ -69,13 +71,15 @@ contract item.
   under `content/` and its owning DOX documentation.
 - Keep three observable fixture books—JavaScript Basics, Git Practice, and SQL Pocketbook—with
   distinct safe icon/accent frontmatter and a systematic cross-plugin test matrix.
+- Match the Make card interaction exactly: a subtle accent radial glow, an accent-centered bottom
+  hairline, focus-visible parity, and a two-pixel lift—without the old accent border/title hover.
 
 ## Definition of done
 
 - Every frozen behavior in Prompt 01 is implemented and evidenced, not inferred.
-- Desktop, tablet, and mobile navigation work with keyboard, pointer, touch, SPA navigation,
-  reduced motion, forced colors, long labels, Unicode, narrow-closed-to-wide resizing, and
-  base-path/subdirectory hosting.
+- Desktop, tablet, and mobile navigation work with keyboard, pointer, touch, no-JS links, SPA
+  navigation, reduced motion, forced colors, long labels, Unicode, popup light-dismiss/focus
+  restoration, narrow-closed-to-wide resizing, and base-path/subdirectory hosting.
 - Root Markdown remains visible and drives normal Quartz TOC, reading-time, Search, RSS, sitemap,
   and social metadata behavior; statistics and browse UI are accurate and accessible.
 - The right Graph component remains present on root and book notes and can show cross-book edges.

@@ -311,10 +311,10 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
 
     return (
       <article class={rootArticleClass(fileData, options.layout)}>
+        <RootOverview entries={entries} locale={cfg.locale} translation={translation} />
         {showRootContent && (
           <div class="rip-root-content markdown-preview-view markdown-rendered">{rootContent}</div>
         )}
-        <RootOverview entries={entries} locale={cfg.locale} translation={translation} />
         <section
           id="rip-directories"
           class="rip-directories"

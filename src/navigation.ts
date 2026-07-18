@@ -42,6 +42,7 @@ export interface SidebarBook {
 
 export interface SidebarNavigationModel {
   books: readonly SidebarBook[]
+  rootTitle?: string
   rootNotes: readonly SidebarNoteNode[]
 }
 
@@ -179,9 +180,18 @@ function parseSlug(file: PluginFile): { slug: FullSlug; parts: string[] } | unde
 }
 
 function isListedPhysical(file: PluginFile): boolean {
+  return isPhysical(file) && ownDataValue(file, "unlisted") !== true
+}
+
+function isPhysical(file: PluginFile): boolean {
   const filePath = ownDataValue(file, "filePath")
+  return typeof filePath === "string" && filePath.length > 0
+}
+
+function isSyntheticVirtualIndex(file: PluginFile): boolean {
   return (
-    typeof filePath === "string" && filePath.length > 0 && ownDataValue(file, "unlisted") !== true
+    !isPhysical(file) &&
+    (hasOwnDataProperty(file, "canvasData") || hasOwnDataProperty(file, "basesData"))
   )
 }
 
@@ -194,6 +204,12 @@ function fileTitle(file: PluginFile, fallbackSegment: string): string {
   const frontmatter = ownDataValue(file, "frontmatter")
   const title = ownDataValue(frontmatter, "title")
   return typeof title === "string" ? title : humanizeSegment(fallbackSegment)
+}
+
+function authoredTitle(file: PluginFile): string | undefined {
+  const frontmatter = ownDataValue(file, "frontmatter")
+  const title = ownDataValue(frontmatter, "title")
+  return typeof title === "string" && title.trim().length > 0 ? title : undefined
 }
 
 function compareNodes(a: SidebarNavigationNode, b: SidebarNavigationNode): number {
@@ -338,6 +354,7 @@ export function buildSidebarNavigationModel(
     books.map((book) => [book.segment, new Map<string, MutableNavigationNode>()]),
   )
   const rootNotes: SidebarNoteNode[] = []
+  let rootTitle: string | undefined
   const seenSlugs = new Set<string>()
   const folderDestinations = new Map<FullSlug, PluginFile>()
 
@@ -348,6 +365,7 @@ export function buildSidebarNavigationModel(
       parsed.parts.length < 3 ||
       parsed.parts.at(-1) !== "index" ||
       ownDataValue(file, "unlisted") === true ||
+      isSyntheticVirtualIndex(file) ||
       !bookTrees.has(parsed.parts[0]!) ||
       folderDestinations.has(parsed.slug)
     ) {
@@ -363,7 +381,10 @@ export function buildSidebarNavigationModel(
     seenSlugs.add(parsed.slug)
 
     if (parsed.parts.length === 1) {
-      if (parsed.slug === "index") continue
+      if (parsed.slug === "index") {
+        rootTitle ??= authoredTitle(file)
+        continue
+      }
       rootNotes.push(
         Object.freeze({
           kind: "note",
@@ -399,6 +420,7 @@ export function buildSidebarNavigationModel(
 
   return Object.freeze({
     books: Object.freeze(frozenBooks),
+    ...(rootTitle ? { rootTitle } : {}),
     rootNotes: Object.freeze(rootNotes),
   })
 }

@@ -203,6 +203,13 @@ describe("RootIndexPanelsPage", () => {
     expect(pageType.match({ slug: fullSlug("index"), fileData: sharedFile, cfg: {} })).toBe(true)
 
     const html = render(pageType.body()(props) as Parameters<typeof render>[0])
+    const overviewIndex = html.indexOf('class="rip-overview"')
+    const authoredIndex = html.indexOf('class="rip-root-content')
+    const directoriesIndex = html.indexOf('id="rip-directories"')
+    expect(html).toMatch(/<article class="[^"]*\brip\b[^"]*"><div class="rip-overview">/)
+    expect(overviewIndex).toBeGreaterThan(-1)
+    expect(overviewIndex).toBeLessThan(authoredIndex)
+    expect(authoredIndex).toBeLessThan(directoriesIndex)
     expect(html).toContain('id="root-heading"')
     expect(html).toContain("Authored root prose sentinel.")
     expect(html).toContain('id="rip-directories"')

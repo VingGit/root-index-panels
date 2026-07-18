@@ -1,9 +1,9 @@
 # root-index-panels
 
 A Quartz 5 Page Type and layout-component plugin for a multi-book knowledge base. Every eligible
-first-level content directory becomes a book. The physical root page renders its authored Markdown,
-an aggregate overview, and book cards or a list; a route-aware left sidebar switches between Home
-and the books without taking ownership of Quartz's right layout slot.
+first-level content directory becomes a book. The physical root page renders an aggregate overview,
+its authored Markdown, and book cards or a list; a route-aware left sidebar switches between the
+authored root manual and the books without taking ownership of Quartz's right layout slot.
 
 The package has two deliberately separate rendering roles:
 
@@ -212,9 +212,9 @@ CLI-created layout should remain the integration path.
 utility. It does not render raw Markdown, use a raw HTML-string injection path, or duplicate the
 article. A genuinely empty tree simply omits the Markdown wrapper. The visible body order is:
 
-1. authored root content inside the normal popover/Markdown classes;
-2. a semantic overview with directory count, total listed-note count, the newest valid book date when
-   one exists, and—when at least one book exists—a no-JavaScript `Browse directories` anchor; and
+1. a semantic overview with directory count, total listed-note count, the newest valid book date when
+   one exists, and—when at least one book exists—a no-JavaScript `Browse directories` anchor;
+2. authored root content inside the normal popover/Markdown classes; and
 3. the `#rip-directories` heading followed by cards, a list, or the localized empty state.
 
 Directory count is the number of rendered eligible books. Total notes is the safe sum of their
@@ -228,18 +228,35 @@ on an ordinary content page.
 ## Left navigation and host composition
 
 `RootIndexSidebar` server-renders a labelled `<nav>` made from native `<details>`, `<summary>`,
-lists, and ordinary links. It works without JavaScript and remains compatible with Quartz SPA
-navigation:
+lists, and ordinary links. Its selector is a boxed native disclosure: the visible label is the
+current book title or the physical root index's authored title, with the localized Home label used
+only when that title is unavailable. The absolute popup identifies itself as the manual switcher and
+offers the root manual plus every eligible book without shifting the Explorer tree below it.
 
-- Home context covers the root, root notes, tags, 404, and routes whose first segment is not an
+The complete selector, tree, and links work without JavaScript. A small enhancement closes the
+popup after a selected link, an outside pointer press, or Escape; Escape restores focus to the
+summary, only one plugin switcher remains open, and Quartz SPA cleanup removes every listener before
+re-entry.
+
+The selected manual and exact current page are intentionally different states:
+
+- `data-rip-selected="true"` and a visible check identify the root manual or book whose tree is being
+  browsed. Every route inside a book keeps that book selected.
+- `aria-current="page"` appears only on the link whose destination is the exact current route. A
+  selected book link is therefore not current while reading one of its descendants.
+
+The Explorer scope follows the selected route:
+
+- Root context covers the root, root notes, tags, 404, and routes whose first segment is not an
   eligible book. Its note tree contains only listed physical root notes and excludes `index`.
 - Book context selects the matching book and shows only that book's listed physical descendants.
-  The book's own index is the overview destination rather than a repeated chapter.
+  The book's own index appears once as the first `Overview` link.
 - Nested directories use native disclosure. A listed physical or FolderPage-generated index may
   supply a folder overview link, while virtual-only Canvas/Bases records do not become navigation
   notes.
-- The exact current link receives `aria-current="page"`; current ancestry is opened in server output.
-  Authored titles, long paths, spaces, and Unicode remain text rather than selector data.
+- Top-level folders are open in server output so a book starts as a useful table of contents. Deeper
+  folders open only when they are the current destination or contain it. Authored titles, long paths,
+  spaces, and Unicode remain text rather than selector data.
 
 The sidebar inventory receives the same normalized `excludeDirs`, `descriptionFallback`, `sort`, and
 `tagCount` inputs as the panel collector. In particular, configured alphabetical/count/date ordering
@@ -247,11 +264,11 @@ is shared; cache variants include all four values so distinct configurations can
 model.
 
 At Quartz's narrow layout, the entire sidebar becomes a native disclosure; its summary and the
-sidebar's links/disclosures keep a 2.75rem minimum target. No client script, custom tree keyboard
-model, or focus trap is required. Reduced-motion and forced-color modes retain usable state and
-focus cues, and accent color is never the sole indicator. If a reader closes the shell on mobile and
-then widens the viewport, plugin-local CSS exposes the content again above the mobile breakpoint;
-the now-hidden summary can never strand desktop navigation in a closed native-details state.
+sidebar's links/disclosures keep a 2.75rem minimum target. No custom tree keyboard model or focus
+trap is required. Reduced-motion and forced-color modes retain usable state and focus cues, and
+accent color is never the sole indicator. If a reader closes the shell on mobile and then widens the
+viewport, plugin-local CSS exposes the content again above the mobile breakpoint; the now-hidden
+summary can never strand desktop navigation in a closed native-details state.
 
 Real-browser testing found that Quartz's intrinsic `auto` grid tracks can retain a wider
 left/center/right minimum after this component is inserted. The plugin therefore uses two
@@ -309,16 +326,30 @@ left positions; `RootIndexSidebar` does not install or duplicate them.
 
 ## Rendering, themes, and accessibility
 
-Cards and list rows are each one whole-panel link. The visible title is its explicit accessible name; localized count and other supporting text form its description. The plugin uses Quartz theme tokens, a responsive grid, Windows forced-color support, visible host-controlled focus outlines, and reduced-motion fallbacks. Decorative icon wrappers are `aria-hidden`, inert, and non-interactive; their SVG is non-focusable. Numeric card badges are hidden from assistive technology and paired with visually hidden localized count text; list counts are localized visibly.
+Cards and list rows are each one whole-panel link. The visible title is its explicit accessible name;
+localized count and other supporting text form its description. Card hover and keyboard focus share a
+subtle Make-style treatment: a low-opacity accent glow descends from the top edge and a one-pixel
+accent hairline appears along the bottom, while hover adds a two-pixel lift. The effect does not
+replace the border or recolor the title, and reduced-motion removes the lift and transitions.
+
+The plugin uses Quartz theme tokens, a responsive grid, Windows forced-color support, visible
+host-controlled focus outlines, and reduced-motion fallbacks. Decorative icon wrappers are
+`aria-hidden`, inert, and non-interactive; their SVG is non-focusable. Numeric card badges are hidden
+from assistive technology and paired with visually hidden localized count text; list counts are
+localized visibly. Forced-color mode disables the decorative glow and retains explicit borders and
+focus cues.
 
 Stable scoped hooks for theme authors are `.rip`, `.rip-grid`, `.rip-card-link`, `.rip-list-link`, `.rip-panel-icon`, `.rip-count`, `.rip-tags`, `data-rip-icon`, and `data-rip-accent`. Named accents expose only the validated registry name; direct values use `data-rip-accent="direct"`. Theme behavior emits neither an accent data attribute nor an inline custom property.
 
 Named and direct accents set a validated inline `--rip-panel-accent` custom property. A strict Content Security Policy that blocks style attributes may also block those accents; use theme behavior or adjust the site's CSP deliberately. Raw authored values never become selectors or class names.
 
-Arrow keys move between adjacent panels when one has focus; `Home` and `End` move to the first and last panel. Listeners initialize on Quartz `nav` events and register through `window.addCleanup`, so SPA navigation tears them down before re-entry.
+Arrow keys move between adjacent panels when one has focus; `Home` and `End` move to the first and
+last panel. Panel-keyboard and sidebar-light-dismiss listeners initialize on Quartz `nav` events and
+register through `window.addCleanup`, so SPA navigation tears them down before re-entry.
 
-The plugin ships `en-US` and `fi-FI` strings for counts, overview labels, empty state, and sidebar
-navigation, selected from `cfg.locale` on each render. Unsupported locales fall back to English.
+The plugin ships `en-US` and `fi-FI` strings for counts, overview labels, empty state, Explorer,
+manual-switcher, selected-manual, and sidebar-navigation labels, selected from `cfg.locale` on each
+render. Unsupported locales fall back to English.
 English uses `1 note`, `N notes`, and `No subdirectories found.`; Finnish uses `1 muistiinpano`,
 `N muistiinpanoa`, and `Alikansioita ei löytynyt.`
 
@@ -333,8 +364,8 @@ UnlistedPages/EncryptedPages configured for the disclosure policy you need.
 
 ## Base-path and subdirectory hosting
 
-There is no GitLab-specific routing branch. Root panels and sidebar destinations use Quartz's public
-`resolveRelative`/slug utilities from the current page. A deployment at a domain root and one below
+There is no GitLab-specific routing branch. Root panels and root-manual/book/sidebar destinations use
+Quartz's public `resolveRelative`/slug utilities from the current page. A deployment at a domain root and one below
 `/quartz-for-gitlab/` therefore use the same plugin code, with Quartz's normal site configuration
 controlling the base URL. Tests cover root, nested, dotted, spaced, Unicode, SPA, and no-SPA links
 under a non-root base path.
@@ -411,11 +442,18 @@ npm run verify:package
 npm pack --dry-run
 ```
 
-When this checkout is nested inside Quartz (or `RIP_QUARTZ_ROOT` points to a Quartz checkout), run the isolated three-build host matrix too:
+When this checkout is nested inside Quartz (or `RIP_QUARTZ_ROOT` points to a Quartz checkout), run
+the isolated stock-host matrix too:
 
 ```bash
 npm run test:integration
 ```
+
+The matrix performs fresh remove/add/enable installation and checks generated layout, overview-first
+body order, authored root selector title, selected-manual/current-page semantics, disjoint root and
+book Explorer scopes, top-level folder state, Graph/TOC coexistence, Explorer replacement, locale
+fallback, SPA/no-SPA output, and dotted/deep links below a non-root base path. Focused unit tests also
+freeze sidebar light-dismiss cleanup and the card glow's reduced-motion/forced-color fallbacks.
 
 Set `RIP_KEEP_INTEGRATION=1` only when you want its temporary workspaces preserved for manual inspection; the default run validates and removes them.
 
