@@ -2,6 +2,75 @@
 
 Populate this file during the implementation run. It is evidence, not a substitute for tests.
 
+## 2026-07-18 Canvas/Base navigation and breadcrumb correction
+
+### Resolved behavior
+
+- The sidebar now admits generated Canvas and Bases records as typed document leaves when the record
+  is not unlisted, owns exactly one matching `canvasData`/`basesData` marker, and has a canonical
+  lower-case `.canvas`/`.base` slug. Listed physical records retain precedence and the ordinary-note
+  glyph; Canvas uses Lucide Workflow and Base uses Table Properties. Exact regressions cover
+  `git-practice/history.canvas` and `sql-pocketbook/query-catalog.base`.
+- Book/card eligibility, metadata, ordering inputs, and counts remain listed-physical only. Generated
+  leaves cannot create or prove a book, affect counts/order, or supply a folder Overview
+  destination/title. They may originate structural folders only to expose a nested route inside an
+  already-eligible book.
+- `replaceExplorer: true` now has separate direct-sibling variants for the default left slot and
+  CanvasFrame's `.canvas-sidebar`; false omits the opt-in attribute and preserves Explorer in either
+  frame. The Canvas rule leaves the plugin sidebar and canvas stage intact.
+- On default-frame eligible-book routes, plugin CSS hides only the redundant first stock Home
+  breadcrumb element. Quartz's already-rendered book-title/book-root link becomes the first visible
+  crumb. Root-scope breadcrumbs remain stock, while PageTitle and the manual switcher still link to
+  the true root. No JavaScript rewrites Explorer or Breadcrumbs, and no rule targets the right slot,
+  Graph, TOC, or Backlinks.
+
+### Verification evidence
+
+- `npm run check` passed TypeScript, ESLint, Prettier, and 205 Vitest tests across 7 files. The new
+  adversarial cases cover exact live slugs, root/book/nested virtual leaves, unlisted and ambiguous
+  records, inherited/accessor markers, suffix mismatches, physical collisions, exact current state,
+  distinct SVGs, both frame selectors, breadcrumb scope, and forbidden right-side selectors.
+- `npm run build`, `npm run verify:dist`, `npm run verify:package`, `npm pack --dry-run`, and
+  `git diff --check` passed. The packed package still contains 14 allowlisted files; regenerated,
+  committed `dist/` contains the typed icons and both scoped CSS behaviors.
+- `npm run test:integration` passed all three isolated stock-Quartz variants. The fixture enables
+  Breadcrumbs, CanvasPage, and BasesPage; adds valid `.canvas`/`.base` sources; preserves Java's
+  physical count of 2; renders note/Canvas/Base links with three distinct SVGs; proves exact current
+  state and relative links below `/group/project/`; renders the Canvas custom frame and Base body;
+  preserves stock Explorer in SSR for CSS replacement; and emits the exact Canvas and breadcrumb
+  selectors. `npm run test:watch-integration` also passed with the documented 2/3 stale aggregate
+  observations followed by clean-build correctness.
+- Edge 150 computed-style checks passed at `1440`, `900`, and `390` CSS-pixel widths. On the ordinary
+  book route, Home computed to `display: none`; `iOS` was the first visible crumb and linked to
+  `/group/project/java/`; PageTitle and the switcher linked to `/group/project/`; note/Canvas/Base
+  SVGs were distinct; stock Explorer was hidden; and tablet/mobile had no horizontal overflow. The
+  root-scope loose note retained a visible Home/root link.
+- Opening CanvasFrame's drawer at desktop/mobile kept one plugin sidebar, the current Canvas and Base
+  links, and the canvas stage visible while the direct stock Explorer computed to `display: none`.
+  At `390px` the drawer fit without horizontal overflow. Removing the true opt-in attribute—the
+  exact SSR state produced by `replaceExplorer: false`—changed the direct Explorer from `none` to
+  `flex` in both default and Canvas frames while the plugin and stage stayed visible.
+
+### Push, CI, and remote-consumer evidence
+
+- Implementation commit `3b815a5940d902e6e4f8141813ceb0aeee358b64`
+  (`feat: integrate Canvas and Bases navigation`) is pushed to `origin/main`. GitHub CI run
+  <https://github.com/VingGit/root-index-panels/actions/runs/29654796522> completed successfully for
+  that exact SHA.
+- A preserved stock-shaped Quartz workspace removed the local plugin source, added
+  `github:VingGit/root-index-panels`, and enabled it through the normal CLI. Add selected committed
+  prebuilt `dist/`; the lock and cache both resolved the exact implementation SHA above; generated
+  configuration contained one enabled plugin entry with one left-priority-40 layout. A clean
+  `/group/project/` build processed 14 inputs and emitted 64 files. It rendered six root cards, one
+  sidebar, typed Canvas/Base links, exact current Canvas/Base states, the raw Home/book breadcrumb
+  ancestry, and both emitted scoped selectors.
+- The parent repository remains intentionally untouched except for reusable guidance in the new,
+  non-upstream `.github/QUARTZ_PLUGIN_DEVELOPMENT.md`. Its upstream-owned `quartz.lock.json` still
+  pins the preceding plugin revision by design; the live GitLab deployment will receive this pushed
+  plugin only after the consumer runs
+  `npx quartz plugin install --latest root-index-panels`, commits its refreshed lock, and deploys.
+  No version bump, tag, release, npm publish, marketplace action, or parent push was performed.
+
 ## 2026-07-18 follow-up design alignment
 
 ### Resolved contract

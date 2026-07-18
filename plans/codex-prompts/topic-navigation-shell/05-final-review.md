@@ -12,30 +12,30 @@ historical check as evidence that the new behavior passed.
 
 ## Active Canvas/Base, CanvasFrame, and breadcrumb corrective audit
 
-- [ ] Book/card eligibility, physical counts, and book ordering remain listed-physical only.
+- [x] Book/card eligibility, physical counts, and book ordering remain listed-physical only.
       Generated Canvas/Base records cannot create/prove a book, inflate counts/order, or supply a
       folder Overview destination/title; structural folder containers may only expose their nested
       path inside an already-eligible book.
-- [ ] Root and eligible-book scopes include a generated Canvas/Base leaf only when it is non-unlisted,
+- [x] Root and eligible-book scopes include a generated Canvas/Base leaf only when it is non-unlisted,
       owns exactly one matching provenance marker, and has a canonical lower-case `.canvas`/`.base`
       slug. Ambiguous, inherited/accessor-backed, suffix-mismatched, and exact `<segment>/index`
       provenance collisions are rejected; physical canonical-slug collisions win.
-- [ ] Ordinary-note, Canvas, and Base leaves render three distinct decorative glyphs and correct
+- [x] Ordinary-note, Canvas, and Base leaves render three distinct decorative glyphs and correct
       exact-current/ancestor state in unit SSR, isolated stock Quartz output, and real browser output.
-- [ ] `replaceExplorer: true` hides only the direct Explorer sibling beside the plugin sidebar in both
+- [x] `replaceExplorer: true` hides only the direct Explorer sibling beside the plugin sidebar in both
       default `.left.sidebar` and Canvas `.canvas-sidebar` frames. `false`, nested/unrelated Explorer,
       and other components remain visible; the Canvas stage and plugin sidebar remain usable.
-- [ ] On default-frame eligible-book routes, only the redundant first stock Home breadcrumb element
+- [x] On default-frame eligible-book routes, only the redundant first stock Home breadcrumb element
       is hidden, making Quartz's existing book-title/book-root link first. Root-context Breadcrumbs
       retain stock behavior, and PageTitle/manual selector retain true-root access.
-- [ ] CSS contains exactly four behavioral host-selector kinds: default-frame grid containment,
+- [x] CSS contains exactly four behavioral host-selector kinds: default-frame grid containment,
       mobile-left containment, frame-specific direct Explorer replacement, and book-root breadcrumb
       promotion. No script rewrites Explorer/Breadcrumbs and no selector or script changes the right
       slot, Graph, TOC, Backlinks, or unrelated components/frames.
-- [ ] Focused unit/style tests, full check/build/dist/package gates, isolated Page Type integration,
+- [x] Focused unit/style tests, full check/build/dist/package gates, isolated Page Type integration,
       desktop/tablet/mobile browser checks, base-path links, and fresh remote-pin verification pass at
       the exact pushed revision, with current evidence recorded in `IMPLEMENTATION-NOTES.md`.
-- [ ] README, examples, architecture, changelog, prompt contracts, plugin DOX, generated `dist/`, and
+- [x] README, examples, architecture, changelog, prompt contracts, plugin DOX, generated `dist/`, and
       public declarations agree with the correction. No upstream file, release, tag, npm publish,
       marketplace action, or unauthorized parent push occurs.
 
