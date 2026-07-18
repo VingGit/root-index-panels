@@ -31,6 +31,11 @@ counts. A virtual index carrying Canvas/Bases provenance cannot prove a book des
 that directory also contains physical Markdown. Root-level notes, empty folders, and synthetic
 Canvas/Bases entries without `filePath` do not create books.
 
+This listed-physical rule governs books, cards, ordering inputs, and counts. The scoped sidebar has a
+separate, deliberately narrower Page Type exception: a safe generated Canvas or Base route may appear
+as a typed leaf, but it still cannot create a book, increase its count, or supply a book or folder
+Overview destination.
+
 The physical, listed `<book>/index.md` is the only metadata source. Its authored title is preserved exactly; only a missing title is humanized from the directory slug. A same-named root note such as `java.md` is never used. Each count includes listed physical descendants except the book's own index; authored nested indexes count and virtual indexes do not. Duplicate physical slugs count once, with the first eligible entry winning. `sort: date` uses the newest valid date found anywhere in the book's listed physical entries, checking Quartz `dates`, then top-level file data, then date-like index/descendant frontmatter. Valid dates include epoch and pre-1970 finite/parseable timestamps; undated books sort behind dated books.
 
 Every destination is resolved as `<book>/index` through Quartz's public path utility. From the root,
@@ -163,7 +168,7 @@ Prefer named values backed by Quartz/custom CSS variables for light/dark contras
 | `defaultIcon`         | string                             | `""`           | A trimmed valid registry name; malformed or unresolved names produce no icon.                           |
 | `defaultAccent`       | string                             | `theme`        | `theme`, a named accent, or an allowed direct value; invalid values become `theme`.                     |
 | `accents`             | string map                         | `{}`           | Valid own names map to allowed direct values; invalid entries and the reserved `theme` key are ignored. |
-| `replaceExplorer`     | boolean                            | `true`         | `true` hides only the stock Explorer beside this sidebar; non-booleans become `true`.                   |
+| `replaceExplorer`     | boolean                            | `true`         | `true` hides only a direct stock Explorer sibling in default/Canvas frames; non-booleans become `true`. |
 
 `accents` is accepted by the YAML loader, but the current Quartz manifest schema cannot accurately describe arbitrary mappings, so it is not exposed through schema-driven TUI editing. `icons` contains Preact components and is TypeScript-only.
 
@@ -248,12 +253,20 @@ The selected manual and exact current page are intentionally different states:
 The Explorer scope follows the selected route:
 
 - Root context covers the root, root notes, tags, 404, and routes whose first segment is not an
-  eligible book. Its note tree contains only listed physical root notes and excludes `index`.
-- Book context selects the matching book and shows only that book's listed physical descendants.
-  The book's own index appears once as the first `Overview` link.
+  eligible book. Its tree contains listed physical root notes and safe generated root Canvas/Base
+  leaves, and excludes `index`.
+- Book context selects the matching book and shows its listed physical descendants plus safe
+  generated Canvas/Base leaves. The book's own index appears once as the first `Overview` link.
 - Nested directories use native disclosure. A listed physical or FolderPage-generated index may
-  supply a folder overview link, while virtual-only Canvas/Bases records do not become navigation
-  notes.
+  supply a folder Overview link. Generated Canvas/Bases leaves may originate structural folder
+  containers so their nested paths remain navigable, but never supply that folder's destination or
+  title.
+- A generated leaf is admitted only when it is not unlisted, owns exactly one matching
+  `canvasData`/`basesData` provenance marker, and its canonical slug ends in lower-case `.canvas` or
+  `.base`. Ambiguous, inherited, accessor-backed, suffix-mismatched, and exact `<segment>/index`
+  provenance collisions are rejected; physical records win canonical-slug collisions.
+- Ordinary notes use the file-text glyph, Canvas leaves use a workflow glyph, and Base leaves use a
+  table-properties glyph, so the three route types remain distinct at a glance.
 - Top-level folders are open in server output so a book starts as a useful table of contents. Deeper
   folders open only when they are the current destination or contain it. Authored titles, long paths,
   spaces, and Unicode remain text rather than selector data.
@@ -282,30 +295,46 @@ non-suppressing containment rules in addition to Explorer replacement:
 
 These rules preserve Quartz's grid areas, document order, and responsive right-rail flow. They do
 not select `.right`, Graph, Table of Contents, or any individual right component, and the
-`data-frame="default"` gate means CanvasPage and other custom frames never match. Together with the
-Explorer rule below, these are the plugin's exactly three kinds of narrowly scoped host selector.
+`data-frame="default"` gate means CanvasPage and other custom frames never match the grid rule.
 
-`replaceExplorer` defaults to `true`. The stylesheet hides only a direct stock Explorer sibling
-when this component explicitly opts in:
+`replaceExplorer` defaults to `true`. Frame-specific selectors hide only a direct stock Explorer
+sibling when this component explicitly opts in:
 
 ```text
 .left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer
+
+.page[data-frame="canvas"]
+  > #quartz-body
+  > .center.canvas-frame
+  > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"])
+  > .explorer
 ```
 
-This intentionally depends on Quartz's current default-frame `.left.sidebar` and stock `.explorer`
-markup, plus browser support for `:has()`. It is the only rule that suppresses another plugin. It
-never mutates Explorer with JavaScript and never targets Search, PageTitle, toolbar controls, or
-generic navigation. Set `replaceExplorer: false` to omit the opt-in attribute and keep both
-navigation components visible. On an older browser without `:has()`, the safe failure mode is also
-that stock Explorer remains visible.
+The two variants intentionally depend on Quartz's current default-frame `.left.sidebar`, Canvas
+`.canvas-sidebar`, and stock `.explorer` markup, plus browser support for `:has()`. They are one
+behavioral selector kind and the only whole-component suppression. They never mutate Explorer with
+JavaScript and never target Search, PageTitle, toolbar controls, or generic navigation. Set
+`replaceExplorer: false` to omit the opt-in attribute and keep both navigation components visible in
+either frame. On an older browser without `:has()`, the safe failure mode is also that stock Explorer
+remains visible.
+
+When Quartz Breadcrumbs renders on a default-frame route inside an eligible book, the plugin hides
+only its redundant first `Home` element. Quartz's existing next crumb already contains the resolved
+book title and book-root link, so that crumb becomes the first visible breadcrumb without duplicating
+or reconstructing Breadcrumbs. Root-context routes keep normal stock breadcrumb behavior. The site
+title/PageTitle and the manual switcher continue to link to the true root.
+
+Together these are exactly four narrowly scoped behavioral selector kinds: default-frame grid-track
+containment, mobile left-container containment, frame-specific direct Explorer replacement, and
+eligible-book breadcrumb-root promotion. No script performs either replacement or breadcrumb work.
 
 The plugin does not clear, hide, move, or style the right layout slot. A right-positioned Graph—and
 independent Table of Contents and Backlinks entries—continues to render on the root and ordinary
 book pages, including Quartz's responsive document flow. CanvasPage is the host-controlled
 exception: its fullscreen `canvas` frame exposes only a togglable left slot and canvas controls, so
 there is no ordinary right Graph slot unless the site overrides CanvasPage to use the default frame.
-Its custom `.canvas-sidebar` wrapper also sits outside the default-frame Explorer selector, so that
-drawer may show both navigation components when stock Explorer is configured.
+Its custom `.canvas-sidebar` receives the separate, frame-gated direct-Explorer replacement variant,
+so `replaceExplorer: true` removes the duplicate stock tree while `false` deliberately keeps both.
 
 Cross-book links remain ordinary Quartz links. Graph and Backlinks can show those relationships; the
 sidebar scopes browsing, not the content graph.
@@ -414,11 +443,11 @@ The icon names above are built-ins. Custom component aliases remain TypeScript-o
 never contains SVG/component code.
 
 Each count excludes the book's own index, drafts, unlisted entries, assets, and virtual Page Type
-records. The listed encrypted Git specimen counts; its hidden encrypted control does not. Canvas and
-Bases routes remain linked interoperability targets, but their synthetic records do not inflate the
-physical/listed book totals. The fixture exercises Markdown, Search, TOC, Graph, Backlinks, aliases,
-encryption, transclusion, math, diagrams, assets, spaces, Unicode, Canvas, Bases, responsive layout,
-and cross-book links.
+records. The listed encrypted Git specimen counts; its hidden encrypted control does not. Safe Canvas
+and Base routes appear as distinctly iconed scoped-navigation leaves, but their generated records do
+not inflate the physical/listed book totals or supply landing/folder destinations. The fixture
+exercises Markdown, Search, TOC, Graph, Backlinks, aliases, encryption, transclusion, math, diagrams,
+assets, spaces, Unicode, Canvas, Bases, responsive layout, and cross-book links.
 
 ## Partial-watch limitation
 

@@ -32,6 +32,16 @@ function switcherMenu(html: string): string {
   return start >= 0 ? html.slice(start, end >= 0 ? end : undefined) : ""
 }
 
+function sidebarIconSvg(html: string, kind: "note" | "canvas" | "base"): string {
+  const marker = `data-rip-icon="${kind}"`
+  const markerIndex = html.indexOf(marker)
+  const svgStart = html.indexOf("<svg", markerIndex)
+  const svgEnd = html.indexOf("</svg>", svgStart)
+  return markerIndex >= 0 && svgStart >= 0 && svgEnd > svgStart
+    ? html.slice(svgStart, svgEnd + "</svg>".length)
+    : ""
+}
+
 function fixture(): PluginFile[] {
   return [
     physicalFile("index", { title: "Home" }),
@@ -171,6 +181,103 @@ describe("sidebar navigation model", () => {
       expect(folder.children).toHaveLength(1)
     }
     expect(JSON.stringify(model)).not.toContain("destination")
+  })
+
+  it("groups typed virtual leaves without turning their folder into an Overview destination", () => {
+    const model = buildSidebarNavigationModel([
+      physicalFile("book/index", { title: "Book" }),
+      virtualFile("book/visual/history.canvas", { title: "History" }, { canvasData: {} }),
+      virtualFile("book/visual/catalog.base", { title: "Catalog" }, { basesData: {} }),
+    ])
+
+    const visual = model.books[0]?.children[0]
+    expect(visual?.kind).toBe("folder")
+    if (visual?.kind !== "folder") throw new Error("Expected Visual folder")
+    expect(visual.slug).toBeUndefined()
+    expect(visual.children.map((node) => [node.kind, node.title])).toEqual([
+      ["base", "Catalog"],
+      ["canvas", "History"],
+    ])
+  })
+
+  it("includes safe Canvas and Bases leaves in root and eligible-book scopes", () => {
+    const model = buildSidebarNavigationModel(
+      [
+        physicalFile("index", { title: "Home" }),
+        virtualFile("root-map.canvas", { title: "Root map" }, { canvasData: {} }),
+        virtualFile("root-table.base", { title: "Root table" }, { basesData: {} }),
+        physicalFile("git-practice/index", { title: "Git Practice" }),
+        physicalFile("git-practice/topic", { title: "Topic" }),
+        virtualFile("git-practice/history.canvas", { title: "History" }, { canvasData: {} }),
+        virtualFile("virtual-only/board.canvas", { title: "Virtual only" }, { canvasData: {} }),
+        physicalFile("sql-pocketbook/index", { title: "SQL Pocketbook" }),
+        physicalFile("sql-pocketbook/one", { title: "One" }),
+        physicalFile("sql-pocketbook/two", { title: "Two" }),
+        virtualFile(
+          "sql-pocketbook/query-catalog.base",
+          { title: "Query Catalog" },
+          { basesData: {} },
+        ),
+      ],
+      { sort: "docCount" },
+    )
+
+    expect(model.rootNotes.map((node) => [node.kind, node.title, node.slug])).toEqual([
+      ["canvas", "Root map", "root-map.canvas"],
+      ["base", "Root table", "root-table.base"],
+    ])
+    // Virtual leaves neither create books nor inflate the physical document-count order.
+    expect(model.books.map((book) => book.segment)).toEqual(["sql-pocketbook", "git-practice"])
+    expect(JSON.stringify(model)).not.toContain("Virtual only")
+
+    const gitPractice = model.books.find((book) => book.segment === "git-practice")
+    expect(gitPractice?.children.map((node) => [node.kind, node.title, node.slug])).toEqual([
+      ["canvas", "History", "git-practice/history.canvas"],
+      ["note", "Topic", "git-practice/topic"],
+    ])
+    const sqlPocketbook = model.books.find((book) => book.segment === "sql-pocketbook")
+    expect(sqlPocketbook?.children.map((node) => [node.kind, node.title, node.slug])).toEqual([
+      ["note", "One", "sql-pocketbook/one"],
+      ["base", "Query Catalog", "sql-pocketbook/query-catalog.base"],
+      ["note", "Two", "sql-pocketbook/two"],
+    ])
+  })
+
+  it("rejects ambiguous or mismatched virtual markers and gives physical collisions precedence", () => {
+    const inheritedCanvas = Object.assign(Object.create({ canvasData: {} }), {
+      slug: "book/inherited.canvas",
+      frontmatter: { title: "Inherited marker" },
+    }) as PluginFile
+    const accessorCanvas = virtualFile("book/accessor.canvas", { title: "Accessor marker" })
+    Object.defineProperty(accessorCanvas, "canvasData", {
+      enumerable: true,
+      get() {
+        throw new Error("must not execute")
+      },
+    })
+
+    const model = buildSidebarNavigationModel([
+      physicalFile("book/index", { title: "Book" }),
+      virtualFile("book/collision.canvas", { title: "Generated collision" }, { canvasData: {} }),
+      physicalFile("book/collision.canvas", { title: "Physical collision" }, { canvasData: {} }),
+      physicalFile("book/source.base", { title: "Physical source" }, { basesData: {} }),
+      virtualFile("book/both.canvas", { title: "Both" }, { canvasData: {}, basesData: {} }),
+      virtualFile("book/wrong.base", { title: "Wrong Canvas" }, { canvasData: {} }),
+      virtualFile("book/wrong.canvas", { title: "Wrong Base" }, { basesData: {} }),
+      virtualFile("book/missing.canvas", { title: "Missing marker" }),
+      virtualFile("book/upper.CANVAS", { title: "Uppercase" }, { canvasData: {} }),
+      virtualFile("book/hidden.base", { title: "Hidden" }, { basesData: {}, unlisted: true }),
+      inheritedCanvas,
+      accessorCanvas,
+    ])
+
+    expect(model.books[0]?.children.map((node) => [node.kind, node.title])).toEqual([
+      ["note", "Physical collision"],
+      ["note", "Physical source"],
+    ])
+    expect(JSON.stringify(model)).not.toMatch(
+      /Generated collision|Both|Wrong Canvas|Wrong Base|Missing marker|Uppercase|Hidden|Inherited marker|Accessor marker/,
+    )
   })
 
   it("caches by allFiles identity without conflating option variants", () => {
@@ -346,6 +453,43 @@ describe("RootIndexSidebar SSR", () => {
     expect(scope).toContain('class="rip-sidebar-node-icon" aria-hidden="true" inert')
     expect(scope).not.toContain("Git Topic")
     expect(scope).not.toContain("Loose note")
+  })
+
+  it("renders typed Canvas and Bases links with distinct semantic icons", () => {
+    const files = [
+      physicalFile("index", { title: "Home" }),
+      physicalFile("git-practice/index", { title: "Git Practice" }),
+      physicalFile("git-practice/topic", { title: "Topic" }),
+      virtualFile("git-practice/history.canvas", { title: "History" }, { canvasData: {} }),
+      physicalFile("sql-pocketbook/index", { title: "SQL Pocketbook" }),
+      physicalFile("sql-pocketbook/topic", { title: "Topic" }),
+      virtualFile(
+        "sql-pocketbook/query-catalog.base",
+        { title: "Query Catalog" },
+        { basesData: {} },
+      ),
+    ]
+    const canvasScope = sidebarScope(renderSidebar("git-practice/history.canvas", files))
+    const baseScope = sidebarScope(renderSidebar("sql-pocketbook/query-catalog.base", files))
+
+    expect(canvasScope).toMatch(
+      /href="\.\.\/git-practice\/history\.canvas" aria-current="page" data-rip-state="current" data-rip-node-kind="canvas"/,
+    )
+    expect(baseScope).toMatch(
+      /href="\.\.\/sql-pocketbook\/query-catalog\.base" aria-current="page" data-rip-state="current" data-rip-node-kind="base"/,
+    )
+    expect(canvasScope).toMatch(/href="\.\.\/git-practice\/topic" data-rip-node-kind="note"/)
+    expect(canvasScope).toContain('data-rip-icon="canvas"')
+    expect(baseScope).toContain('data-rip-icon="base"')
+    expect(canvasScope).toContain('data-rip-icon="note"')
+
+    const noteIcon = sidebarIconSvg(canvasScope, "note")
+    const canvasIcon = sidebarIconSvg(canvasScope, "canvas")
+    const baseIcon = sidebarIconSvg(baseScope, "base")
+    expect(noteIcon).not.toBe("")
+    expect(canvasIcon).not.toBe("")
+    expect(baseIcon).not.toBe("")
+    expect(new Set([noteIcon, canvasIcon, baseIcon]).size).toBe(3)
   })
 
   it("separates selected-manual context from the exact current page", () => {

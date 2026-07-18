@@ -28,33 +28,47 @@
 - `RootIndexSidebar` uses native SSR links/disclosures. Its selector labels the root manual from the
   physical root index's authored title, with localized Home fallback, and lists that root plus every
   eligible book in an absolute popup. Selected-manual state is separate from exact-page
-  `aria-current`; the scoped Explorer shows only listed physical root notes or the current eligible
-  book, places the book Overview first, opens top-level folders by default, and otherwise opens only
-  current ancestry. Reuse the book collector's eligibility, order, destination, canonical-slug,
-  title, icon, and accent contracts. Cache variants inherit normalized `excludeDirs`,
-  `descriptionFallback`, `sort`, and `tagCount` inputs. A shell closed on mobile must expose its
-  content again above the mobile breakpoint, where its summary is hidden.
+  `aria-current`; the scoped Explorer shows listed physical notes plus safe generated Canvas/Bases
+  leaves in the root or current eligible-book scope, places the book Overview first, opens top-level
+  folders by default, and otherwise opens only current ancestry. Admit a generated leaf only when it
+  is non-unlisted, owns exactly the matching `canvasData`/`basesData` provenance marker, and has a
+  canonical lower-case `.canvas`/`.base` slug; give note, Canvas, and Base leaves distinct icons.
+  Generated leaves never establish book/card eligibility, counts/order, or landing/folder Overview
+  destinations/titles; they may originate structural folder containers only to expose a nested path
+  inside an already-eligible book. Reuse the book collector's eligibility, order, destination,
+  canonical-slug, title, icon, and accent contracts. Cache variants inherit normalized
+  `excludeDirs`, `descriptionFallback`, `sort`, and `tagCount` inputs. A shell closed on mobile must
+  expose its content again above the mobile breakpoint, where its summary is hidden.
 - The sidebar's native selector and links remain complete without JavaScript. Its inline script may
   add only light-dismiss behavior: one open selector, outside-pointer and switcher-link close, and
   Escape close with focus restoration. It must initialize on Quartz `nav` and tear down through
   `window.addCleanup`.
-- Exactly three kinds of narrowly scoped host selector are allowed:
+- Exactly four kinds of narrowly scoped host selector are allowed:
   1. default-frame `#quartz-body` grid containment gated by a direct
      `.left.sidebar > .rip-sidebar` descendant, used at tablet/mobile breakpoints only to replace
      intrinsic `auto` tracks with `minmax(0, ...)` tracks;
-  2. direct-plugin mobile `.left.sidebar:has(> .rip-sidebar)` width/wrap containment; and
-  3. direct
-     `.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer` replacement.
-- Breakpoint variants of the grid rule remain one selector kind. Explorer is the only cross-plugin
-  suppression. `replaceExplorer` defaults to `true`; `false` must leave Explorer untouched. Never
-  use script/DOM mutation to suppress it.
+  2. direct-plugin mobile `.left.sidebar:has(> .rip-sidebar)` width/wrap containment;
+  3. frame-specific direct Explorer sibling replacement, with separate default
+     `.left.sidebar` and Canvas `.canvas-sidebar` variants gated by the frame, direct
+     `.rip-sidebar[data-rip-replace-explorer="true"]`, and direct `.explorer` sibling; and
+  4. default-frame eligible-book breadcrumb-root promotion that hides only the redundant first stock
+     `Home` breadcrumb so Quartz's existing book-title/book-root link becomes the first crumb.
+- Breakpoint variants and the two frame-specific Explorer variants remain one selector kind each.
+  `replaceExplorer` defaults to `true`; `false` must leave Explorer untouched in both frames. Explorer
+  replacement is the only whole-component suppression; breadcrumb promotion may hide only the
+  redundant first breadcrumb element. Root-context routes retain their normal Home crumb. Never use
+  script/DOM mutation for either behavior.
 - Never select, clear, hide, move, or style the right layout slot, Graph, or TOC. The grid rule may
-  change only default-frame track sizing and must not match CanvasPage or any custom frame.
+  change only default-frame track sizing and must not match CanvasPage or any custom frame. PageTitle
+  and the manual switcher continue to provide true-root access from book routes.
 - Resolve every plugin destination with public Quartz path utilities. Treat hosting beneath a base
   path such as `/quartz-for-gitlab/` as general subdirectory hosting, not GitLab-specific behavior.
-- Books/counts use listed physical records; virtual FolderPage indexes may prove destinations, while
-  Canvas/Bases virtual records—including `<segment>/index` collisions—never prove, create, or inflate
-  books. `dist/` remains committed for GitHub prebuilt installs.
+- Books/cards/counts use listed physical records; virtual FolderPage indexes may prove destinations,
+  while Canvas/Bases virtual records—including `<segment>/index` collisions—never prove, create, or
+  inflate books, counts, order, or folder Overview destinations/titles. Eligible generated
+  Canvas/Bases records may appear only as typed sidebar leaves under the safe provenance/slug rules
+  above, with structural folder containers allowed solely for nested paths. `dist/` remains committed
+  for GitHub prebuilt installs.
 - Declare optional peers used through public utility subpaths as direct dependencies. Distribution
   verification must reject dependency sources resolved from an ancestor `node_modules`, and bundled
   license notices must match the generated source-map closure.
@@ -67,11 +81,12 @@
   `topic-appearance/` for non-superseded book/appearance history.
 - Treat the parent Quartz docs, source, installed public APIs, and real CLI behavior as authoritative
   when template examples conflict.
-- Keep styles/scripts under `rip-*`, except the three documented structural selector kinds. The
+- Keep styles/scripts under `rip-*`, except the four documented behavioral selector kinds. The
   default-frame rule may only constrain grid tracks, the mobile left rule may only constrain
-  width/wrapping, and the Explorer sibling rule is the only suppression. Sidebar navigation must
-  work without JavaScript; both panel and sidebar `.inline.ts` lifecycles must clean up on SPA
-  navigation.
+  width/wrapping, the Explorer variants may hide only their direct opted-in Explorer siblings, and
+  breadcrumb promotion may hide only the redundant first Home crumb on a default-frame eligible-book
+  route. Sidebar navigation must work without JavaScript; both panel and sidebar `.inline.ts`
+  lifecycles must clean up on SPA navigation.
 - Define and test physical-versus-virtual data, `allFiles` cache identity, and partial-watch
   invalidation explicitly. Clean/full builds are authoritative.
 - Do not bump versions, tag, release, publish, or submit to a marketplace without separate user
@@ -88,8 +103,9 @@
   unless `RIP_KEEP_INTEGRATION=1` is set.
 - For sidebar popup or card-interaction changes, also verify a real browser at desktop, tablet, and
   mobile widths: menu overlay without Explorer reflow, outside/Escape close and focus restoration,
-  book-scoped Explorer state, card hover/focus glow, right-rail preservation, and no horizontal
-  overflow.
+  book-scoped note/Canvas/Base state with distinct icons, default- and Canvas-frame Explorer
+  replacement/opt-out, book-first breadcrumbs with true-root access, card hover/focus glow,
+  right-rail preservation, and no horizontal overflow.
 - Run `npm run test:watch-integration` when changing aggregate/watch behavior or its documentation;
   stale partial-watch observations are acceptable only when a subsequent clean build corrects them.
 - Validate unpublished work with stock `quartz plugin remove`, `add`, and `enable`; verify the lock

@@ -14,8 +14,10 @@ export interface SidebarNavigationOptions {
   tagCount?: unknown
 }
 
-export interface SidebarNoteNode {
-  kind: "note"
+export type SidebarDocumentKind = "note" | "canvas" | "base"
+
+export interface SidebarDocumentNode {
+  kind: SidebarDocumentKind
   key: string
   slug: FullSlug
   title: string
@@ -30,7 +32,7 @@ export interface SidebarFolderNode {
   children: readonly SidebarNavigationNode[]
 }
 
-export type SidebarNavigationNode = SidebarNoteNode | SidebarFolderNode
+export type SidebarNavigationNode = SidebarDocumentNode | SidebarFolderNode
 
 export interface SidebarBook {
   segment: string
@@ -43,18 +45,18 @@ export interface SidebarBook {
 export interface SidebarNavigationModel {
   books: readonly SidebarBook[]
   rootTitle?: string
-  rootNotes: readonly SidebarNoteNode[]
+  rootNotes: readonly SidebarDocumentNode[]
 }
 
 export type SidebarNavigationScope =
-  | { kind: "root"; book?: undefined; children: readonly SidebarNoteNode[] }
+  | { kind: "root"; book?: undefined; children: readonly SidebarDocumentNode[] }
   | { kind: "book"; book: SidebarBook; children: readonly SidebarNavigationNode[] }
   | { kind: "none"; book?: undefined; children: readonly [] }
 
 export type SidebarLinkState = "current" | "ancestor" | undefined
 
-interface MutableNoteNode {
-  kind: "note"
+interface MutableDocumentNode {
+  kind: SidebarDocumentKind
   key: string
   slug: FullSlug
   title: string
@@ -69,7 +71,7 @@ interface MutableFolderNode {
   children: Map<string, MutableNavigationNode>
 }
 
-type MutableNavigationNode = MutableNoteNode | MutableFolderNode
+type MutableNavigationNode = MutableDocumentNode | MutableFolderNode
 
 const emptyChildren = Object.freeze([]) as readonly []
 const emptyModel: SidebarNavigationModel = Object.freeze({
@@ -195,6 +197,22 @@ function isSyntheticVirtualIndex(file: PluginFile): boolean {
   )
 }
 
+function navigationDocumentKind(
+  file: PluginFile,
+  parsed: { slug: FullSlug; parts: string[] },
+): SidebarDocumentKind | undefined {
+  if (ownDataValue(file, "unlisted") === true) return undefined
+  if (isPhysical(file)) return "note"
+
+  const hasCanvasData = hasOwnDataProperty(file, "canvasData")
+  const hasBasesData = hasOwnDataProperty(file, "basesData")
+  if (hasCanvasData === hasBasesData) return undefined
+
+  if (hasCanvasData && parsed.slug.endsWith(".canvas")) return "canvas"
+  if (hasBasesData && parsed.slug.endsWith(".base")) return "base"
+  return undefined
+}
+
 function humanizeSegment(segment: string): string {
   const text = segment.replace(/-/g, " ")
   return text.length === 0 ? text : text.charAt(0).toUpperCase() + text.slice(1)
@@ -213,7 +231,9 @@ function authoredTitle(file: PluginFile): string | undefined {
 }
 
 function compareNodes(a: SidebarNavigationNode, b: SidebarNavigationNode): number {
-  if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1
+  const leftIsFolder = a.kind === "folder"
+  const rightIsFolder = b.kind === "folder"
+  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1
   const left = a.title.toLowerCase()
   const right = b.title.toLowerCase()
   if (left < right) return -1
@@ -274,6 +294,7 @@ function insertBookFile(
   relativeParts: string[],
   slug: FullSlug,
   file: PluginFile,
+  kind: SidebarDocumentKind,
   folderDestinations: ReadonlyMap<FullSlug, PluginFile>,
 ): void {
   if (relativeParts.length === 0) return
@@ -307,10 +328,10 @@ function insertBookFile(
 
   const leafSegment = relativeParts.at(-1)
   if (!leafSegment) return
-  const key = `note:${slug}`
+  const key = `document:${slug}`
   if (parent.has(key)) return
   parent.set(key, {
-    kind: "note",
+    kind,
     key,
     slug,
     title: fileTitle(file, leafSegment),
@@ -319,7 +340,7 @@ function insertBookFile(
 
 function freezeNodes(nodes: Map<string, MutableNavigationNode>): readonly SidebarNavigationNode[] {
   const frozen = Array.from(nodes.values(), (node): SidebarNavigationNode => {
-    if (node.kind === "note") return Object.freeze({ ...node })
+    if (node.kind !== "folder") return Object.freeze({ ...node })
     return Object.freeze({
       kind: node.kind,
       key: node.key,
@@ -333,7 +354,7 @@ function freezeNodes(nodes: Map<string, MutableNavigationNode>): readonly Sideba
   return Object.freeze(frozen)
 }
 
-/** Build the SSR navigation inventory from listed physical files only. */
+/** Build the SSR navigation inventory from physical notes and safe Page Type leaves. */
 export function buildSidebarNavigationModel(
   allFiles: unknown,
   options: SidebarNavigationOptions | unknown = undefined,
@@ -353,7 +374,7 @@ export function buildSidebarNavigationModel(
   const bookTrees = new Map(
     books.map((book) => [book.segment, new Map<string, MutableNavigationNode>()]),
   )
-  const rootNotes: SidebarNoteNode[] = []
+  const rootNotes: SidebarDocumentNode[] = []
   let rootTitle: string | undefined
   const seenSlugs = new Set<string>()
   const folderDestinations = new Map<FullSlug, PluginFile>()
@@ -374,9 +395,28 @@ export function buildSidebarNavigationModel(
     folderDestinations.set(parsed.slug, file)
   }
 
+  const navigationFiles: Array<{
+    file: PluginFile
+    parsed: { slug: FullSlug; parts: string[] }
+    kind: SidebarDocumentKind
+  }> = []
+
+  // Physical source records retain precedence when a generated record collides
+  // with the same canonical slug. Virtual Page Type leaves never enter the
+  // physical book inventory above or the folder-destination map.
   for (const file of validFiles) {
-    if (!isListedPhysical(file)) continue
     const parsed = parseSlug(file)
+    if (!parsed || !isListedPhysical(file)) continue
+    navigationFiles.push({ file, parsed, kind: "note" })
+  }
+  for (const file of validFiles) {
+    const parsed = parseSlug(file)
+    if (!parsed || isPhysical(file)) continue
+    const kind = navigationDocumentKind(file, parsed)
+    if (kind && kind !== "note") navigationFiles.push({ file, parsed, kind })
+  }
+
+  for (const { file, parsed, kind } of navigationFiles) {
     if (!parsed || seenSlugs.has(parsed.slug)) continue
     seenSlugs.add(parsed.slug)
 
@@ -387,8 +427,8 @@ export function buildSidebarNavigationModel(
       }
       rootNotes.push(
         Object.freeze({
-          kind: "note",
-          key: `note:${parsed.slug}`,
+          kind,
+          key: `document:${parsed.slug}`,
           slug: parsed.slug,
           title: fileTitle(file, parsed.parts[0]!),
         }),
@@ -399,7 +439,15 @@ export function buildSidebarNavigationModel(
     const bookSegment = parsed.parts[0]
     const tree = bookSegment ? bookTrees.get(bookSegment) : undefined
     if (!tree || parsed.slug === `${bookSegment}/index`) continue
-    insertBookFile(tree, bookSegment!, parsed.parts.slice(1), parsed.slug, file, folderDestinations)
+    insertBookFile(
+      tree,
+      bookSegment!,
+      parsed.parts.slice(1),
+      parsed.slug,
+      file,
+      kind,
+      folderDestinations,
+    )
   }
 
   rootNotes.sort(compareNodes)

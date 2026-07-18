@@ -15,6 +15,7 @@ import {
   getSidebarNavigationModel,
   selectSidebarNavigationScope,
   type SidebarBook,
+  type SidebarDocumentKind,
   type SidebarNavigationNode,
 } from "../navigation"
 import { normalizeRootIndexPanelsOptions, type NormalizedRootIndexPanelsOptions } from "../options"
@@ -29,14 +30,16 @@ type SidebarIconComponent = (typeof sidebarIcons)[keyof typeof sidebarIcons]
 function SidebarGlyph({
   className,
   icon: Icon,
+  iconName,
   size = 15,
 }: {
   className: string
   icon: SidebarIconComponent
+  iconName?: SidebarDocumentKind
   size?: number
 }) {
   return (
-    <span class={className} aria-hidden="true" inert>
+    <span class={className} data-rip-icon={iconName} aria-hidden="true" inert>
       <Icon aria-hidden="true" focusable="false" width={size} height={size} stroke-width={1.8} />
     </span>
   )
@@ -130,11 +133,13 @@ function NavigationLink({
   title,
   current,
   className,
+  kind = "note",
 }: {
   slug: FullSlug
   title: string
   current: FullSlug
   className: string
+  kind?: SidebarDocumentKind
 }) {
   const state = getSidebarLinkState(slug, current)
   return (
@@ -143,8 +148,9 @@ function NavigationLink({
       href={resolveRelative(current, slug)}
       aria-current={state === "current" ? "page" : undefined}
       data-rip-state={state}
+      data-rip-node-kind={kind}
     >
-      <SidebarGlyph className="rip-sidebar-node-icon" icon={sidebarIcons.file} />
+      <SidebarGlyph className="rip-sidebar-node-icon" icon={sidebarIcons[kind]} iconName={kind} />
       <span class="rip-sidebar-link-label">{title}</span>
     </a>
   )
@@ -161,7 +167,7 @@ function NavigationNode({
   depth: number
   translation: RootIndexPanelsTranslation
 }) {
-  if (node.kind === "note") {
+  if (node.kind !== "folder") {
     return (
       <li class="rip-sidebar-note">
         <NavigationLink
@@ -169,6 +175,7 @@ function NavigationNode({
           title={node.title}
           current={current}
           className="rip-sidebar-note-link"
+          kind={node.kind}
         />
       </li>
     )

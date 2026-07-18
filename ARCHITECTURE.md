@@ -67,7 +67,9 @@ sorting: lower-cased title, exact title, then segment.
 
 The root body collects and resolves one render-entry array for its overview and cards/list, so those
 surfaces cannot drift within a render. The sidebar builds its navigation model with the same book
-collector and normalized eligibility/ordering inputs, then adds a route-specific physical-note view.
+collector and normalized eligibility/ordering inputs, then adds a route-specific document view. The
+additional generated Canvas/Base leaves never flow back into the collector, its ordering inputs, or
+`docCount`.
 
 ## Authored root and overview rendering
 
@@ -102,14 +104,22 @@ book `docCount`:
 
 - The first listed physical root `index` contributes its non-empty authored title to the selector;
   accessor-backed/missing titles are ignored and the component uses its localized Home fallback.
-- Root notes are listed physical slugs with exactly one segment, excluding `index`.
-- A book tree contains only listed physical descendants of that eligible book and excludes the
-  book's own `<book>/index` landing from its chapter list.
+- Root documents are listed physical slugs plus safe generated Canvas/Base slugs with exactly one
+  segment, excluding `index`.
+- A book tree contains listed physical descendants plus safe generated Canvas/Base leaves of that
+  eligible book and excludes the book's own `<book>/index` landing from its chapter list.
+- A generated leaf is safe only when top-level `unlisted !== true`, it owns exactly one matching
+  `canvasData`/`basesData` marker, and its canonical slug ends in lower-case `.canvas`/`.base`.
+  Inherited/accessor markers, ambiguous or mismatched provenance, and suffix mismatches are rejected;
+  physical canonical-slug collisions take precedence.
 - Full slugs are deduplicated before insertion. Reserved/excluded books, `tags`, unlisted entries,
-  other books, and virtual-only records do not become note nodes.
+  other books, and other virtual records do not become document nodes.
 - Nested path segments create folders. A listed physical or generated nested index may supply that
-  folder's overview destination/title, but an empty generated folder creates no node.
-- Folders sort before notes, followed by case-insensitive title, exact title, and stable key ties.
+  folder's overview destination/title. A safe generated Canvas/Base leaf may originate structural
+  folder containers inside an already-eligible book so its path remains navigable, but cannot supply
+  their Overview destination/title or establish the book itself.
+- Folders sort before document leaves, followed by case-insensitive title, exact title, and stable key
+  ties. Note, Canvas, and Base leaves carry distinct file-text, workflow, and table-properties icons.
 
 The immutable model is cached in a `WeakMap` by `allFiles` identity and the normalized
 `excludeDirs`, `descriptionFallback`, `sort`, and `tagCount` values. Repeated page renders in one
@@ -136,37 +146,53 @@ sidebar shell summary becomes a native mobile disclosure; sidebar summaries and 
 the native `<details>` remains closed after a narrow-to-wide resize, because its reopening summary is
 hidden there.
 
-The stylesheet permits exactly three kinds of host selector. Two are structural containment, not
-cross-plugin suppression:
+The stylesheet permits exactly four kinds of narrowly scoped behavioral host selector:
 
 1. `.page[data-frame="default"]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body`
    may replace only intrinsic `auto` track sizing with `minmax(0, ...)` at tablet/mobile
    breakpoints. Tablet preserves the host's two-track layout; mobile uses one shrinkable track.
 2. `.left.sidebar:has(> .rip-sidebar)` may constrain only the mobile left container's width and
    wrapping, including long-label wrapping, so it occupies the available viewport.
-3. The direct Explorer sibling selector documented below may suppress Explorer.
+3. The frame-specific direct Explorer sibling variants documented below may suppress Explorer.
+4. A default-frame eligible-book breadcrumb selector may hide only the redundant first stock Home
+   crumb so the existing book-title/book-root link becomes first.
 
 The first rule is gated by the default frame and a direct plugin descendant, preserves grid areas
-and DOM order, and does not match CanvasPage or another custom frame. Neither structural rule
-selects `.right`, `.graph`, `.toc`, Backlinks, or an individual right component. Browser testing at
-tablet/mobile widths and zoom/reflow is the compatibility evidence for this deliberately narrow
-Quartz-markup dependency.
+and DOM order, and does not match CanvasPage or another custom frame. The structural rules and
+behavioral replacements never select `.right`, `.graph`, `.toc`, Backlinks, or an individual right
+component. Repeated breakpoint declarations and the two frame-specific Explorer variants remain one
+selector kind each. Browser testing at tablet/mobile widths and zoom/reflow is the compatibility
+evidence for this deliberately narrow Quartz-markup dependency.
 
 ## Explorer replacement and host ownership
 
 `replaceExplorer` is normalized to `true` unless the caller supplies a boolean. The opted-in sidebar
-renders `data-rip-replace-explorer="true"`. One intentionally cross-plugin CSS rule then hides only
-the direct stock Explorer beside that sidebar:
+renders `data-rip-replace-explorer="true"`. Two frame-specific CSS variants then hide only the direct
+stock Explorer beside that sidebar:
 
 ```text
 .left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer
+
+.page[data-frame="canvas"]
+  > #quartz-body
+  > .center.canvas-frame
+  > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"])
+  > .explorer
 ```
 
-The selector is coupled to Quartz's current default-frame `.left.sidebar` and Explorer `.explorer`
-markup and to supported browser `:has()` behavior. It is the only cross-plugin suppression. It does
-not target nested/unrelated Explorer markup, generic navigation, or any right/center component.
-`replaceExplorer: false` emits no true attribute, leaving stock Explorer unchanged; lack of `:has()`
-support fails safely by showing it. No JavaScript mutates Explorer.
+The variants are coupled to Quartz's current default-frame `.left.sidebar`, CanvasFrame
+`.canvas-sidebar`, Explorer `.explorer` markup, and supported browser `:has()` behavior. They form one
+selector kind and are the only whole-component suppression. They do not target nested/unrelated
+Explorer markup, generic navigation, or any right component. `replaceExplorer: false` emits no true
+attribute, leaving stock Explorer unchanged in both frames; lack of `:has()` support fails safely by
+showing it. No JavaScript mutates Explorer.
+
+On a default-frame route whose direct plugin sidebar reports `data-rip-scope="book"`, the fourth
+selector kind hides only `.breadcrumb-element:first-child:not(:only-child)` inside the stock
+Breadcrumbs path. Quartz already emits the resolved book title/root link as the next element, so
+that existing element becomes the first visible crumb. Root/unrecognized routes retain stock
+Breadcrumbs behavior, and PageTitle plus the manual switcher retain true-root access. No JavaScript
+rewrites breadcrumbs.
 
 Search, PageTitle, Darkmode, ReaderMode, Breadcrumbs, ContentMeta, Note Properties, Table of
 Contents, Backlinks, Graph, Footer, and other host components remain independent layout entries. The
@@ -176,8 +202,9 @@ the default frame on root and ordinary book pages and follows Quartz's responsiv
 CanvasPage is an explicit host-frame exception. Its fullscreen `canvas` frame exposes the left slot
 and canvas controls but no ordinary right slot, so Graph is absent there unless the site overrides
 CanvasPage to use the `default` frame. Root Index Panels neither causes nor bypasses that frame
-decision. Its `.canvas-sidebar` wrapper also does not satisfy the default-frame Explorer selector;
-when both layout entries are configured, both navigation components can remain in that drawer.
+decision. Its `.canvas-sidebar` wrapper receives only the separate frame-gated direct-Explorer
+replacement variant; opted-in pages show one navigation tree, while `replaceExplorer: false`
+preserves both.
 
 Cross-book links remain ordinary Quartz links; Graph and Backlinks may expose cross-book edges even
 while sidebar navigation is scoped to one book.
@@ -297,19 +324,21 @@ a version bump, tag, or release.
   public barrels.
 - `test/sidebar-navigation.test.tsx` covers inventory/scope/cache behavior, native SSR markup,
   authored root selector title, selected-manual versus exact-current semantics, book Overview-first
-  ordering, top-folder disclosure state, canonical links, appearance, locale, malformed input, and
-  Explorer opt-out.
+  ordering, top-folder disclosure state, typed Canvas/Base leaf provenance and distinct icons,
+  canonical links, appearance, locale, malformed input, and Explorer opt-out.
 - `test/sidebar-style.test.ts` freezes the default-frame grid containment, mobile left width/wrap
-  containment, absolute menu overlay/underlay protection, narrow Explorer selector, forbidden
-  right-rail selectors, and native mobile disclosure including the closed-mobile-to-wide escape.
+  containment, absolute menu overlay/underlay protection, default/Canvas Explorer variants,
+  book-breadcrumb promotion, forbidden right-rail selectors, and native mobile disclosure including
+  the closed-mobile-to-wide escape.
 - `test/panels-script.test.ts` covers initial/repeated SPA navigation, cleanup, keyboard boundaries,
   and zero/one-panel behavior.
 - `test/sidebar-script.test.ts` covers repeated initialization, listener cleanup, one-open behavior,
   outside/inside close, and Escape focus restoration.
 - `test/integration/parent-build.mjs` uses isolated Quartz workspaces for fresh CLI install/layout,
   mixed-Preact rendering, YAML/TypeScript variants, SPA/no-SPA assets, authored root/TOC/reading time,
-  overview-first body order, authored-root selector state, disjoint root/book sidebar scope,
-  right Graph, Explorer replacement, locale fallback, and non-root base-path output.
+  overview-first body order, authored-root selector state, disjoint root/book sidebar scope, generated
+  Canvas/Base leaves and frames, book-first breadcrumbs, right Graph, both Explorer replacements,
+  locale fallback, and non-root base-path output.
 - `test/integration/watch-build.mjs` separately reproduces aggregate watch staleness and requires the
   clean full-build correction.
 - package scripts verify deterministic maps, generated externals, packed installs, and committed
@@ -334,14 +363,15 @@ host invalidation API can remove this limitation without changing the public con
 - `src/pageType.ts`: physical-root Page Type and body ownership.
 - `src/books.ts`: shared physical book inventory, metadata, counts, dates, and sorting.
 - `src/navigation.ts`: cached root-manual/book inventory, authored root title, hierarchy, scope, and
-  link state.
+  typed document leaves/link state.
 - `src/options.ts`: option/registry validation and normalization.
 - `src/icons.ts` and `src/appearance.ts`: safe icon/accent resolution.
 - `src/i18n/`: plugin-owned catalogs and locale selector.
 - `src/components/RootIndexPanels.tsx`: overview, authored root, browse, cards/list body.
 - `src/components/RootIndexSidebar.tsx`: native manual selector and route-aware Explorer navigation.
 - `src/components/styles/`: scoped body/sidebar styles, default-frame responsive grid containment,
-  mobile left width/wrap containment, and Explorer sibling replacement.
+  mobile left width/wrap containment, frame-specific Explorer sibling replacement, and book-root
+  breadcrumb promotion.
 - `src/components/scripts/`: panel keyboard and sidebar light-dismiss SPA lifecycles.
 - `src/build/validate-manifest.ts`: exactly-one-sidebar manifest contract.
 - `src/index.ts`, `src/types.ts`, `src/components/index.ts`: public barrels.

@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a progressively enhanced absolute manual popup with selected-manual checks, outside/link
   light-dismiss, one-open behavior, Escape close with focus restoration, and Quartz SPA cleanup; the
   native no-JavaScript interaction remains complete.
-- Added `replaceExplorer`, defaulting to `true`, with a narrowly scoped direct-sibling selector and a
-  `false` opt-out that preserves stock Explorer.
+- Added `replaceExplorer`, defaulting to `true`, with narrowly scoped frame-specific direct-sibling
+  variants and a `false` opt-out that preserves stock Explorer.
 - Added public `RootIndexSidebar` and `RootIndexSidebarOptions` exports and declared the sidebar as
   the manifest's only layout component at left priority `40`.
 - Added optional book-index `panel.icon` and `panel.accent` metadata with 13 statically bundled Lucide icons, TypeScript custom icon aliases, YAML-safe named accents, and theme/direct accent fallbacks.
@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   composition, SPA/no-SPA assets, base-path/subdirectory hosting, and watch invalidation evidence.
 - Added a durable JavaScript/Git/SQL compatibility-lab contract with physical/listed counts of
   `8`/`5`/`6`, distinct writer-selected icons/accents, cross-book edges, and Quartz feature specimens.
+- Added safe generated Canvas and Bases routes to scoped sidebar navigation, with distinct workflow,
+  table-properties, and ordinary-note glyphs.
 
 ### Changed
 
@@ -55,9 +57,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Overview, opens top-level folders by default, and opens deeper folders only for current ancestry.
   The right layout slot remains host-owned; CanvasPage's fullscreen no-right-slot frame remains an
   explicit host-controlled exception.
-- Responsive host coupling is limited to three narrowly scoped selector kinds: default-frame grid
-  track containment, direct-plugin mobile left-container containment, and direct Explorer sibling
-  replacement. Explorer remains the only cross-plugin suppression.
+- Responsive host coupling is limited to four narrowly scoped behavioral selector kinds:
+  default-frame grid-track containment, direct-plugin mobile left-container containment,
+  frame-specific direct Explorer sibling replacement, and default-frame eligible-book breadcrumb
+  promotion. Explorer replacement remains the only whole-component suppression.
 
 ### Fixed
 
@@ -76,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Embedded source-map text is normalized to LF after builds, so the committed `dist/` freshness check is deterministic across Windows and Linux without discarding useful source content.
 - Browser-observed tablet/mobile horizontal overflow from Quartz intrinsic `auto` grid tracks is
   contained with default-frame-only `minmax(0, ...)` tracks and direct-plugin left width/wrapping;
-  right-rail components and Canvas/custom frames remain untargeted.
+  that containment leaves right-rail components and Canvas/custom frames untargeted.
 - Declared the JSX utility's optional `hast-util-to-jsx-runtime` peer directly so standalone source
   builds cannot resolve it accidentally from an ancestor Quartz installation.
 - A sidebar shell collapsed on mobile becomes visible when resized to tablet/desktop, even though
@@ -90,6 +93,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revoked option and frontmatter proxies fall back safely at the public root component boundary.
 - Packed-package verification now exercises sidebar runtime exports and sidebar option declarations
   through every public entry.
+- Generated Canvas/Bases Page Type records now appear as typed leaves only when their own provenance
+  marker matches a canonical lower-case `.canvas`/`.base` slug and they are not unlisted. They still
+  cannot create or prove a book, affect physical book counts/order, or supply a folder Overview.
+- CanvasFrame now receives its own direct, frame-gated Explorer replacement variant, removing the
+  duplicate stock tree below `RootIndexSidebar` when `replaceExplorer` is enabled while preserving it
+  when the option is false.
+- Default-frame eligible-book routes now promote Quartz's existing book-title/book-root breadcrumb by
+  hiding only the redundant leading Home crumb; root routes and true-root PageTitle/switcher access
+  remain unchanged.
 
 ### Security
 

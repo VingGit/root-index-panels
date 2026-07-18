@@ -141,11 +141,18 @@ The generated left component uses native disclosures and ordinary links. Its box
 the authored title from `content/index.md` (here, `Knowledge Base`) or the localized Home fallback,
 and opens an absolute manual menu without moving the Explorer tree:
 
-- on `/`, `/loose-note`, `/tags/...`, `/404`, and unrecognized namespaces, its note list contains
-  only listed physical root notes;
+- on `/`, `/loose-note`, `/tags/...`, `/404`, and unrecognized namespaces, its document list contains
+  listed physical root notes plus safe generated root Canvas/Base leaves;
 - on `/java/` and descendants such as `/java/collections`, it contains only the Java hierarchy; and
 - the switcher always offers the root manual plus every eligible book using the same safe title,
   icon, accent, exclusion, and destination rules as the root collection.
+
+Books, cards, ordering inputs, and counts remain listed-physical only. Within those scopes, a
+generated route becomes a navigation leaf only when it is not unlisted, owns exactly one matching
+`canvasData`/`basesData` marker, and has a canonical lower-case `.canvas`/`.base` suffix. Canvas uses
+a workflow glyph and Base uses a table-properties glyph rather than the ordinary file-text glyph.
+These leaves may require structural folder containers for a nested path, but they never create a
+book, change its count/order, or provide a folder Overview destination/title.
 
 All destinations are resolved relative to the current Quartz slug. A visible check and
 `data-rip-selected="true"` mark the manual whose tree is being browsed, while
@@ -164,16 +171,23 @@ separate `.left.sidebar:has(> .rip-sidebar)` mobile rule constrains width and wr
 and the other left-slot components fit the viewport. Neither rule hides a sibling, selects the
 right rail, Graph, or TOC, or matches Canvas/custom frames.
 
-By default, this precise selector replaces only the stock Explorer navigation role:
+By default, frame-specific variants replace only the stock Explorer navigation role:
 
 ```text
 .left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer
+
+.page[data-frame="canvas"]
+  > #quartz-body
+  > .center.canvas-frame
+  > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"])
+  > .explorer
 ```
 
-It depends on the current Quartz default-frame/Explorer class structure and browser `:has()`
-support. `replaceExplorer: false` removes the opt-in attribute and leaves Explorer visible. This is
-the only one of the plugin's three host-selector kinds that suppresses another plugin, and it never
-targets Search, PageTitle, Graph, Table of Contents, Backlinks, or other components.
+They depend on the current Quartz default-frame/CanvasFrame/Explorer class structure and browser
+`:has()` support. `replaceExplorer: false` removes the opt-in attribute and leaves Explorer visible
+in either frame. These variants form one host-selector kind and are the only whole-component
+suppression; they never target Search, PageTitle, Graph, Table of Contents, Backlinks, or other
+components.
 
 ```yaml
 options:
@@ -183,8 +197,18 @@ options:
 The right layout slot remains host-owned. A configured right Graph appears on the root and ordinary
 book notes and can show cross-book edges. CanvasPage is different by design: its fullscreen `canvas`
 frame has a togglable left slot but no normal right slot. Override CanvasPage to the `default` frame
-if that route also needs the ordinary right Graph. Its custom `.canvas-sidebar` wrapper also does not
-match the default-frame Explorer replacement selector, so its drawer may contain both navigations.
+if that route also needs the ordinary right Graph. Its custom `.canvas-sidebar` wrapper uses the
+separate frame-gated replacement variant, so the default option removes the duplicate Explorer tree;
+the drawer contains both only when `replaceExplorer: false`.
+
+When stock Breadcrumbs renders on a default-frame eligible-book route, only its redundant leading
+`Home` crumb is hidden. Quartz's existing book-title link to the book root becomes the first visible
+crumb. Root-context breadcrumbs remain unchanged, while PageTitle and the manual selector continue
+to provide true-root access. This book-root promotion is CSS-only.
+
+The responsive grid rule, mobile-left rule, frame-specific Explorer variants, and book-breadcrumb
+promotion are exactly four narrowly scoped host-selector kinds. None selects the right rail, Graph,
+TOC, or Backlinks.
 
 These relevant entries coexist normally; no body placement is present:
 
@@ -361,7 +385,8 @@ These icon values come from the bundled registry. A TypeScript-only custom compo
 uses the earlier `icons` registration pattern; frontmatter never contains SVG or component code.
 
 The counts are deliberately physical/listed counts. They exclude each book index, draft and
-unlisted controls, the local SVG asset, and synthetic `.canvas`/`.base` Page Type records. The Git
+unlisted controls, the local SVG asset, and synthetic `.canvas`/`.base` Page Type records. Safe
+Canvas/Base records still appear as distinctly iconed leaves in the scoped navigation. The Git
 book's listed encrypted fixture contributes to `5`; its hidden encrypted control does not. Cross-book
 links are intentional so the normal Graph and Backlinks can expose relationships even though the
 left navigation displays only one book hierarchy at a time.

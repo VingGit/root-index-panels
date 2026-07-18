@@ -11,6 +11,9 @@ Turn the existing multi-book root Page Type into a coherent Quartz-native knowle
 3. The rest of Quartz continues to behave normally, especially Search and the always-present right
    Graph slot.
 4. Three small technical books remain in `content/` as an observable compatibility laboratory.
+5. Generated Canvas/Base pages appear as distinctly iconed scoped-navigation leaves, Canvas does not
+   retain a duplicate Explorer below the plugin, and eligible-book Breadcrumbs begin at the book
+   root.
 
 Functional fidelity to the local Figma Make source matters. Keep the icon tiles, restrained accents,
 compact hierarchy, popup selector, Explorer label, useful landing-page context, and responsive
@@ -51,14 +54,18 @@ manual Page Type body layout registration.
 - Keep the Quartz `default` frame and the Page Type's existing `layout: "content"` key unless the
   Prompt 01 discovery gate proves a public-API reason to revise the contract before source edits.
 - Do not reimplement Search, PageTitle, Darkmode, ReaderMode, Breadcrumbs, Table of Contents,
-  Backlinks, Graph, or Footer. Compose with their normal layout entries.
+  Backlinks, Graph, or Footer. Compose with their normal layout entries. On an eligible-book route,
+  promote Quartz's existing book-title/book-root breadcrumb by hiding only the redundant first Home
+  element; do not reconstruct its data or markup.
 - `RootIndexSidebar` intentionally replaces the stock Explorer navigation role. Because Quartz's
   installer cannot remove another plugin entry, `replaceExplorer` defaults to `true`: narrowly
-  scoped component CSS may hide only a direct stock `.explorer` in the same left sidebar when the
-  rendered sidebar carries an explicit opt-in data attribute. Do not mutate Explorer DOM, intercept
-  its scripts, hide any other component, or use an unscoped `.explorer` selector.
-- `replaceExplorer: false` must leave stock Explorer visible for users who deliberately want both.
-  Document the selector's dependency on current Quartz default-frame/Explorer markup.
+  scoped, frame-gated component CSS may hide only a direct stock `.explorer` sibling in the default
+  `.left.sidebar` or Canvas `.canvas-sidebar` when the rendered sidebar carries an explicit opt-in
+  data attribute. Do not mutate Explorer DOM, intercept its scripts, hide any other component, or use
+  an unscoped `.explorer` selector.
+- `replaceExplorer: false` must leave stock Explorer visible in both frames for users who deliberately
+  want both. Document the selectors' dependency on current Quartz default/CanvasFrame/Explorer
+  markup.
 - Never clear, replace, hide, reposition, or style the right layout slot. With Graph enabled at
   `position: right`, it remains rendered on root and book notes. On tablet/mobile, "always visible"
   means present in Quartz's responsive document flow, not permanently fixed onscreen.
@@ -105,21 +112,30 @@ Overview semantics:
   The root and every eligible book are ordinary links; core navigation works with JavaScript
   disabled and Quartz SPA enabled.
 - Root context applies to `index`, listed root notes, tags, 404, and paths whose first segment is not
-  an eligible book. Its Explorer lists only listed physical root notes, excluding `index`.
+  an eligible book. Its Explorer lists listed physical root notes and safe generated root Canvas/Base
+  leaves, excluding `index`.
 - The root selector/menu label comes from the authored title of the first listed physical exact
   `index` record. Accessors are ignored and a localized Home label is the safe fallback; do not
   hard-code a site name such as `Knowledge Base`.
 - Book context applies when the current slug begins with an eligible first segment. The selected
   selector label uses that book's resolved title/accent/icon; the Explorer lists only that book's
-  navigable descendants and does not repeat other books.
+  navigable descendants—including safe generated Canvas/Base leaves—and does not repeat other books.
 - Build sidebar books through the same collector and the same normalized `excludeDirs`,
   `descriptionFallback`, `sort`, and `tagCount` inventory options as the panels. The two independently
   rendered components need equivalent results and ordering, not shared array identity.
 - Deduplicate by canonical slug. Exclude unlisted content and the reserved `tags` namespace. Preserve
   authored titles; use the established fallback only when a title is absent.
+- Keep book/card eligibility, counts, and book ordering listed-physical only. Admit a generated
+  Canvas/Base navigation leaf only when it is non-unlisted, owns exactly one matching
+  `canvasData`/`basesData` provenance marker, and has a canonical lower-case `.canvas`/`.base` suffix.
+  Reject ambiguous/inherited/accessor/mismatched markers and prefer a physical collision. Give note,
+  Canvas, and Base leaves distinct icons.
 - In book context, render the book landing first as `Overview`, then the scoped descendant tree. Use
   native disclosure for directories: first-level folders start open; deeper folders start open only
   when they contain the current route, while readers may change either state.
+- Generated leaves may originate structural folder containers inside an already-eligible book so a
+  nested path is navigable, but never establish a book, inflate its count/order, or provide a folder
+  Overview destination/title.
 - Mark the selected root/book context independently from exact-page state. The popup shows exactly
   one selected check/status, while only the exact current destination receives
   `aria-current="page"`; a descendant route must not falsely mark the book landing current.
@@ -143,12 +159,15 @@ Overview semantics:
 - Support long titles, long descriptions, Unicode paths, zoom/reflow, forced colors, light/dark
   themes, coarse pointers, and `prefers-reduced-motion`.
 - Accent color is decorative and never the only current/focus/expanded indicator.
-- Scope plugin markup/classes under `rip-*`, except exactly three narrowly scoped host-selector
-  kinds: the default-frame grid containment above; mobile
-  `.left.sidebar:has(> .rip-sidebar)` width/wrap containment; and direct opted-in Explorer sibling
-  replacement. The mobile left rule may set only `min-width`, `width`, `max-width`, `flex-wrap`, and
-  `overflow-wrap` for viewport containment. Explorer replacement remains the only selector allowed
-  to suppress another plugin and must require the explicit `rip-sidebar` marker/data attribute.
+- Scope plugin markup/classes under `rip-*`, except exactly four narrowly scoped behavioral
+  host-selector kinds: the default-frame grid containment above; mobile
+  `.left.sidebar:has(> .rip-sidebar)` width/wrap containment; frame-specific direct opted-in Explorer
+  sibling replacement for default and Canvas frames; and default-frame eligible-book breadcrumb-root
+  promotion. The mobile left rule may set only `min-width`, `width`, `max-width`, `flex-wrap`, and
+  `overflow-wrap` for viewport containment. Explorer variants must require the explicit
+  `rip-sidebar` marker/data attribute and are the only whole-component suppression. Breadcrumb
+  promotion may hide only a non-only first stock Home crumb; root-context routes keep normal
+  Breadcrumbs behavior and PageTitle/manual-selector access to the true root.
 
 ## Durable compatibility fixture
 
@@ -164,9 +183,9 @@ they cover configured Markdown, links, transclusions, metadata, Search, TOC, Gra
 aliases, visibility, encryption, Canvas, Bases, assets, paths, responsive behavior, and cross-book
 edges. Keep a manual checklist and stable `FIXTURE-*` sentinels.
 
-The fixture does not redefine book counts. Canvas/Bases virtual pages remain testable destinations
-but do not inflate the frozen physical/listed `docCount` unless Prompt 01 records new public host
-evidence and revises both contracts before implementation.
+The fixture does not redefine book counts. Safe Canvas/Bases virtual pages remain testable,
+distinctly iconed scoped-navigation destinations but do not create/prove books, provide folder
+Overviews, or inflate the frozen physical/listed `docCount`/book ordering.
 
 ## Known limitation and release boundary
 

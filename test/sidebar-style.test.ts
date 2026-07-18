@@ -6,6 +6,7 @@ const styleSource = readFileSync(
   new URL("../src/components/styles/sidebar.scss", import.meta.url),
   "utf8",
 )
+const compactStyleSource = styleSource.replace(/\s+/g, "")
 
 describe("RootIndexSidebar Explorer replacement styles", () => {
   it("renders the native manual switcher as a bounded overlay surface", () => {
@@ -32,6 +33,22 @@ describe("RootIndexSidebar Explorer replacement styles", () => {
     )
     expect(styleSource).not.toContain("rip-sidebar-explorer-replaced")
     expect(styleSource).not.toMatch(/\.(?:right|graph|toc|backlinks|search|page-title)\b/)
+  })
+
+  it("hides only a direct CanvasFrame Explorer sibling when replacement is enabled", () => {
+    expect(compactStyleSource).toContain(
+      '.page[data-frame="canvas"]>#quartz-body>.center.canvas-frame>.canvas-sidebar:has(>.rip-sidebar[data-rip-replace-explorer="true"])>.explorer{display:none!important;}',
+    )
+    expect(styleSource.match(/\.page\[data-frame="canvas"\]/g)).toHaveLength(1)
+    expect(styleSource).not.toContain('[data-rip-replace-explorer="false"]')
+  })
+
+  it("hides only the redundant root breadcrumb on default-frame book routes", () => {
+    expect(compactStyleSource).toContain(
+      '.page[data-frame="default"]:has(>#quartz-body>.left.sidebar>.rip-sidebar[data-rip-scope="book"])>#quartz-body>.center>.page-header>.popover-hint>.breadcrumb-container>.breadcrumb-element:first-child:not(:only-child){display:none;}',
+    )
+    expect(styleSource.match(/\[data-rip-scope="book"\]/g)).toHaveLength(1)
+    expect(styleSource.match(/:first-child:not\(:only-child\)/g)).toHaveLength(1)
   })
 
   it("contains the default Quartz grid without targeting right-side components", () => {

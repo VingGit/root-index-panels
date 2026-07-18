@@ -10,8 +10,9 @@ code.
 ## Phase A — Lock regressions and shared data
 
 1. Add failing tests for the new manifest topology, overview/article/directory order, sidebar contexts,
-   native markup, Explorer opt-out, path resolution, and Graph-safe resource scoping before changing
-   the corresponding behavior.
+   typed Canvas/Base leaves and icons, both frame-specific Explorer variants/opt-out, book-root
+   breadcrumbs, native markup, path resolution, and Graph-safe resource scoping before changing the
+   corresponding behavior.
 2. Extend runtime normalization with `replaceExplorer`, preserving every existing option default and
    invalid-input fallback.
 3. Reuse the existing one-pass book collector and appearance resolvers. Pass the sidebar the same
@@ -22,6 +23,13 @@ code.
    inputs and returns an immutable/render-ready root/book model with nested nodes. Select the active
    scope from that model and the current slug. Keep both operations free of DOM, Preact, and
    host-private imports so they are exhaustively unit-testable.
+   - Preserve listed-physical book/card eligibility, counts, and ordering inputs.
+   - Admit a generated Canvas/Base document leaf only with its own matching provenance marker,
+     canonical lower-case suffix, and non-unlisted state. Prefer physical slug collisions and reject
+     ambiguous/inherited/accessor/mismatched records without executing them.
+   - Allow structural folders only to represent a typed leaf's nested path in an already-eligible
+     book; the virtual record cannot create/prove a book, change counts/order, or supply a folder
+     Overview destination/title.
 5. Cache immutable navigation models only by `allFiles` identity plus all four normalized inventory
    values. Equivalent normalized variants may reuse a model; distinct variants must remain isolated.
 6. Treat all `fileData`/frontmatter objects as unknown and use the existing own-property defensive
@@ -51,14 +59,17 @@ code.
    - a native root-manual/book selector whose root label comes from authored physical `index` title
      data and falls back safely to localized Home;
    - an uppercase/localized explorer label or equivalent semantic heading;
-   - root-note navigation or the selected book's `Overview` plus nested descendant navigation;
+   - root-document navigation or the selected book's `Overview` plus nested descendant navigation,
+     including safe generated Canvas/Base leaves;
    - selected-context, exact-current-page, and current-ancestor state as separate concepts.
 3. Resolve all links relative to `fileData.slug` using public Quartz utilities. Folder disclosures are
    native and folder links appear only when a valid emitted destination is known.
-4. Reuse panel icon/accent resolution for selected-book and selector decoration. Keep SVG decorative,
-   non-focusable, and free of nested interactions; keep accents out of critical state indicators.
-5. Emit `data-rip-replace-explorer="true"` only for normalized opt-in. Add the exact narrow
-   same-left-sidebar/direct-Explorer CSS replacement selector and a `false` path with no suppression.
+4. Reuse panel icon/accent resolution for selected-book and selector decoration. Add distinct
+   ordinary-note, Canvas, and Base leaf glyphs. Keep SVG decorative, non-focusable, and free of nested
+   interactions; keep accents out of critical state indicators.
+5. Emit `data-rip-replace-explorer="true"` only for normalized opt-in. Add separate exact, frame-gated
+   direct-Explorer sibling variants for default `.left.sidebar` and Canvas `.canvas-sidebar`, with a
+   `false` path that suppresses neither.
 6. Add responsive styles for Quartz desktop/tablet/mobile flow, native mobile disclosure, an
    absolute/opaque selector popup, long labels, scrolling, touch, zoom, light/dark, forced colors,
    reduced motion, and print as appropriate. Opening the popup must not shift the Explorer, and its
@@ -69,10 +80,13 @@ code.
    in Prompt 01. Neither structural rule may hide/restyle siblings or select the right rail/custom
    frames. Add a plugin-local wide-breakpoint fallback that displays shell content when a mobile
    collapse leaves the native `<details>` closed after resizing and its summary is hidden.
-7. Add only the small selector enhancement needed for light-dismiss: outside `pointerdown`, selected
+7. Add the exact default-frame eligible-book breadcrumb selector from Prompt 01. Hide only the
+   non-only first stock Home element so Quartz's existing book-title/book-root link becomes first;
+   keep root-context behavior and true-root PageTitle/manual-selector access unchanged.
+8. Add only the small selector enhancement needed for light-dismiss: outside `pointerdown`, selected
    link, Escape with summary-focus restoration, and one-open-selector behavior. Follow Quartz
    `nav`/`window.addCleanup` lifecycle conventions and prove no-JS functionality first; never
-   reconstruct navigation or touch host components.
+   reconstruct navigation, rewrite Breadcrumbs, or touch host components.
 
 ## Phase D — Manifest, public API, and build graph
 
@@ -106,8 +120,8 @@ Within the allowed parent `content/` subtree:
 4. Keep negative controls safe: drafts/unlisted pages must not leak; encryption passwords are fake and
    documented; local assets contain no sensitive data; no remote test dependency is required.
 5. Reconcile the checklist and nearest content DOX with clean-build observed counts. Do not count
-   Canvas/Bases merely because their source files exist on disk if Quartz exposes them only as
-   synthetic Page Type records.
+   Canvas/Bases merely because their source files exist on disk or their safe generated routes appear
+   as scoped-navigation leaves.
 
 ## Phase F — Styling and integration polish
 
@@ -118,11 +132,13 @@ Within the allowed parent `content/` subtree:
   120%-by-80% top radial accent wash, one-pixel accent-centered bottom hairline, `300ms` opacity,
   keyboard-focus parity, and two-pixel lift with reduced-motion/forced-colors fallbacks.
 - Check coexistence with PageTitle, Search, Darkmode, ReaderMode, Breadcrumbs, ContentMeta,
-  NoteProperties, TOC, Graph, Backlinks, and Footer. Fix only plugin-owned markup/styles/scripts.
-- Audit generated selectors and scripts: allow exactly the three host-selector kinds frozen in
-  Prompt 01—default-frame grid containment, direct-plugin mobile left width/wrap containment, and
-  direct Explorer sibling replacement. Explorer replacement remains the only cross-plugin
-  suppression; no code selects or touches the right slot, Graph, TOC, or a custom frame.
+  NoteProperties, TOC, Graph, Backlinks, and Footer. The only host-element changes are the exact
+  Explorer sibling replacement and redundant first book-breadcrumb suppression frozen in Prompt 01.
+- Audit generated selectors and scripts: allow exactly the four host-selector kinds frozen in
+  Prompt 01—default-frame grid containment, direct-plugin mobile left width/wrap containment,
+  frame-specific default/Canvas direct Explorer sibling replacement, and default-frame book-root
+  breadcrumb promotion. Explorer replacement remains the only whole-component suppression; no code
+  selects or touches the right slot, Graph, TOC, Backlinks, or unrelated custom frames.
 - Verify base-path/subdirectory hosting at every route depth and through SPA navigation.
 
 ## Implementation acceptance
@@ -131,9 +147,12 @@ Within the allowed parent `content/` subtree:
   frozen order, with the banner first inside the plugin body.
 - The manifest exposes/inserts exactly one sidebar component and never the body.
 - Root/book navigation is correctly scoped, includes book `Overview`, distinguishes selection from
-  exact-current state, uses the frozen disclosure defaults, and is accessible/path-safe.
-- `replaceExplorer: true` prevents the stock duplicate only in the exact intended sidebar context;
-  `false` preserves it.
+  exact-current state, includes distinctly iconed safe Canvas/Base leaves without altering the
+  physical book model, uses the frozen disclosure defaults, and is accessible/path-safe.
+- `replaceExplorer: true` prevents the stock duplicate only in the exact intended default/Canvas
+  sibling contexts; `false` preserves it in both.
+- Eligible default-frame book Breadcrumbs begin at Quartz's existing book-title/root link; root
+  context and PageTitle/manual-selector true-root access remain intact.
 - The Graph/right slot and all unrelated Quartz components remain operational and visible.
 - The three content books are a durable, documented compatibility laboratory with accurate expected
   outcomes.

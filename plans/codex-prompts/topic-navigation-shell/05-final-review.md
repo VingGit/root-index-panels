@@ -5,6 +5,40 @@ current diffs, generated package, parent fixture, rendered pages, pushed revisio
 box, cite authoritative current-state evidence in `IMPLEMENTATION-NOTES.md`; absence of an observed
 failure is not proof.
 
+The checked sections below record the completed navigation-shell/design-alignment baseline. Their
+physical-only sidebar-leaf, three-selector, default-frame-only Explorer, and untouched-Breadcrumbs
+details are superseded by the active corrective audit immediately below; do not reinterpret a
+historical check as evidence that the new behavior passed.
+
+## Active Canvas/Base, CanvasFrame, and breadcrumb corrective audit
+
+- [ ] Book/card eligibility, physical counts, and book ordering remain listed-physical only.
+      Generated Canvas/Base records cannot create/prove a book, inflate counts/order, or supply a
+      folder Overview destination/title; structural folder containers may only expose their nested
+      path inside an already-eligible book.
+- [ ] Root and eligible-book scopes include a generated Canvas/Base leaf only when it is non-unlisted,
+      owns exactly one matching provenance marker, and has a canonical lower-case `.canvas`/`.base`
+      slug. Ambiguous, inherited/accessor-backed, suffix-mismatched, and exact `<segment>/index`
+      provenance collisions are rejected; physical canonical-slug collisions win.
+- [ ] Ordinary-note, Canvas, and Base leaves render three distinct decorative glyphs and correct
+      exact-current/ancestor state in unit SSR, isolated stock Quartz output, and real browser output.
+- [ ] `replaceExplorer: true` hides only the direct Explorer sibling beside the plugin sidebar in both
+      default `.left.sidebar` and Canvas `.canvas-sidebar` frames. `false`, nested/unrelated Explorer,
+      and other components remain visible; the Canvas stage and plugin sidebar remain usable.
+- [ ] On default-frame eligible-book routes, only the redundant first stock Home breadcrumb element
+      is hidden, making Quartz's existing book-title/book-root link first. Root-context Breadcrumbs
+      retain stock behavior, and PageTitle/manual selector retain true-root access.
+- [ ] CSS contains exactly four behavioral host-selector kinds: default-frame grid containment,
+      mobile-left containment, frame-specific direct Explorer replacement, and book-root breadcrumb
+      promotion. No script rewrites Explorer/Breadcrumbs and no selector or script changes the right
+      slot, Graph, TOC, Backlinks, or unrelated components/frames.
+- [ ] Focused unit/style tests, full check/build/dist/package gates, isolated Page Type integration,
+      desktop/tablet/mobile browser checks, base-path links, and fresh remote-pin verification pass at
+      the exact pushed revision, with current evidence recorded in `IMPLEMENTATION-NOTES.md`.
+- [ ] README, examples, architecture, changelog, prompt contracts, plugin DOX, generated `dist/`, and
+      public declarations agree with the correction. No upstream file, release, tag, npm publish,
+      marketplace action, or unauthorized parent push occurs.
+
 ## External-plugin and topology invariant
 
 - [x] No file that exists in Quartz upstream outside the explicit disposable-`content/` fixture
@@ -69,11 +103,12 @@ failure is not proof.
       `minmax(0, ...)`, preserves grid areas/order, and does not match Canvas/custom frames.
 - [x] Mobile left CSS matches only `.left.sidebar:has(> .rip-sidebar)`, applies only the frozen
       width/wrap containment properties, and leaves every sibling host component visible.
-- [x] `replaceExplorer` normalizes to true by default; its selector hides only a direct stock Explorer
-      beside an opted-in sidebar. False and unrelated/nested Explorer cases remain visible.
-- [x] CSS/script review finds exactly the three permitted host-selector kinds and no
-      suppression/mutation of Search, PageTitle, toolbar components, right slot, Graph, TOC,
-      Backlinks, Canvas/custom frames, or other unrelated plugins; Explorer is the only suppression.
+- [x] At the superseded baseline, `replaceExplorer` normalized to true by default and its one
+      default-frame selector hid only a direct stock Explorer beside an opted-in sidebar. False and
+      unrelated/nested Explorer cases remained visible.
+- [x] At the superseded baseline, CSS/script review found exactly its then-permitted three
+      host-selector kinds and no suppression/mutation of Search, PageTitle, toolbar components, right
+      slot, Graph, TOC, Backlinks, Canvas/custom frames, or other unrelated plugins.
 - [x] The absolute selector popup causes no Explorer layout shift, stays inside the viewport, and
       disables the visually covered Explorer scope while open. Outside pointer and selected-link
       activation close it; Escape closes and restores summary focus; SPA cleanup prevents duplicates.

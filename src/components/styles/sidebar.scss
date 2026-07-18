@@ -330,6 +330,26 @@
   display: none !important;
 }
 
+.page[data-frame="canvas"]
+  > #quartz-body
+  > .center.canvas-frame
+  > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"])
+  > .explorer {
+  display: none !important;
+}
+
+.page[data-frame="default"]:has(
+    > #quartz-body > .left.sidebar > .rip-sidebar[data-rip-scope="book"]
+  )
+  > #quartz-body
+  > .center
+  > .page-header
+  > .popover-hint
+  > .breadcrumb-container
+  > .breadcrumb-element:first-child:not(:only-child) {
+  display: none;
+}
+
 @media (min-width: 801px) {
   .rip-sidebar-shell:not([open]) > .rip-sidebar-content {
     display: block;

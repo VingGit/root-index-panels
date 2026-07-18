@@ -2875,10 +2875,25 @@ var Shield = createLucideIcon("shield", [
   ]
 ]);
 
+// node_modules/lucide-preact/dist/esm/icons/table-properties.mjs
+var TableProperties = createLucideIcon("table-properties", [
+  ["path", { d: "M15 3v18", key: "14nvp0" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }],
+  ["path", { d: "M21 9H3", key: "1338ky" }],
+  ["path", { d: "M21 15H3", key: "9uk58r" }]
+]);
+
 // node_modules/lucide-preact/dist/esm/icons/terminal.mjs
 var Terminal = createLucideIcon("terminal", [
   ["path", { d: "M12 19h8", key: "baeox8" }],
   ["path", { d: "m4 17 6-6-6-6", key: "1yngyt" }]
+]);
+
+// node_modules/lucide-preact/dist/esm/icons/workflow.mjs
+var Workflow = createLucideIcon("workflow", [
+  ["rect", { width: "8", height: "8", x: "3", y: "3", rx: "2", key: "by2w9f" }],
+  ["path", { d: "M7 11v4a2 2 0 0 0 2 2h4", key: "xkn7yn" }],
+  ["rect", { width: "8", height: "8", x: "13", y: "13", rx: "2", key: "1cgmvn" }]
 ]);
 function readLucideIconNode(icon) {
   const wrapper = icon({});
@@ -2908,11 +2923,13 @@ function adaptLucideIcon(icon) {
   );
 }
 var sidebarIcons = Object.freeze({
+  base: adaptLucideIcon(TableProperties),
+  canvas: adaptLucideIcon(Workflow),
   check: adaptLucideIcon(Check),
   chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
-  file: adaptLucideIcon(FileText),
   folder: adaptLucideIcon(Folder),
-  home: adaptLucideIcon(House)
+  home: adaptLucideIcon(House),
+  note: adaptLucideIcon(FileText)
 });
 var builtInIcons = {
   "book-open": adaptLucideIcon(BookOpen),
@@ -3325,6 +3342,16 @@ function isPhysical2(file) {
 function isSyntheticVirtualIndex(file) {
   return !isPhysical2(file) && (hasOwnDataProperty2(file, "canvasData") || hasOwnDataProperty2(file, "basesData"));
 }
+function navigationDocumentKind(file, parsed) {
+  if (ownDataValue5(file, "unlisted") === true) return void 0;
+  if (isPhysical2(file)) return "note";
+  const hasCanvasData = hasOwnDataProperty2(file, "canvasData");
+  const hasBasesData = hasOwnDataProperty2(file, "basesData");
+  if (hasCanvasData === hasBasesData) return void 0;
+  if (hasCanvasData && parsed.slug.endsWith(".canvas")) return "canvas";
+  if (hasBasesData && parsed.slug.endsWith(".base")) return "base";
+  return void 0;
+}
 function humanizeSegment2(segment) {
   const text2 = segment.replace(/-/g, " ");
   return text2.length === 0 ? text2 : text2.charAt(0).toUpperCase() + text2.slice(1);
@@ -3340,7 +3367,9 @@ function authoredTitle(file) {
   return typeof title === "string" && title.trim().length > 0 ? title : void 0;
 }
 function compareNodes(a, b) {
-  if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1;
+  const leftIsFolder = a.kind === "folder";
+  const rightIsFolder = b.kind === "folder";
+  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1;
   const left = a.title.toLowerCase();
   const right = b.title.toLowerCase();
   if (left < right) return -1;
@@ -3386,7 +3415,7 @@ function ensureFolder(parent, segment, keyPrefix) {
   parent.set(key, folder);
   return folder;
 }
-function insertBookFile(root2, bookSegment, relativeParts, slug2, file, folderDestinations) {
+function insertBookFile(root2, bookSegment, relativeParts, slug2, file, kind, folderDestinations) {
   if (relativeParts.length === 0) return;
   const isIndex = relativeParts.at(-1) === "index";
   const folderParts = relativeParts.slice(0, -1);
@@ -3414,10 +3443,10 @@ function insertBookFile(root2, bookSegment, relativeParts, slug2, file, folderDe
   }
   const leafSegment = relativeParts.at(-1);
   if (!leafSegment) return;
-  const key = `note:${slug2}`;
+  const key = `document:${slug2}`;
   if (parent.has(key)) return;
   parent.set(key, {
-    kind: "note",
+    kind,
     key,
     slug: slug2,
     title: fileTitle(file, leafSegment)
@@ -3425,7 +3454,7 @@ function insertBookFile(root2, bookSegment, relativeParts, slug2, file, folderDe
 }
 function freezeNodes(nodes) {
   const frozen = Array.from(nodes.values(), (node) => {
-    if (node.kind === "note") return Object.freeze({ ...node });
+    if (node.kind !== "folder") return Object.freeze({ ...node });
     return Object.freeze({
       kind: node.kind,
       key: node.key,
@@ -3464,9 +3493,19 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
     }
     folderDestinations.set(parsed.slug, file);
   }
+  const navigationFiles = [];
   for (const file of validFiles) {
-    if (!isListedPhysical(file)) continue;
     const parsed = parseSlug(file);
+    if (!parsed || !isListedPhysical(file)) continue;
+    navigationFiles.push({ file, parsed, kind: "note" });
+  }
+  for (const file of validFiles) {
+    const parsed = parseSlug(file);
+    if (!parsed || isPhysical2(file)) continue;
+    const kind = navigationDocumentKind(file, parsed);
+    if (kind && kind !== "note") navigationFiles.push({ file, parsed, kind });
+  }
+  for (const { file, parsed, kind } of navigationFiles) {
     if (!parsed || seenSlugs.has(parsed.slug)) continue;
     seenSlugs.add(parsed.slug);
     if (parsed.parts.length === 1) {
@@ -3476,8 +3515,8 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
       }
       rootNotes.push(
         Object.freeze({
-          kind: "note",
-          key: `note:${parsed.slug}`,
+          kind,
+          key: `document:${parsed.slug}`,
           slug: parsed.slug,
           title: fileTitle(file, parsed.parts[0])
         })
@@ -3487,7 +3526,15 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
     const bookSegment = parsed.parts[0];
     const tree = bookSegment ? bookTrees.get(bookSegment) : void 0;
     if (!tree || parsed.slug === `${bookSegment}/index`) continue;
-    insertBookFile(tree, bookSegment, parsed.parts.slice(1), parsed.slug, file, folderDestinations);
+    insertBookFile(
+      tree,
+      bookSegment,
+      parsed.parts.slice(1),
+      parsed.slug,
+      file,
+      kind,
+      folderDestinations
+    );
   }
   rootNotes.sort(compareNodes);
   const frozenBooks = [];
@@ -3557,13 +3604,14 @@ function selectSidebarNavigationScope(model, currentSlug2) {
 var sidebar_inline_default = 'function c(){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));if(r.length===0)return;let s=[];for(let e of r){let n=()=>{if(e.open)for(let o of r)o!==e&&(o.open=!1)},t=o=>{o.target?.closest?.("a")&&(e.open=!1)};e.addEventListener("toggle",n),e.addEventListener("click",t),s.push(()=>{e.removeEventListener("toggle",n),e.removeEventListener("click",t)})}let i=e=>{let n=e.target;if(n)for(let t of r)t.open&&!t.contains(n)&&(t.open=!1)},d=e=>{if(e.key!=="Escape")return;let n=r.find(o=>o.open);if(!n)return;e.preventDefault(),n.open=!1,n.firstElementChild?.focus?.()};document.addEventListener("pointerdown",i),document.addEventListener("keydown",d),s.push(()=>{document.removeEventListener("pointerdown",i),document.removeEventListener("keydown",d)}),typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{s.forEach(e=>e())})}typeof document<"u"&&document.addEventListener("nav",()=>{c()});\n';
 
 // src/components/styles/sidebar.scss
-var sidebar_default = '.rip-sidebar {\n  width: 100%;\n  min-width: 0;\n  color: var(--darkgray);\n  font-size: 0.9rem;\n}\n.rip-sidebar *,\n.rip-sidebar *::before,\n.rip-sidebar *::after {\n  box-sizing: border-box;\n}\n.rip-sidebar a {\n  color: inherit;\n  text-decoration: none;\n}\n.rip-sidebar a:hover {\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n.rip-sidebar a:focus-visible,\n.rip-sidebar summary:focus-visible {\n  border-radius: 0.35rem;\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home,\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-shell,\n.rip-sidebar-content {\n  width: 100%;\n  min-width: 0;\n}\n\n.rip-sidebar-content {\n  position: relative;\n}\n\n.rip-sidebar-toggle {\n  display: none;\n}\n\n.rip-sidebar-home {\n  padding: 0.45rem 0.55rem;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=ancestor] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-switcher {\n  position: relative;\n  z-index: 5;\n  margin-top: 0.35rem;\n}\n\n.rip-sidebar-switcher[open] {\n  z-index: 30;\n}\n\n.rip-sidebar-switcher > summary,\n.rip-sidebar-folder > details > summary {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  color: var(--dark);\n  cursor: pointer;\n  list-style: none;\n  user-select: none;\n}\n\n.rip-sidebar-switcher > summary {\n  padding: 0.5rem 0.6rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.5rem;\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);\n  font-family: var(--headerFont);\n  font-weight: 600;\n  transition: border-color 120ms ease, background-color 120ms ease;\n}\n\n.rip-sidebar-switcher > summary:hover {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-switcher > summary::-webkit-details-marker,\n.rip-sidebar-folder > details > summary::-webkit-details-marker,\n.rip-sidebar-toggle::-webkit-details-marker {\n  display: none;\n}\n\n.rip-sidebar-switcher-label,\n.rip-sidebar-link-label,\n.rip-sidebar-folder-label {\n  min-width: 0;\n  overflow-wrap: anywhere;\n}\n\n.rip-sidebar-switcher-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rip-sidebar-switcher-chevron {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--gray);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon,\n.rip-sidebar-book-icon {\n  display: inline-grid;\n  width: 1.4rem;\n  height: 1.4rem;\n  flex: 0 0 1.4rem;\n  place-items: center;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 0.38rem;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 15%, transparent);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon svg,\n.rip-sidebar-book-icon svg,\n.rip-sidebar-node-icon svg,\n.rip-sidebar-selected-check svg,\n.rip-sidebar-switcher-chevron svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-sidebar-switcher-menu {\n  position: absolute;\n  z-index: 20;\n  top: calc(100% + 0.35rem);\n  inset-inline: 0;\n  overflow: hidden;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.55rem;\n  color: var(--darkgray);\n  background: var(--light);\n  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);\n}\n\n.rip-sidebar-switcher-heading {\n  margin: 0;\n  padding: 0.5rem 0.7rem;\n  border-bottom: 1px solid var(--lightgray);\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  line-height: 1.4;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-home-list,\n.rip-sidebar-books,\n.rip-sidebar-tree,\n.rip-sidebar-children {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.rip-sidebar-home-list {\n  padding: 0.3rem 0.35rem;\n}\n\n.rip-sidebar-switcher-divider {\n  height: 1px;\n  margin-inline: 0.7rem;\n  background: var(--lightgray);\n}\n\n.rip-sidebar-books {\n  max-height: min(14rem, 100dvh - 12rem);\n  padding: 0.3rem 0.35rem 0.4rem;\n  overflow-y: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-switcher-menu [data-rip-selected=true] {\n  color: var(--rip-sidebar-accent, var(--dark));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 10%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar-selected-check {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  pointer-events: none;\n}\n\n.rip-sidebar-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  padding: 0.42rem 0.6rem;\n}\n\n.rip-sidebar-switcher[open] + .rip-sidebar-scope {\n  visibility: hidden;\n  pointer-events: none;\n}\n\n.rip-sidebar-scope {\n  min-height: 0;\n  margin-top: 0.95rem;\n}\n\n.rip-sidebar-scope-title {\n  margin: 0 0 0.35rem;\n  padding-inline: 0.6rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.72rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-tree {\n  max-height: calc(100dvh - 19rem);\n  overflow: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-node-icon {\n  display: inline-grid;\n  width: 1rem;\n  height: 1rem;\n  flex: 0 0 1rem;\n  place-items: center;\n  color: inherit;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder > details > summary {\n  padding: 0.42rem 0.6rem;\n  font-family: var(--bodyFont);\n  font-weight: 550;\n}\n\n.rip-sidebar-folder > details > summary::before {\n  width: 0.42rem;\n  height: 0.42rem;\n  flex: 0 0 0.42rem;\n  border-inline-end: 1.5px solid currentColor;\n  border-block-end: 1.5px solid currentColor;\n  content: "";\n  transform: rotate(-45deg);\n  transition: transform 120ms ease;\n}\n\n.rip-sidebar-folder > details[open] > summary::before {\n  transform: rotate(45deg);\n}\n\n.rip-sidebar-children {\n  margin-inline-start: 1rem;\n  padding-inline-start: 0.55rem;\n  border-inline-start: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-overview-link {\n  margin-inline-start: 1rem;\n  color: var(--gray);\n  font-size: 0.82rem;\n}\n\n.rip-sidebar-book-overview-link {\n  margin: 0 0 0.15rem;\n}\n\n.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n@media (min-width: 801px) {\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: block;\n  }\n}\n@media (min-width: 800px) and (max-width: 1200px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);\n  }\n}\n@media (max-width: 800px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 1fr) !important;\n  }\n  .left.sidebar:has(> .rip-sidebar) {\n    min-width: 0;\n    width: 100%;\n    max-width: 100%;\n    flex-wrap: wrap;\n    overflow-wrap: anywhere;\n  }\n  .rip-sidebar {\n    width: 100%;\n    flex: 1 0 100%;\n    order: 100;\n    padding-top: 0.5rem;\n  }\n  .rip-sidebar-toggle {\n    display: flex;\n    min-height: 2.75rem;\n    align-items: center;\n    padding: 0.55rem 0.65rem;\n    border: 1px solid var(--lightgray);\n    border-radius: 0.45rem;\n    color: var(--dark);\n    cursor: pointer;\n    font-family: var(--headerFont);\n    font-weight: 650;\n    list-style: none;\n  }\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: none;\n  }\n  .rip-sidebar-content {\n    padding-top: 0.35rem;\n  }\n  .rip-sidebar-tree {\n    max-height: min(45dvh, 24rem);\n  }\n  .rip-sidebar-books {\n    max-height: min(14rem, 45dvh);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-folder > details > summary::before {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-switcher-menu,\n  .rip-sidebar-switcher-heading,\n  .rip-sidebar-switcher-divider,\n  .rip-sidebar-children,\n  .rip-sidebar-root-icon,\n  .rip-sidebar-book-icon {\n    border-color: CanvasText;\n  }\n  .rip-sidebar-switcher-menu {\n    background: Canvas;\n    box-shadow: none;\n  }\n  .rip-sidebar-switcher-divider {\n    background: CanvasText;\n  }\n  .rip-sidebar [data-rip-state=current],\n  .rip-sidebar-switcher-menu [data-rip-selected=true] {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip-sidebar a:focus-visible,\n  .rip-sidebar summary:focus-visible {\n    outline-color: Highlight;\n  }\n}';
+var sidebar_default = '.rip-sidebar {\n  width: 100%;\n  min-width: 0;\n  color: var(--darkgray);\n  font-size: 0.9rem;\n}\n.rip-sidebar *,\n.rip-sidebar *::before,\n.rip-sidebar *::after {\n  box-sizing: border-box;\n}\n.rip-sidebar a {\n  color: inherit;\n  text-decoration: none;\n}\n.rip-sidebar a:hover {\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n.rip-sidebar a:focus-visible,\n.rip-sidebar summary:focus-visible {\n  border-radius: 0.35rem;\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home,\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-shell,\n.rip-sidebar-content {\n  width: 100%;\n  min-width: 0;\n}\n\n.rip-sidebar-content {\n  position: relative;\n}\n\n.rip-sidebar-toggle {\n  display: none;\n}\n\n.rip-sidebar-home {\n  padding: 0.45rem 0.55rem;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=ancestor] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-switcher {\n  position: relative;\n  z-index: 5;\n  margin-top: 0.35rem;\n}\n\n.rip-sidebar-switcher[open] {\n  z-index: 30;\n}\n\n.rip-sidebar-switcher > summary,\n.rip-sidebar-folder > details > summary {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  color: var(--dark);\n  cursor: pointer;\n  list-style: none;\n  user-select: none;\n}\n\n.rip-sidebar-switcher > summary {\n  padding: 0.5rem 0.6rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.5rem;\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);\n  font-family: var(--headerFont);\n  font-weight: 600;\n  transition: border-color 120ms ease, background-color 120ms ease;\n}\n\n.rip-sidebar-switcher > summary:hover {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-switcher > summary::-webkit-details-marker,\n.rip-sidebar-folder > details > summary::-webkit-details-marker,\n.rip-sidebar-toggle::-webkit-details-marker {\n  display: none;\n}\n\n.rip-sidebar-switcher-label,\n.rip-sidebar-link-label,\n.rip-sidebar-folder-label {\n  min-width: 0;\n  overflow-wrap: anywhere;\n}\n\n.rip-sidebar-switcher-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rip-sidebar-switcher-chevron {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--gray);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon,\n.rip-sidebar-book-icon {\n  display: inline-grid;\n  width: 1.4rem;\n  height: 1.4rem;\n  flex: 0 0 1.4rem;\n  place-items: center;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 0.38rem;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 15%, transparent);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon svg,\n.rip-sidebar-book-icon svg,\n.rip-sidebar-node-icon svg,\n.rip-sidebar-selected-check svg,\n.rip-sidebar-switcher-chevron svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-sidebar-switcher-menu {\n  position: absolute;\n  z-index: 20;\n  top: calc(100% + 0.35rem);\n  inset-inline: 0;\n  overflow: hidden;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.55rem;\n  color: var(--darkgray);\n  background: var(--light);\n  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);\n}\n\n.rip-sidebar-switcher-heading {\n  margin: 0;\n  padding: 0.5rem 0.7rem;\n  border-bottom: 1px solid var(--lightgray);\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  line-height: 1.4;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-home-list,\n.rip-sidebar-books,\n.rip-sidebar-tree,\n.rip-sidebar-children {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.rip-sidebar-home-list {\n  padding: 0.3rem 0.35rem;\n}\n\n.rip-sidebar-switcher-divider {\n  height: 1px;\n  margin-inline: 0.7rem;\n  background: var(--lightgray);\n}\n\n.rip-sidebar-books {\n  max-height: min(14rem, 100dvh - 12rem);\n  padding: 0.3rem 0.35rem 0.4rem;\n  overflow-y: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-switcher-menu [data-rip-selected=true] {\n  color: var(--rip-sidebar-accent, var(--dark));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 10%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar-selected-check {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  pointer-events: none;\n}\n\n.rip-sidebar-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  padding: 0.42rem 0.6rem;\n}\n\n.rip-sidebar-switcher[open] + .rip-sidebar-scope {\n  visibility: hidden;\n  pointer-events: none;\n}\n\n.rip-sidebar-scope {\n  min-height: 0;\n  margin-top: 0.95rem;\n}\n\n.rip-sidebar-scope-title {\n  margin: 0 0 0.35rem;\n  padding-inline: 0.6rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.72rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-tree {\n  max-height: calc(100dvh - 19rem);\n  overflow: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-node-icon {\n  display: inline-grid;\n  width: 1rem;\n  height: 1rem;\n  flex: 0 0 1rem;\n  place-items: center;\n  color: inherit;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder > details > summary {\n  padding: 0.42rem 0.6rem;\n  font-family: var(--bodyFont);\n  font-weight: 550;\n}\n\n.rip-sidebar-folder > details > summary::before {\n  width: 0.42rem;\n  height: 0.42rem;\n  flex: 0 0 0.42rem;\n  border-inline-end: 1.5px solid currentColor;\n  border-block-end: 1.5px solid currentColor;\n  content: "";\n  transform: rotate(-45deg);\n  transition: transform 120ms ease;\n}\n\n.rip-sidebar-folder > details[open] > summary::before {\n  transform: rotate(45deg);\n}\n\n.rip-sidebar-children {\n  margin-inline-start: 1rem;\n  padding-inline-start: 0.55rem;\n  border-inline-start: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-overview-link {\n  margin-inline-start: 1rem;\n  color: var(--gray);\n  font-size: 0.82rem;\n}\n\n.rip-sidebar-book-overview-link {\n  margin: 0 0 0.15rem;\n}\n\n.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n.page[data-frame=canvas] > #quartz-body > .center.canvas-frame > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n.page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar[data-rip-scope=book]) > #quartz-body > .center > .page-header > .popover-hint > .breadcrumb-container > .breadcrumb-element:first-child:not(:only-child) {\n  display: none;\n}\n\n@media (min-width: 801px) {\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: block;\n  }\n}\n@media (min-width: 800px) and (max-width: 1200px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);\n  }\n}\n@media (max-width: 800px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 1fr) !important;\n  }\n  .left.sidebar:has(> .rip-sidebar) {\n    min-width: 0;\n    width: 100%;\n    max-width: 100%;\n    flex-wrap: wrap;\n    overflow-wrap: anywhere;\n  }\n  .rip-sidebar {\n    width: 100%;\n    flex: 1 0 100%;\n    order: 100;\n    padding-top: 0.5rem;\n  }\n  .rip-sidebar-toggle {\n    display: flex;\n    min-height: 2.75rem;\n    align-items: center;\n    padding: 0.55rem 0.65rem;\n    border: 1px solid var(--lightgray);\n    border-radius: 0.45rem;\n    color: var(--dark);\n    cursor: pointer;\n    font-family: var(--headerFont);\n    font-weight: 650;\n    list-style: none;\n  }\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: none;\n  }\n  .rip-sidebar-content {\n    padding-top: 0.35rem;\n  }\n  .rip-sidebar-tree {\n    max-height: min(45dvh, 24rem);\n  }\n  .rip-sidebar-books {\n    max-height: min(14rem, 45dvh);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-folder > details > summary::before {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-switcher-menu,\n  .rip-sidebar-switcher-heading,\n  .rip-sidebar-switcher-divider,\n  .rip-sidebar-children,\n  .rip-sidebar-root-icon,\n  .rip-sidebar-book-icon {\n    border-color: CanvasText;\n  }\n  .rip-sidebar-switcher-menu {\n    background: Canvas;\n    box-shadow: none;\n  }\n  .rip-sidebar-switcher-divider {\n    background: CanvasText;\n  }\n  .rip-sidebar [data-rip-state=current],\n  .rip-sidebar-switcher-menu [data-rip-selected=true] {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip-sidebar a:focus-visible,\n  .rip-sidebar summary:focus-visible {\n    outline-color: Highlight;\n  }\n}';
 function SidebarGlyph({
   className,
   icon: Icon2,
+  iconName,
   size = 15
 }) {
-  return /* @__PURE__ */ jsx("span", { class: className, "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: size, height: size, "stroke-width": 1.8 }) });
+  return /* @__PURE__ */ jsx("span", { class: className, "data-rip-icon": iconName, "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: size, height: size, "stroke-width": 1.8 }) });
 }
 function ownDataValue6(value, key) {
   try {
@@ -3635,7 +3683,8 @@ function NavigationLink({
   slug: slug2,
   title,
   current,
-  className
+  className,
+  kind = "note"
 }) {
   const state = getSidebarLinkState(slug2, current);
   return /* @__PURE__ */ jsxs(
@@ -3645,8 +3694,9 @@ function NavigationLink({
       href: resolveRelative(current, slug2),
       "aria-current": state === "current" ? "page" : void 0,
       "data-rip-state": state,
+      "data-rip-node-kind": kind,
       children: [
-        /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.file }),
+        /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons[kind], iconName: kind }),
         /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: title })
       ]
     }
@@ -3658,14 +3708,15 @@ function NavigationNode({
   depth,
   translation
 }) {
-  if (node.kind === "note") {
+  if (node.kind !== "folder") {
     return /* @__PURE__ */ jsx("li", { class: "rip-sidebar-note", children: /* @__PURE__ */ jsx(
       NavigationLink,
       {
         slug: node.slug,
         title: node.title,
         current,
-        className: "rip-sidebar-note-link"
+        className: "rip-sidebar-note-link",
+        kind: node.kind
       }
     ) });
   }
@@ -3857,7 +3908,9 @@ lucide-preact/dist/esm/icons/house.mjs:
 lucide-preact/dist/esm/icons/layers.mjs:
 lucide-preact/dist/esm/icons/network.mjs:
 lucide-preact/dist/esm/icons/shield.mjs:
+lucide-preact/dist/esm/icons/table-properties.mjs:
 lucide-preact/dist/esm/icons/terminal.mjs:
+lucide-preact/dist/esm/icons/workflow.mjs:
 lucide-preact/dist/esm/lucide-preact.mjs:
   (**
    * @license lucide-preact v1.25.0 - ISC

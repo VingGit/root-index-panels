@@ -16,7 +16,9 @@ import {
   Layers,
   Network,
   Shield,
+  TableProperties,
   Terminal,
+  Workflow,
 } from "lucide-preact"
 import { createElement, type JSX, type VNode } from "preact"
 
@@ -79,11 +81,13 @@ function adaptLucideIcon(icon: typeof BookOpen): PanelIconComponent {
 
 /** Decorative glyphs used by the plugin-owned sidebar chrome. */
 export const sidebarIcons = Object.freeze({
+  base: adaptLucideIcon(TableProperties),
+  canvas: adaptLucideIcon(Workflow),
   check: adaptLucideIcon(Check),
   chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
-  file: adaptLucideIcon(FileText),
   folder: adaptLucideIcon(Folder),
   home: adaptLucideIcon(House),
+  note: adaptLucideIcon(FileText),
 })
 
 const builtInIcons = {

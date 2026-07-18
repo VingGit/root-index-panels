@@ -21,6 +21,9 @@ proof, and do not edit source until every decision gate in this prompt is satisf
 - Inspect the relevant current Quartz source: Page Type dispatcher/layout resolution, default frame,
   component registry/loader, manifest types, config layout loader, CLI add/enable/remove handlers,
   render pipeline, path utilities, and the installed public type/utility declarations.
+- Inspect CanvasPage/BasesPage generated `fileData` provenance and canonical slugs, CanvasFrame's
+  exact left-sidebar DOM, and stock Breadcrumbs output on root/book/nested routes. Treat rendered
+  host output—not source-file extensions alone—as the navigation evidence.
 - Recheck the upstream `quartz-community/plugin-template` at a recorded commit, especially manifest,
   export, bundling, test, CI, documentation, and release conventions.
 
@@ -131,22 +134,29 @@ separate view over `allFiles` and must not change `docCount`.
 
 ### Explorer inventory
 
-- Root Explorer includes listed physical root notes with exactly one slug segment, except `index`.
-- Book explorer includes listed physical descendants of the selected book, excluding its own
-  `<book>/index` landing from the descendant tree. Render that landing separately as the first
-  `Overview` link so the book remains directly reachable.
+- Root Explorer includes listed physical root notes and safe generated Canvas/Base leaves with
+  exactly one slug segment, except `index`.
+- Book explorer includes listed physical descendants and safe generated Canvas/Base leaves of the
+  selected book, excluding its own `<book>/index` landing from the descendant tree. Render that
+  landing separately as the first `Overview` link so the book remains directly reachable.
 - Deduplicate full slugs first occurrence wins, matching the book collector's defensive model.
 - Unlisted/encrypted-as-unlisted entries, `tags`, excluded books, root entries in book mode, and all
   other books are absent.
-- Preserve each physical note's authored title; use a safe segment/file fallback only when absent.
+- Preserve each admitted document's authored title; use a safe segment/file fallback only when
+  absent.
 - Build directory nodes from descendant segments. A generated FolderPage index may prove a folder
   destination, but must not create a note or count. Do not expose a broken folder link when no
   destination exists.
-- Canvas/Bases pages are linked from authored fixture indexes and remain interoperability targets.
-  Do not count or silently classify their synthetic Page Type records as physical navigation entries
-  without a recorded contract revision based on public host provenance.
-- Sort folders and notes deterministically with locale-independent stable tie-breakers. Freeze the
-  chosen folder-first/title order in tests.
+- Admit a generated Canvas/Base record only as a typed leaf when top-level `unlisted !== true`, it
+  owns exactly one matching `canvasData`/`basesData` marker, and its canonical slug ends in lower-case
+  `.canvas`/`.base`. Reject inherited/accessor-backed, ambiguous, mismatched, and suffix-invalid
+  records without executing authored accessors; a physical canonical-slug collision wins.
+- Generated leaves never create/prove an eligible book, alter its physical count/order, or supply a
+  folder Overview destination/title. They may originate structural folder containers only to expose
+  their nested path inside an already-eligible book.
+- Sort folders and document leaves deterministically with locale-independent stable tie-breakers.
+  Render distinct ordinary-note, Canvas, and Base icons and freeze the chosen folder-first/title
+  order in tests.
 
 ### Markup and destinations
 
@@ -165,34 +175,50 @@ separate view over `allFiles` and must not change `docCount`.
 
 ## Explorer replacement contract
 
-- The rendered root carries `data-rip-replace-explorer="true"` only when normalized
+- The rendered sidebar carries `data-rip-replace-explorer="true"` only when normalized
   `replaceExplorer` is true.
-- The one allowed cross-plugin suppression selector must require all of:
-  1. the Quartz left-sidebar container;
+- Each frame-specific direct-sibling variant must require all of:
+  1. the exact Quartz default `.left.sidebar` or CanvasFrame `.canvas-sidebar` ancestry;
   2. a direct `RootIndexSidebar` marker with that explicit data attribute; and
   3. a direct stock `.explorer` child target.
-- Prefer the narrow equivalent of
-  `.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer`.
-- Do not hide `.explorer` outside that exact sibling context, do not target generic navigation, and
+- Use separate variants rooted at
+  `.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer="true"]) > .explorer` and
+  `.page[data-frame="canvas"] > #quartz-body > .center.canvas-frame > .canvas-sidebar:has(...) > .explorer`.
+- Do not hide `.explorer` outside those exact sibling contexts, do not target generic navigation, and
   do not use JavaScript/DOM mutation to disable Explorer.
-- `replaceExplorer: false` emits no true attribute and leaves Explorer's display/behavior untouched.
+- `replaceExplorer: false` emits no true attribute and leaves Explorer's display/behavior untouched
+  in both frames.
 - Document the current `:has()`/Quartz markup compatibility assumption and test both option states.
   If the current supported-browser policy cannot satisfy it, stop and revise the contract rather
   than broadening the selector.
+
+## Book-root breadcrumb contract
+
+- On a default-frame route whose direct `RootIndexSidebar` has `data-rip-scope="book"`, hide only the
+  non-only first `.breadcrumb-element` in the stock Breadcrumbs container. Quartz's next existing
+  element already carries the resolved book title and link to the book root, so it becomes the first
+  visible breadcrumb.
+- Do not reconstruct breadcrumb data/markup or suppress the Breadcrumbs component. Root-context
+  routes retain stock Home behavior, and PageTitle plus the manual switcher retain true-root access.
+- This behavior is CSS-only and must not select Canvas/custom frames, the right rail, Graph, TOC,
+  Backlinks, or unrelated navigation.
 
 ## Host components and right Graph invariant
 
 - Search, PageTitle, toolbar components, before/after-body components, Footer, and right components
   remain independent host entries. The sidebar must not import their packages or duplicate their
   behavior.
-- Plugin CSS may style `rip-*` content and use exactly three kinds of narrowly scoped host selector:
+- Plugin CSS may style `rip-*` content and use exactly four kinds of narrowly scoped behavioral host
+  selector:
   1. default-frame `#quartz-body` grid containment gated by a direct
      `.left.sidebar > .rip-sidebar` descendant;
   2. direct-plugin mobile left-container width/wrap containment; and
-  3. the Explorer replacement selector.
-- Repeated breakpoint variants of the first kind do not create another kind. Explorer replacement
-  is the only cross-plugin suppression. CSS must not select `.right`, `.graph`, `.toc`, `.backlinks`,
-  `.search`, `.page-title`, toolbar controls, CanvasPage, or another custom frame.
+  3. frame-specific default/Canvas direct Explorer sibling replacement; and
+  4. default-frame eligible-book breadcrumb-root promotion.
+- Repeated breakpoint variants and the two Explorer frame variants do not create additional kinds.
+  Explorer replacement is the only whole-component suppression; breadcrumb promotion may hide only
+  the redundant first Home element. CSS must not select `.right`, `.graph`, `.toc`, `.backlinks`,
+  `.search`, `.page-title`, toolbar controls, or unrelated custom frames.
 - Plugin scripts must not query, move, clone, hide, or attach handlers to those components.
 - The integration fixture keeps Graph enabled at `position: right` with `display: all` behavior and
   no content/root override clearing it. Generated root and book-note DOM must contain Graph under the
@@ -272,7 +298,8 @@ Before Prompt 02, fill the baseline/decision sections of `IMPLEMENTATION-NOTES.m
 
 - current loader and CLI behavior supports exactly one manifest sidebar insertion;
 - public `htmlToJsx` and path APIs are installed and compatible;
-- `replaceExplorer`'s selector is sufficiently narrow for current Quartz/browser support;
+- both `replaceExplorer` frame variants and the breadcrumb-root selector are sufficiently narrow for
+  current Quartz/browser support;
 - navigation cache variants cover the four normalized inventory options without cross-contamination;
 - browser measurements prove the default-frame grid and direct-plugin mobile width/wrap rules remove
   tablet/mobile horizontal overflow without suppressing host components or matching custom frames;
@@ -281,7 +308,11 @@ Before Prompt 02, fill the baseline/decision sections of `IMPLEMENTATION-NOTES.m
 - root and book route output proves authored-root labeling, selected-versus-current semantics,
   first `Overview`, first-level-open/deeper-active disclosure behavior, and mutually disjoint scoped
   Explorer inventories;
-- root/side navigation data has unambiguous physical/listed/virtual provenance;
+- root/side navigation data has unambiguous physical/listed/virtual provenance, generated Canvas/Base
+  leaves have distinct icons, and they do not create/prove/inflate the physical book model;
+- CanvasFrame output proves `replaceExplorer: true` suppresses only its direct duplicate Explorer and
+  false preserves it; default-frame book Breadcrumbs begin at the existing book-root link while root
+  context remains unchanged;
 - Graph remains a host right-slot component on root and book notes;
 - expected fixture counts match a clean build and the frozen book model;
 - no upstream file edit is required.

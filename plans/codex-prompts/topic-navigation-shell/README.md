@@ -6,6 +6,10 @@ This is the active implementation contract for
 component, visible authored root content, landing-page overview controls, and a durable parent
 Quartz compatibility fixture. The 2026-07-18 design-alignment follow-up in this set supersedes the
 original root-order, selector-label, book-overview, disclosure-default, and card-hover details.
+The active Canvas/Bases navigation correction further supersedes the physical-only sidebar-leaf,
+default-frame-only Explorer replacement, three-selector, and untouched-Breadcrumbs details. Earlier
+completed checklists remain historical evidence only; the unchecked corrective audit in Prompt 05
+must pass before this increment is complete.
 
 Prompt 01 is the authoritative technical contract for this increment. The appearance prompt set
 remains authoritative for book discovery/counting, destinations, panel icons/accents, option
@@ -60,12 +64,20 @@ contract item.
   including responsive layouts; the plugin must not clear, hide, replace, or restyle the right slot.
 - Preserve host PageTitle, Search, Darkmode, ReaderMode, Breadcrumbs, Table of Contents, Backlinks,
   Footer, and other independently installed components. `RootIndexSidebar` replaces the navigation
-  role of stock Explorer. Exactly three kinds of narrowly scoped host selector are permitted:
-  direct opted-in Explorer sibling replacement, default-frame `#quartz-body` grid-track containment
-  gated by a direct `.left.sidebar > .rip-sidebar` descendant at tablet/mobile breakpoints, and
-  direct-plugin mobile left-container width/wrap containment. `replaceExplorer` defaults to `true`;
-  `false` is the explicit opt-out. Structural containment may not select the right rail or custom
-  frames. No script may mutate Explorer, and Explorer is the only component that may be suppressed.
+  role of stock Explorer. Exactly four kinds of narrowly scoped behavioral host selector are
+  permitted: default-frame `#quartz-body` grid-track containment gated by a direct
+  `.left.sidebar > .rip-sidebar` descendant at tablet/mobile breakpoints; direct-plugin mobile
+  left-container width/wrap containment; frame-specific direct Explorer sibling replacement for
+  default and Canvas frames; and default-frame eligible-book breadcrumb-root promotion.
+  `replaceExplorer` defaults to `true`; `false` preserves Explorer in both frames. Structural
+  containment may not select the right rail or custom frames. No script may mutate Explorer or
+  Breadcrumbs. Explorer replacement is the only whole-component suppression; breadcrumb promotion
+  hides only the redundant first Home crumb.
+- Keep book/card eligibility, physical counts, and book ordering listed-physical only. Scoped
+  navigation additionally admits a generated Canvas/Base leaf only with its own matching provenance
+  marker, canonical lower-case suffix, and non-unlisted state. These leaves use distinct icons and
+  never create/prove a book, inflate counts/order, or supply a folder Overview; structural folder
+  containers are allowed only to represent their nested path inside an already-eligible book.
 - Keep all compatibility logic inside the external plugin. Never patch Quartz core or any upstream
   file. The only parent-worktree write allowance is the user's disposable/persistent fixture work
   under `content/` and its owning DOX documentation.
@@ -83,6 +95,10 @@ contract item.
 - Root Markdown remains visible and drives normal Quartz TOC, reading-time, Search, RSS, sitemap,
   and social metadata behavior; statistics and browse UI are accurate and accessible.
 - The right Graph component remains present on root and book notes and can show cross-book edges.
+- Safe Canvas/Base pages appear in their root/book navigation scope with distinct icons; opted-in
+  Canvas pages do not show a duplicate stock Explorer below the plugin sidebar.
+- Default-frame book breadcrumbs begin with Quartz's existing book-title/book-root link rather than
+  redundant Home, while root-context breadcrumbs and true-root PageTitle/switcher access remain.
 - The three durable fixture books exercise configured Quartz features and contain an observable
   expected-results checklist with stable sentinels.
 - Unit, DOM, package, real-host, clean-install, watch, browser, accessibility, and remote-pin gates

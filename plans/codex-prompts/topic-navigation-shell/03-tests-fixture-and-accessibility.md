@@ -35,10 +35,11 @@ Parameterize these against different `allFiles` orders and duplicates:
 - An eligible book landing, descendant, nested descendant, Canvas/Bases route slug, dotted segment,
   space, and Unicode slug select the correct book context.
 - A first segment without an eligible/destination-backed book remains root context.
-- Root mode shows only listed physical root notes and never root `index`, books, tags, virtual folders,
-  unlisted/drafts, or duplicate slugs.
-- Book mode shows only listed physical descendants of that book; it omits the book landing from the
-  chapter list, root notes, sibling books, reserved tags, and unlisted data.
+- Root mode shows listed physical root notes plus safe generated Canvas/Base leaves and never root
+  `index`, books, tags, unsupported virtual records, unlisted/drafts, or duplicate slugs.
+- Book mode shows listed physical descendants plus safe generated Canvas/Base leaves of that book; it
+  omits the book landing from the chapter list, root notes, sibling books, reserved tags, and unlisted
+  data.
 - Explicit titles including unusual casing/Unicode remain exact. Missing titles use the documented
   fallback without leaking path markup into hooks.
 - The selector's root title comes from the first listed physical exact `index` record; absent,
@@ -49,6 +50,12 @@ Parameterize these against different `allFiles` orders and duplicates:
   can add a valid link but not a note/count; missing folder destinations remain disclosures only.
 - A Canvas/Bases virtual record colliding at `<book>/index` cannot prove a landing destination even
   when the same first-level directory has a physical Markdown descendant.
+- Valid generated Canvas/Base leaves require an own, exactly matching provenance marker, canonical
+  lower-case suffix, and non-unlisted state. Reject inherited/accessor-backed, both-marker,
+  wrong-suffix, upper-case-suffix, missing-marker, and unlisted cases; physical collisions win.
+- A generated leaf may originate structural folder containers within an already-eligible book, but
+  never creates/proves a book, changes physical count/order, or supplies that folder's Overview
+  destination/title.
 - Sorting is stable for equal/case-varied titles and does not depend on host locale or insertion order.
 - Malformed slugs/frontmatter/fileData, prototypes, accessors, and unsafe text never throw or create
   unsafe attributes. Exercise the same leading/trailing/doubled/backslash slug anomalies through
@@ -85,7 +92,8 @@ Parameterize these against different `allFiles` orders and duplicates:
 - Exactly one root/book entry exposes selected context/check/status independently of
   `aria-current`. Exact current links have `aria-current="page"`; descendants do not falsely mark
   the book landing; the first-level-open/deeper-current disclosure defaults are exact.
-- Icons are decorative/non-focusable, accent hooks are validated, and links retain readable names.
+- Ordinary-note, Canvas, and Base leaves render three distinct decorative/non-focusable SVG glyphs;
+  accent hooks are validated and links retain readable names.
 - Root, book, folder, dotted, spaced, Unicode, and deep links use public relative resolution and
   preserve encoded/output-safe destinations.
 - `replaceExplorer: true` emits the true data hook; false omits it or emits a non-matching value.
@@ -93,14 +101,16 @@ Parameterize these against different `allFiles` orders and duplicates:
 
 ## CSS and script contract tests
 
-- Parse/search compiled CSS and fail if an Explorer suppression rule lacks the left-sidebar,
-  direct-sidebar-marker, true data attribute, or direct `.explorer` target constraints.
+- Parse/search compiled CSS and fail if either frame-specific Explorer suppression variant lacks its
+  exact frame/sidebar ancestry, direct-sidebar marker, true data attribute, or direct `.explorer`
+  target constraints.
 - Render a host-shaped DOM with:
-  1. stock Explorer as a direct same-left-sidebar child and opt-in true — hidden;
-  2. opt-out false — visible;
-  3. an `.explorer` elsewhere/nested — visible;
-  4. Search/PageTitle/toolbars in left — visible;
-  5. Graph/TOC/Backlinks in right — visible.
+  1. stock Explorer as a direct same-default-sidebar child and opt-in true — hidden;
+  2. stock Explorer as a direct CanvasFrame `.canvas-sidebar` child and opt-in true — hidden;
+  3. either frame with opt-out false — visible;
+  4. an `.explorer` elsewhere/nested — visible;
+  5. Search/PageTitle/toolbars in left — visible;
+  6. Graph/TOC/Backlinks in right — visible.
 - Assert tablet/mobile CSS contains the exact default-frame/direct-descendant selector
   `.page[data-frame="default"]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body` and
   changes only track sizing from intrinsic `auto` behavior to `minmax(0, ...)`. Prove the tablet
@@ -111,9 +121,13 @@ Parameterize these against different `allFiles` orders and duplicates:
   `max-width`, `flex-wrap`, and `overflow-wrap` effects, and that it does not hide or restyle sibling
   host components.
 - Fail if plugin CSS contains selectors for the right slot/Graph/TOC or generic unscoped host chrome.
-  Default-frame grid containment, mobile left width/wrap containment, and the frozen Explorer rule
-  are the only host-class selector kinds; Explorer replacement is the only one allowed to suppress
-  another plugin.
+  Default-frame grid containment, mobile left width/wrap containment, frame-specific direct Explorer
+  replacement, and book-root breadcrumb promotion are the only host-class selector kinds. Explorer
+  replacement is the only whole-component suppression.
+- Assert the exact default-frame/direct-book-scope breadcrumb selector hides only
+  `.breadcrumb-element:first-child:not(:only-child)`. In host-shaped DOM, an eligible book route must
+  expose the existing book-title/root link as its first visible crumb, while root/unrecognized routes,
+  only-child Breadcrumbs, and Canvas/custom frames remain unchanged. Reject breadcrumb JavaScript.
 - Verify desktop/tablet/mobile display rules, long-label overflow, native details open/closed display,
   a mobile-close then tablet/desktop resize, print, forced colors, and reduced motion from compiled
   CSS. The wide state must expose content even if the narrow shell's `open` attribute stays absent.
@@ -157,10 +171,10 @@ The checklist must map each configured Quartz feature to a concrete page and obs
 | Paths               | nested directory, spaces, Unicode, punctuation/dotted-segment integration fixture                   |
 | Metadata            | descriptions, tags, aliases, dates, properties, TOC opt-out/control                                 |
 | Visibility/security | draft, unlisted, listed/unlisted encrypted examples with fake documented passwords                  |
-| Page Types          | ordinary content, FolderPage, TagPage, Canvas, Bases                                                |
+| Page Types          | ordinary content, FolderPage, TagPage, distinctly iconed Canvas/Bases leaves and live routes        |
 | Assets              | local image/SVG with alt text; no required remote resource                                          |
 | Host UI             | Search token, TOC, Graph, Backlinks, Breadcrumbs, PageTitle, modes, Footer                          |
-| Navigation          | Authored-root/root-note mode, each book mode, Overview, scoped tree, selector, mobile disclosure    |
+| Navigation          | Root/book modes, Overview, typed leaves, book-first breadcrumbs, selector, mobile disclosure        |
 | Accessibility       | landmark/headings, keyboard order, focus, contrast/forced colors, reduced motion, zoom              |
 
 - Each book index uses its distinct safe icon/accent and links to its specimens.
@@ -179,7 +193,7 @@ Use the plugin's isolated integration runners or a temporary stock-shaped Quartz
 rewrite parent upstream files for a test. Exercise at least:
 
 - cards and list modes;
-- `replaceExplorer` true and false;
+- `replaceExplorer` true and false in both default and Canvas frames;
 - SPA enabled and disabled;
 - `en-US`, `fi-FI`, and unsupported locale;
 - root, root note, three book indexes, ordinary/nested book notes, FolderPage, TagPage, Canvas, Bases,
@@ -196,12 +210,16 @@ Inspect generated HTML and resources, not only exit codes:
 - root TOC/reading-time/Search/RSS/sitemap/social evidence reflects authored root content where the
   host normally exposes it;
 - sidebar authored-root label, selected-versus-current context, `Overview`, disclosure defaults,
-  scoped links, safe hooks, and expected books/notes are exact;
+  scoped links, safe hooks, expected books/notes, typed Canvas/Base leaves, and three distinct
+  document icons are exact without changing physical counts/order;
 - all expected destinations exist and resources/links retain the hosting subdirectory;
 - the right sidebar contains the current Graph component marker on root and representative book
   notes; plugin CSS does not hide it at any tested width;
 - cross-book links appear in Graph data/Backlinks according to host behavior;
-- stock Explorer is hidden only for true same-sidebar replacement and visible for false;
+- stock Explorer is hidden only for opted-in direct default/Canvas sibling replacement and visible
+  for false/unrelated contexts; Canvas stage and plugin navigation remain visible;
+- default-frame eligible-book Breadcrumbs begin with the existing book-title/root link, root-context
+  Breadcrumbs retain stock behavior, and PageTitle/manual-selector links still reach the true root;
 - no duplicate panels/sidebar scripts/listeners or broken console/network requests occur after SPA
   navigation sequences.
 
@@ -237,6 +255,12 @@ Do not junction over a locked cache or infer remote usability from a local workt
   closes it, and Escape closes it and restores summary focus.
 - Keyboard-test selector, folder disclosures, all links, browse anchor, cards/list, Search, modes,
   TOC, and Backlinks through SPA navigation.
+- Open real `.canvas` and `.base` routes. Confirm each appears in the current book tree with its own
+  glyph/current state; the Canvas drawer has no visible stock Explorer below the plugin sidebar when
+  opted in, while the canvas stage remains visible.
+- On a regular/default-frame nested book route, confirm the first visible/accessible breadcrumb is the
+  book-title link to the book root rather than Home. Confirm root context remains stock and the site
+  title/manual selector still reaches the true front page.
 - Inspect card hover/focus computed styles for the frozen radial wash, bottom line, alpha,
   `translateY(-2px)`, and absence of the old border/title highlight.
 - Inspect accessibility tree/names where available; test forced colors/high contrast, reduced motion,

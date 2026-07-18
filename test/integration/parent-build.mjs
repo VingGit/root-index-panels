@@ -305,6 +305,7 @@ function pluginEntries(rootSource, rootOptions) {
       order: 50,
       options: { enableSiteMap: true, enableRSS: true },
     }),
+    communityPlugin("canvas-page", { order: 50 }),
     communityPlugin("content-page", { order: 50 }),
     communityPlugin("folder-page", { order: 50 }),
     communityPlugin("tag-page", { order: 50 }),
@@ -328,6 +329,16 @@ function pluginEntries(rootSource, rootOptions) {
       order: 50,
       layout: { position: "right", priority: 10 },
     }),
+    communityPlugin("breadcrumbs", {
+      order: 50,
+      options: {
+        spacerSymbol: "❯",
+        rootName: "Home",
+        resolveFrontmatterTitle: true,
+        showCurrentPage: true,
+      },
+      layout: { position: "beforeBody", priority: 5, condition: "not-index" },
+    }),
     communityPlugin("article-title", {
       order: 50,
       layout: { position: "beforeBody", priority: 10 },
@@ -345,6 +356,7 @@ function pluginEntries(rootSource, rootOptions) {
       order: 50,
       options: { links: {} },
     }),
+    communityPlugin("bases-page", { order: 50, options: {} }),
     {
       source: rootSource,
       enabled: true,
@@ -559,6 +571,34 @@ The regular content page must retain host frame components.
 
 Topic details.
 `,
+  "content/java/integration-map.canvas": `{
+  "nodes": [
+    {
+      "id": "integration-text",
+      "type": "text",
+      "text": "# Canvas fixture\\n\\nCANVAS PAGE TYPE SENTINEL",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 160
+    }
+  ],
+  "edges": []
+}
+`,
+  "content/java/integration-query.base": `filters:
+  and:
+    - file.ext == "md"
+views:
+  - type: table
+    name: Java integration notes
+    filters:
+      and:
+        - file.inFolder("java")
+    order:
+      - file.name
+      - title
+`,
   "content/java/nested/index.md": `---
 title: Authored nested index
 ---
@@ -698,6 +738,50 @@ function sidebarBookAnchorForHref(html, href) {
   assert.fail(`missing sidebar book link ${href}`)
 }
 
+function sidebarDocumentAnchorForHref(html, href) {
+  const sidebar = sidebarHtml(html)
+  for (const match of sidebar.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
+    const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
+    if (
+      openingTag.includes(`href="${href}"`) &&
+      /\bclass="[^"]*\brip-sidebar-note-link\b/.test(openingTag)
+    ) {
+      return match[0]
+    }
+  }
+  assert.fail(`missing sidebar document link ${href}`)
+}
+
+function sidebarDocumentIconSvg(anchor, label) {
+  const iconStart = anchor.indexOf('class="rip-sidebar-node-icon"')
+  assert.ok(iconStart >= 0, `${label} lost its sidebar document icon`)
+  const svg = anchor.slice(iconStart).match(/<svg\b[\s\S]*?<\/svg>/)?.[0]
+  assert.ok(svg, `${label} did not render an SVG icon`)
+  return svg
+}
+
+function breadcrumbHtml(html, label) {
+  const match = html.match(
+    /<nav\b(?=[^>]*\bclass="[^"]*\bbreadcrumb-container\b[^"]*")[^>]*>[\s\S]*?<\/nav>/,
+  )
+  assert.ok(match, `${label} lost its Breadcrumbs component`)
+  return match[0]
+}
+
+function assertBookBreadcrumbSource(html, pagePath, currentTitle, label) {
+  const breadcrumbs = breadcrumbHtml(html, label)
+  const elements = [
+    ...breadcrumbs.matchAll(/<div class="breadcrumb-element">[\s\S]*?<\/div>/g),
+  ].map((match) => match[0])
+
+  assert.ok(elements.length >= 3, `${label} breadcrumb ancestry is incomplete`)
+  assert.match(elements[0], /<a href="\.\.\/">Home<\/a>/)
+  assert.match(elements[1], /<a href="\.\.\/java\/">iOS<\/a>/)
+  assert.match(elements.at(-1), new RegExp(`<a href(?:="")?>${currentTitle}</a>`))
+  assertResolvesBelowBase("../java/", pagePath, "/java/", `${label} book breadcrumb`)
+  return breadcrumbs
+}
+
 function assertRelativeSidebarLinks(html, label) {
   const sidebar = sidebarHtml(html)
   const hrefs = [...sidebar.matchAll(/<a\b[^>]*\bhref="([^"]+)"[^>]*>/g)].map((match) => match[1])
@@ -800,6 +884,28 @@ function assertExplorerReplacementCss(outputRoot) {
     css.slice(start, end + 1),
     /display:none!important/,
     "emitted Explorer replacement rule must hide the stock Explorer",
+  )
+}
+
+function assertCanvasExplorerReplacementCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const selector =
+    ".page[data-frame=canvas]>#quartz-body>.center.canvas-frame>.canvas-sidebar:has(>.rip-sidebar[data-rip-replace-explorer=true])>.explorer"
+  const rules = ruleBodies(css, selector)
+  assert.ok(
+    rules.some((body) => body.includes("display:none!important")),
+    "emitted CSS lost the direct, opt-in Canvas Explorer replacement rule",
+  )
+}
+
+function assertBookBreadcrumbCss(outputRoot) {
+  const css = normalizedCss(outputRoot)
+  const selector =
+    ".page[data-frame=default]:has(>#quartz-body>.left.sidebar>.rip-sidebar[data-rip-scope=book])>#quartz-body>.center>.page-header>.popover-hint>.breadcrumb-container>.breadcrumb-element:first-child:not(:only-child)"
+  const rules = ruleBodies(css, selector)
+  assert.ok(
+    rules.some((body) => body.includes("display:none")),
+    "emitted CSS lost the book-scoped redundant root-breadcrumb suppression",
   )
 }
 
@@ -949,6 +1055,11 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     rootHtml,
     /data-basepath="\/group\/project"/,
     "configured base path must reach the host frame",
+  )
+  assert.equal(
+    classCount(rootHtml, "breadcrumb-container"),
+    0,
+    "the not-index Breadcrumbs layout condition must keep the true root clear",
   )
   assert.equal(classCount(rootHtml, "rip-sidebar"), 1, "root must render one RootIndexSidebar")
   assert.equal(
@@ -1116,14 +1227,30 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     1,
     "book route must mark exactly one selected manual",
   )
-  assert.match(
-    topicScope,
-    /class="rip-sidebar-note-link" href="\.\.\/java\/topic" aria-current="page"/,
-  )
+  assert.match(sidebarDocumentAnchorForHref(topicHtml, "../java/topic"), /aria-current="page"/)
+  const topicDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/topic")
+  assert.match(topicDocument, /data-rip-node-kind="note"/)
+  assert.match(topicDocument, /data-rip-state="current"/)
+  assert.match(topicDocument, /data-rip-icon="note"[\s\S]*?<svg\b/)
   assert.match(
     topicScope,
     /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
   )
+  assert.match(sidebarDocumentAnchorForHref(topicHtml, "../java/"), /data-rip-node-kind="note"/)
+  const canvasDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/integration-map.canvas")
+  const baseDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/integration-query.base")
+  assert.match(canvasDocument, /data-rip-node-kind="canvas"/)
+  assert.match(canvasDocument, /data-rip-icon="canvas"[\s\S]*?<svg\b/)
+  assert.doesNotMatch(canvasDocument, /aria-current="page"/)
+  assert.match(baseDocument, /data-rip-node-kind="base"/)
+  assert.match(baseDocument, /data-rip-icon="base"[\s\S]*?<svg\b/)
+  assert.doesNotMatch(baseDocument, /aria-current="page"/)
+  const noteSvg = sidebarDocumentIconSvg(topicDocument, "ordinary note")
+  const canvasSvg = sidebarDocumentIconSvg(canvasDocument, "Canvas page")
+  const baseSvg = sidebarDocumentIconSvg(baseDocument, "Base page")
+  assert.notEqual(canvasSvg, noteSvg, "Canvas and ordinary notes must not share an SVG glyph")
+  assert.notEqual(baseSvg, noteSvg, "Base and ordinary notes must not share an SVG glyph")
+  assert.notEqual(baseSvg, canvasSvg, "Base and Canvas pages must have distinct SVG glyphs")
   assert.match(
     topicScope,
     /<li class="rip-sidebar-folder"><details open><summary>[\s\S]*?Authored nested index<\/span>/,
@@ -1132,8 +1259,110 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.doesNotMatch(topicScope, /Dotted directory guide|Loose root note/)
   assertResolvesBelowBase("../java/", "java/topic", "/java/", "book Overview link")
   assertResolvesBelowBase("../java/topic", "java/topic", "/java/topic", "current book note link")
+  assertResolvesBelowBase(
+    "../java/integration-map.canvas",
+    "java/topic",
+    "/java/integration-map.canvas",
+    "Canvas sidebar link",
+  )
+  assertResolvesBelowBase(
+    "../java/integration-query.base",
+    "java/topic",
+    "/java/integration-query.base",
+    "Base sidebar link",
+  )
+  assertBookBreadcrumbSource(topicHtml, "java/topic", "Java Topic", "regular book page")
   assertLeftCompanions(topicHtml, "regular book page")
   assertRightGraph(topicHtml, "regular book page")
+
+  const canvasPath = path.join(outputRoot, "java", "integration-map.canvas.html")
+  const canvasHtml = fs.readFileSync(canvasPath, "utf8")
+  assert.match(canvasHtml, /<div id="quartz-root" class="page" data-frame="canvas">/)
+  assert.match(canvasHtml, /CANVAS PAGE TYPE SENTINEL/)
+  assert.equal(classCount(canvasHtml, "canvas-stage"), 1, "Canvas frame lost its stage")
+  assert.equal(classCount(canvasHtml, "canvas-page"), 1, "Canvas Page Type body did not render")
+  assert.equal(
+    classCount(canvasHtml, "rip-sidebar"),
+    1,
+    "Canvas page must render one RootIndexSidebar",
+  )
+  assert.equal(
+    classCount(canvasHtml, "explorer"),
+    1,
+    "stock Explorer must remain in Canvas SSR for scoped CSS replacement",
+  )
+  const canvasSidebar = assertRelativeSidebarLinks(canvasHtml, "Canvas page")
+  const canvasScope = sidebarScopeHtml(canvasHtml)
+  assert.match(canvasSidebar, /data-rip-replace-explorer="true"/)
+  assert.match(canvasSidebar, /data-rip-scope="book"/)
+  const currentCanvasDocument = sidebarDocumentAnchorForHref(
+    canvasHtml,
+    "../java/integration-map.canvas",
+  )
+  assert.match(currentCanvasDocument, /data-rip-node-kind="canvas"/)
+  assert.match(currentCanvasDocument, /data-rip-icon="canvas"[\s\S]*?<svg\b/)
+  assert.match(currentCanvasDocument, /aria-current="page"/)
+  assert.match(currentCanvasDocument, /data-rip-state="current"/)
+  assert.match(
+    sidebarDocumentAnchorForHref(canvasHtml, "../java/integration-query.base"),
+    /data-rip-node-kind="base"/,
+  )
+  assert.match(canvasScope, /integration-map/)
+  assert.match(canvasScope, /integration-query/)
+  const canvasAsideStart = canvasHtml.indexOf('<aside class="canvas-sidebar">')
+  const canvasAsideEnd = canvasHtml.indexOf("</aside>", canvasAsideStart)
+  const canvasPluginIndex = canvasHtml.indexOf('<nav class="rip-sidebar"', canvasAsideStart)
+  const canvasExplorerIndex = canvasHtml.indexOf('<div class="explorer', canvasAsideStart)
+  assert.ok(
+    canvasAsideStart >= 0 &&
+      canvasAsideEnd > canvasAsideStart &&
+      canvasPluginIndex > canvasAsideStart &&
+      canvasExplorerIndex > canvasPluginIndex &&
+      canvasExplorerIndex < canvasAsideEnd,
+    "Canvas SSR must retain the plugin sidebar followed by the stock Explorer in its left rail",
+  )
+  assertResolvesBelowBase(
+    "../java/integration-map.canvas",
+    "java/integration-map.canvas",
+    "/java/integration-map.canvas",
+    "current Canvas sidebar link",
+  )
+  assertLeftCompanions(canvasHtml, "Canvas page")
+
+  const basePath = path.join(outputRoot, "java", "integration-query.base.html")
+  const baseHtml = fs.readFileSync(basePath, "utf8")
+  assert.match(baseHtml, /<div id="quartz-root" class="page" data-frame="default">/)
+  assert.equal(classCount(baseHtml, "bases-page"), 1, "Bases Page Type body did not render")
+  assert.match(baseHtml, /class="bases-view is-active"[^>]*data-view-type="table"/)
+  assert.equal(classCount(baseHtml, "rip-sidebar"), 1, "Base page must render one RootIndexSidebar")
+  assert.equal(
+    classCount(baseHtml, "explorer"),
+    1,
+    "stock Explorer must remain in Base SSR for scoped CSS replacement",
+  )
+  const baseSidebar = assertRelativeSidebarLinks(baseHtml, "Base page")
+  assert.match(baseSidebar, /data-rip-replace-explorer="true"/)
+  assert.match(baseSidebar, /data-rip-scope="book"/)
+  const currentBaseDocument = sidebarDocumentAnchorForHref(
+    baseHtml,
+    "../java/integration-query.base",
+  )
+  assert.match(currentBaseDocument, /data-rip-node-kind="base"/)
+  assert.match(currentBaseDocument, /data-rip-icon="base"[\s\S]*?<svg\b/)
+  assert.match(currentBaseDocument, /aria-current="page"/)
+  assert.match(currentBaseDocument, /data-rip-state="current"/)
+  assert.match(
+    sidebarDocumentAnchorForHref(baseHtml, "../java/integration-map.canvas"),
+    /data-rip-node-kind="canvas"/,
+  )
+  assertResolvesBelowBase(
+    "../java/integration-query.base",
+    "java/integration-query.base",
+    "/java/integration-query.base",
+    "current Base sidebar link",
+  )
+  assertLeftCompanions(baseHtml, "Base page")
+  assertRightGraph(baseHtml, "Base page")
 
   const dottedPath = path.join(outputRoot, "git.md", "guide.html")
   const dottedHtml = fs.readFileSync(dottedPath, "utf8")
@@ -1145,9 +1374,10 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     dottedSwitcher,
     /class="rip-sidebar-book-link" href="\.\.\/git\.md\/"[^>]*data-rip-state="ancestor"[^>]*data-rip-selected="true"/,
   )
+  assert.match(sidebarDocumentAnchorForHref(dottedHtml, "../git.md/guide"), /aria-current="page"/)
   assert.match(
-    dottedScope,
-    /class="rip-sidebar-note-link" href="\.\.\/git\.md\/guide" aria-current="page"/,
+    sidebarDocumentAnchorForHref(dottedHtml, "../git.md/guide"),
+    /data-rip-node-kind="note"/,
   )
   assert.match(dottedScope, /Dotted directory guide/)
   assert.doesNotMatch(dottedScope, /Java Topic|Loose root note/)
@@ -1158,8 +1388,12 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
 
   assertAssetReferencesResolve(rootPath, outputRoot)
   assertAssetReferencesResolve(topicPath, outputRoot)
+  assertAssetReferencesResolve(canvasPath, outputRoot)
+  assertAssetReferencesResolve(basePath, outputRoot)
   assertAssetReferencesResolve(dottedPath, outputRoot)
   assertExplorerReplacementCss(outputRoot)
+  assertCanvasExplorerReplacementCss(outputRoot)
+  assertBookBreadcrumbCss(outputRoot)
   assertResponsiveContainmentCss(outputRoot)
   assertDesignCss(outputRoot)
   const clientScripts = emittedJavaScript(outputRoot)
