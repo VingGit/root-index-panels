@@ -65,10 +65,20 @@ Populate this file during the implementation run. It is evidence, not a substitu
   (`feat: integrate Canvas and Bases navigation`) is pushed to `origin/main`. GitHub CI run
   <https://github.com/VingGit/root-index-panels/actions/runs/29654796522> completed successfully for
   that exact SHA.
+- Canvas drawer containment commit `f5d40530cba3016497423529a707cf0ad7971cd3`
+  (`fix: contain Canvas sidebar drawer`) is pushed to `origin/main`. GitHub CI run
+  <https://github.com/VingGit/root-index-panels/actions/runs/29655988881> completed successfully for
+  that exact SHA.
+- A separate stock-shaped consumer ran
+  `npx quartz plugin install --latest root-index-panels`; its lock and cache both resolved
+  `f5d40530cba3016497423529a707cf0ad7971cd3`, and the installer selected committed prebuilt `dist/`.
+  Its clean `/group/project/` build processed 14 inputs, emitted 64 files, retained the Canvas stage
+  and stock Explorer SSR, rendered current typed Canvas/Base leaves, and emitted the plugin-gated
+  CanvasFrame border-box rule.
 - A preserved stock-shaped Quartz workspace removed the local plugin source, added
-  `github:VingGit/root-index-panels`, and enabled it through the normal CLI. Add selected committed
-  prebuilt `dist/`; the lock and cache both resolved the exact implementation SHA above; generated
-  configuration contained one enabled plugin entry with one left-priority-40 layout. A clean
+  `github:VingGit/root-index-panels`, and enabled it through the normal CLI. `plugin add` selected
+  committed prebuilt `dist/`; the lock and cache both resolved the exact implementation SHA above;
+  generated configuration contained one enabled plugin entry with one left-priority-40 layout. A clean
   `/group/project/` build processed 14 inputs and emitted 64 files. It rendered six root cards, one
   sidebar, typed Canvas/Base links, exact current Canvas/Base states, the raw Home/book breadcrumb
   ancestry, and both emitted scoped selectors.

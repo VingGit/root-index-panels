@@ -36,8 +36,10 @@ historical check as evidence that the new behavior passed.
 - [x] Opening/closing CanvasFrame at 1440px and 801px allocates its desktop drawer padding inward;
       800px and 390px retain Quartz's mobile overlay. Frame/stage/controls remain visible, the direct
       stock Explorer remains hidden when opted in, and every state has zero horizontal scroll.
-- [ ] The corrected revision is pushed, GitHub CI passes, a fresh consumer lock resolves it, GitLab
-      Pages deploys it, and the two requested live routes pass the same computed-style audit.
+- [x] The corrected runtime revision is pushed, its exact GitHub CI run passes, and a fresh remote
+      consumer lock/cache resolves its committed prebuilt package and builds the corrected CSS.
+- [ ] The parent consumer lock resolves the final plugin revision, GitLab Pages deploys it, and the
+      two requested live routes pass the same computed-style audit.
 - [x] Focused unit/style tests, full check/build/dist/package gates, isolated Page Type integration,
       desktop/tablet/mobile browser checks, and base-path links pass in the corrected worktree, with
       current evidence recorded in `IMPLEMENTATION-NOTES.md`.
