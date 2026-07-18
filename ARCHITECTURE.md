@@ -80,7 +80,7 @@ Internal inventory, normalized-option, and resolver types are not public merely 
 
 `tsup.config.ts` produces ESM JavaScript, declarations, and source maps for the root, `./types`, and `./components` entries. Its loaders compile SCSS and browser-bundle `.inline.ts` files into strings attached to the component.
 
-Preact and Quartz host singletons (`preact`, `@jackyzha0/quartz`, `vfile`, and `unified`, including subpaths) remain external. Other runtime implementation dependencies, including the statically tree-shaken `lucide-preact` registry and `@quartz-community/utils`, are bundled into the prebuilt output. Artifact checks scan every generated JavaScript entry for unexpected bare runtime imports. `THIRD_PARTY_NOTICES.md` ships the Lucide/Feather and Quartz utility notices.
+Preact and Quartz host singletons (`preact`, `@jackyzha0/quartz`, `vfile`, and `unified`, including subpaths) remain external. Other runtime implementation dependencies, including the statically tree-shaken `lucide-preact` registry and `@quartz-community/utils`, are bundled into the prebuilt output. `github-slugger` is declared directly because the utility package imports it from `./path` but exposes it only as an optional peer; this keeps source checks and builds independent of an ancestor checkout's `node_modules`. Artifact checks scan every generated JavaScript entry for unexpected bare runtime imports. `THIRD_PARTY_NOTICES.md` ships the corresponding dependency notices.
 
 `dist/` is committed so GitHub installs can consume prebuilt output. The package allowlist includes only the distribution, public/license documents, changelog, and package metadata. Version fields remain synchronized but are not advanced during unreleased implementation.
 
@@ -99,7 +99,7 @@ CI runs the source checks, build, distribution scan, package check, and a freshn
 
 ## Watch invalidation boundary
 
-The regular root page aggregates nested files, but Quartz's partial Page Type emitter re-emits only changed regular slugs and provides no plugin dependency-invalidation hook. A serve/watch session can therefore leave the emitted root aggregate stale after nested add/change/delete events. A clean/full build is the correctness boundary; changing ownership to a virtual page or patching Quartz core requires a separate design.
+The regular root page aggregates nested files, but Quartz's partial Page Type emitter re-emits only changed regular slugs and provides no plugin dependency-invalidation hook. A serve/watch session can therefore leave the emitted root aggregate stale after nested add/change/delete events. A clean/full build is the correctness boundary; changing ownership to a virtual page requires a separate plugin design, while patching Quartz core is forbidden in this workspace.
 
 The stock-host diagnostic observed all three current cases: adding a nested page emitted that page while the root count remained `1` instead of `2`; changing the authored book index updated the book page while the root retained the old description; deleting both descendants rebuilt but left count `1` instead of `0`. A subsequent clean build emitted count `0` and the new description.
 

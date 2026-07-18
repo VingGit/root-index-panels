@@ -69,6 +69,7 @@
   "dependencies": {
     "@quartz-community/types": "github:quartz-community/types",
     "@quartz-community/utils": "github:quartz-community/utils",
+    "github-slugger": "^2.0.0",
     "lucide-preact": "1.25.0"
   },
   "devDependencies": {

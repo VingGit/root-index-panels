@@ -30,6 +30,10 @@ Verified on 2026-07-18 before source implementation.
   `external` regex because this tsup release gives `noExternal` precedence. The build therefore
   uses a blanket non-singleton matcher with explicit Preact/Quartz/vfile/unified exclusions, and
   artifact verification rejects both unexpected bare dependencies and bundled singleton markers.
+- A clean GitHub Actions checkout exposed that `@quartz-community/utils/path` imports
+  `github-slugger` while declaring it only as an optional peer. The nested Windows checkout had
+  resolved that import accidentally from the parent Quartz `node_modules`. The plugin now declares
+  `github-slugger` directly and validates source checks from an ancestor-free checkout.
 
 ## Contract revisions from host evidence
 

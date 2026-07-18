@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Built-in icons render through a hook-free Lucide-node adapter, avoiding split Preact context failures in local plugin worktrees without any Quartz upstream change.
 - Card counts now use reliable localized accessible descriptions, and modified Arrow/Home/End browser shortcuts are no longer intercepted.
 - Throwing/accessor-backed synthetic metadata is ignored without executing authored accessors or crashing the root render.
+- Declared the path utility's optional `github-slugger` peer directly so clean Linux checkouts no longer depend on an ancestor Quartz installation to run source tests and builds.
 
 ### Security
 
