@@ -1,6 +1,5 @@
 # root-index-panels
 
-
 A Quartz 5 Page Type and layout-component plugin for a multi-book knowledge base. Every eligible
 first-level content directory becomes a book. The physical root page renders an aggregate overview,
 its authored Markdown, and book cards or a list; a route-aware left sidebar switches between the
@@ -115,7 +114,6 @@ panel:
   icon: terminal
   accent: ocean
 ---
-
 ```
 
 `panel.icon` is a built-in or custom registry identifier. `panel.accent` is `theme`, a named accent, or an allowed direct color. The plugin never infers appearance from the directory name, title, or tags, and does not accept SVG, HTML, CSS declarations, or remote assets from frontmatter.
