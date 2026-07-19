@@ -115,6 +115,7 @@ panel:
   icon: terminal
   accent: ocean
 ---
+
 ```
 
 `panel.icon` is a built-in or custom registry identifier. `panel.accent` is `theme`, a named accent, or an allowed direct color. The plugin never infers appearance from the directory name, title, or tags, and does not accept SVG, HTML, CSS declarations, or remote assets from frontmatter.
