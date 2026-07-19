@@ -1,5 +1,6 @@
 # root-index-panels
 
+
 A Quartz 5 Page Type and layout-component plugin for a multi-book knowledge base. Every eligible
 first-level content directory becomes a book. The physical root page renders an aggregate overview,
 its authored Markdown, and book cards or a list; a route-aware left sidebar switches between the
