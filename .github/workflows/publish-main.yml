@@ -1,0 +1,75 @@
+name: Prepare main sync
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: promptfiles-main-sync
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout promptfiles
+        uses: actions/checkout@v4
+        with:
+          ref: promptfiles
+          fetch-depth: 0
+
+      - name: Create main-compatible branch
+        id: sync
+        env:
+          BRANCH: automation/promptfiles-to-main
+        run: |
+          git fetch origin main
+          git switch --create "$BRANCH" "origin/main"
+          git diff --binary "origin/main...origin/promptfiles" -- . \
+            ':(exclude).github/README.md' \
+            ':(exclude).github/copilot-instructions.md' \
+            ':(exclude).github/instructions/**' \
+            ':(exclude).github/prompts/**' \
+            ':(exclude).github/reference/**' \
+            ':(exclude)plans/codex-prompts/**' | git apply
+          if git diff --quiet; then
+            echo "No main-compatible changes to publish."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add --all
+          git commit -m "chore: sync promptfiles changes to main"
+          git push --force-with-lease origin "$BRANCH"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create or find pull request
+        if: steps.sync.outputs.has_changes == 'true'
+        id: pull-request
+        env:
+          BRANCH: automation/promptfiles-to-main
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
+            --state open --json number --jq '.[0].number')"
+          if [ -z "$pr_number" ]; then
+            created_pr_url="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" \
+              --title "chore: sync promptfiles changes to main" \
+              --body "Automated main-compatible sync from promptfiles.")"
+            pr_number="$(gh pr view "$created_pr_url" --json number --jq .number)"
+          fi
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+
+      - name: Request validation and auto-merge
+        if: steps.sync.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pull-request.outputs.number }}
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/dispatches" \
+            -f event_type=merge-main-pr \
+            -F "client_payload[pr_number]=$PR_NUMBER"
