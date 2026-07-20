@@ -84,20 +84,20 @@ plugins:
       priority: 40
 ```
 
-| Option | Default | Purpose |
-| --- | --- | --- |
-| `layout` | `cards` | Use `cards` or `list`. |
-| `sort` | `alphabetical` | Use `alphabetical`, `docCount`, or `date`. |
-| `showDescription` | `true` | Show the book-index description. |
-| `showDocCount` | `true` | Show the number of listed Markdown descendants. |
-| `showTags` | `true` | Show book-index tags in card layout. |
-| `tagCount` | `3` | Maximum number of displayed tags. |
-| `excludeDirs` | `[]` | First-level directories to omit; matching is case-sensitive. |
-| `descriptionFallback` | `""` | Text used when a book index has no description. |
-| `defaultIcon` | `""` | Built-in or TypeScript-registered icon used as a fallback. |
-| `defaultAccent` | `theme` | `theme`, a named accent, or an allowed direct color. |
-| `accents` | `{}` | Named accent values available to book frontmatter. |
-| `replaceExplorer` | `true` | Replace stock Explorer beside this sidebar. Set `false` to show both. |
+| Option                | Default        | Purpose                                                               |
+| --------------------- | -------------- | --------------------------------------------------------------------- |
+| `layout`              | `cards`        | Use `cards` or `list`.                                                |
+| `sort`                | `alphabetical` | Use `alphabetical`, `docCount`, or `date`.                            |
+| `showDescription`     | `true`         | Show the book-index description.                                      |
+| `showDocCount`        | `true`         | Show the number of listed Markdown descendants.                       |
+| `showTags`            | `true`         | Show book-index tags in card layout.                                  |
+| `tagCount`            | `3`            | Maximum number of displayed tags.                                     |
+| `excludeDirs`         | `[]`           | First-level directories to omit; matching is case-sensitive.          |
+| `descriptionFallback` | `""`           | Text used when a book index has no description.                       |
+| `defaultIcon`         | `""`           | Built-in or TypeScript-registered icon used as a fallback.            |
+| `defaultAccent`       | `theme`        | `theme`, a named accent, or an allowed direct color.                  |
+| `accents`             | `{}`           | Named accent values available to book frontmatter.                    |
+| `replaceExplorer`     | `true`         | Replace stock Explorer beside this sidebar. Set `false` to show both. |
 
 `accents` works in YAML, although Quartz's current schema-driven editor cannot represent arbitrary
 maps. Later configuration surfaces replace the entire `accents` or `icons` map rather than merging
