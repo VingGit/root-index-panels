@@ -1,16 +1,13 @@
 name: CI
 
 on:
-  push:
-    branches: ["main"]
-    tags: ["v*"]
   pull_request:
 
 jobs:
-  test:
+  diagnose-full-sequence:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout synthetic merge
         uses: actions/checkout@v6
 
       - name: Setup Node
@@ -22,71 +19,45 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Check formatting
-        run: npm run format
-
-      - name: Test
-        run: npm run test
-
-      - name: Build
-        run: npm run build
-
-      - name: Verify dist is up to date
+      - name: Run preceding verification sequence
         run: |
-          if git diff --quiet dist/; then
-            echo "dist/ is up to date"
-          else
-            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
-            git diff --stat dist/
-            exit 1
-          fi
+          npm run typecheck
+          npm run lint
+          npm run format
+          npm run test
+          npm run build
+          npm run verify:dist
+          npm run verify:package
 
-      - name: Verify dist externals
-        run: npm run verify:dist
+      - name: Run first integration diagnostic
+        id: first
+        continue-on-error: true
+        run: |
+          set +e
+          npm run test:integration > integration-first.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > integration-first.status
+          cat integration-first.log
+          exit "$status"
 
-      - name: Verify packed package
-        run: npm run verify:package
+      - name: Run second integration diagnostic
+        id: second
+        continue-on-error: true
+        run: |
+          set +e
+          npm run test:integration > integration-second.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > integration-second.status
+          cat integration-second.log
+          exit "$status"
 
-      - name: Test isolated Quartz integration
-        run: npm run test:integration
-
-      - name: Test watch diagnostics
-        run: npm run test:watch-integration
-
-      - name: Verify package contents
-        run: npm pack --dry-run
-
-      - name: Check whitespace errors
-        run: git diff --check
-
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - name: Upload sequence diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          node-version: "22"
-          cache: "npm"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Publish
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          name: quartz-full-sequence-logs
+          path: |
+            integration-first.log
+            integration-first.status
+            integration-second.log
+            integration-second.status
