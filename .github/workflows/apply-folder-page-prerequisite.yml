@@ -31,7 +31,26 @@ jobs:
           cache: npm
 
       - name: Apply prerequisite changes
-        run: python scripts/apply-folder-page-prerequisite.py
+        id: patch
+        continue-on-error: true
+        run: |
+          set +e
+          python scripts/apply-folder-page-prerequisite.py > prerequisite-patch.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          cat prerequisite-patch.log
+          exit "$status"
+
+      - name: Upload patch diagnostic
+        if: steps.patch.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-page-prerequisite-patch-log
+          path: prerequisite-patch.log
+
+      - name: Stop after patch failure
+        if: steps.patch.outcome == 'failure'
+        run: exit 1
 
       - name: Install dependencies
         run: npm ci
@@ -85,6 +104,7 @@ jobs:
         run: |
           rm scripts/apply-folder-page-prerequisite.py
           rm .github/workflows/apply-folder-page-prerequisite.yml
+          rm -f prerequisite-patch.log
 
       - name: Final repository checks
         run: |
