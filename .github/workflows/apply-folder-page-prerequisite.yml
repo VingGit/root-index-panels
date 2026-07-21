@@ -34,6 +34,16 @@ jobs:
         id: patch
         continue-on-error: true
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/apply-folder-page-prerequisite.py")
+          source = path.read_text(encoding="utf-8")
+          old = 'raise SystemExit(f"{path}: expected one replacement target, found {count}")'
+          new = 'raise SystemExit(f"{path}: target={old[:160]!r}; expected one replacement target, found {count}")'
+          if source.count(old) != 1:
+              raise SystemExit("could not instrument patch helper")
+          path.write_text(source.replace(old, new), encoding="utf-8")
+          PY
           set +e
           python scripts/apply-folder-page-prerequisite.py > prerequisite-patch.log 2>&1
           status=$?
