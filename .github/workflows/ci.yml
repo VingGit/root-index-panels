@@ -20,9 +20,9 @@ jobs:
           mkdir -p "$output/files"
 
           find "$host" -type f \
-            \( -name '.gitlab-ci.yml' -o -name 'quartz.config.yaml' -o -name 'quartz.ts' \
-               -o -name 'package.json' -o -name '*.sh' -o -name '*.mjs' -o -name '*.js' \
-               -o -name '*.ts' -o -name '*.yaml' -o -name '*.yml' \) \
+            \( -name '.gitlab-ci.yml' -o -name 'quartz.config.yaml' -o -name 'quartz.config.default.yaml' \
+               -o -name 'quartz.ts' -o -name 'package.json' -o -name '*.md' -o -name '*.sh' \
+               -o -name '*.mjs' -o -name '*.js' -o -name '*.ts' -o -name '*.yaml' -o -name '*.yml' \) \
             -not -path '*/node_modules/*' -not -path '*/.git/*' \
             -print0 | while IFS= read -r -d '' file; do
               relative="${file#"$host"/}"
@@ -40,5 +40,6 @@ jobs:
       - name: Upload deployment inspection
         uses: actions/upload-artifact@v7
         with:
-          name: gitlab-template-deployment
+          name: gitlab-template-deployment-dotfiles
           path: gitlab-template-deployment
+          include-hidden-files: true
