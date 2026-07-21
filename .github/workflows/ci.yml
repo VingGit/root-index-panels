@@ -25,31 +25,44 @@ jobs:
           path = Path("test/integration/parent-build.mjs")
           text = path.read_text()
 
-          old_assertion = '''  assert.match(
-            topicSidebar,
-            /class="rip-sidebar-home-mark" href="\\.\\.\\/java\\/"[^>]*aria-label="Open iOS home"/,
-          )'''
-          new_assertion = '''  assert.ok(
-            topicSidebar.includes(
-              `class="rip-sidebar-home-mark" href="../java/" aria-label="${expectedLabels.bookHome}"`,
-            ),
-            "book home-mark label was not localized",
-          )'''
+          old_assertion = "\n".join([
+              '  assert.match(',
+              '    topicSidebar,',
+              '    /class="rip-sidebar-home-mark" href="\\.\\.\\/java\\/"[^>]*aria-label="Open iOS home"/,',
+              '  )',
+          ])
+          new_assertion = "\n".join([
+              '  assert.ok(',
+              '    topicSidebar.includes(',
+              '      `class="rip-sidebar-home-mark" href="../java/" aria-label="${expectedLabels.bookHome}"`,',
+              '    ),',
+              '    "book home-mark label was not localized",',
+              '  )',
+          ])
 
-          if text.count(old_assertion) != 1:
-              raise SystemExit(f"expected one hard-coded book-home assertion, found {text.count(old_assertion)}")
+          count = text.count(old_assertion)
+          if count != 1:
+              raise SystemExit(f"expected one hard-coded book-home assertion, found {count}")
           text = text.replace(old_assertion, new_assertion)
 
           english = '{ switchBook: "Switch book", explorer: "Explorer" }'
           english_new = '{ switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" }'
-          if text.count(english) != 2:
-              raise SystemExit(f"expected two English label bundles, found {text.count(english)}")
+          count = text.count(english)
+          if count != 2:
+              raise SystemExit(f"expected two English label bundles, found {count}")
           text = text.replace(english, english_new)
 
           finnish = '{ switchBook: "Vaihda kirjaa", explorer: "Sisältöselain" }'
-          finnish_new = '{\n          switchBook: "Vaihda kirjaa",\n          explorer: "Sisältöselain",\n          bookHome: "Avaa kirjan iOS etusivu",\n        }'
-          if text.count(finnish) != 1:
-              raise SystemExit(f"expected one Finnish label bundle, found {text.count(finnish)}")
+          finnish_new = "\n".join([
+              '{',
+              '          switchBook: "Vaihda kirjaa",',
+              '          explorer: "Sisältöselain",',
+              '          bookHome: "Avaa kirjan iOS etusivu",',
+              '        }',
+          ])
+          count = text.count(finnish)
+          if count != 1:
+              raise SystemExit(f"expected one Finnish label bundle, found {count}")
           text = text.replace(finnish, finnish_new)
 
           path.write_text(text)
