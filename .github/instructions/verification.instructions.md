@@ -6,19 +6,17 @@ applyTo: "{src,test,scripts,types,dist}/**,package.json,package-lock.json,tsup.c
 
 # Verification contract
 
-Select checks in proportion to the change, but do not treat a component snapshot or successful
-build as proof of CLI insertion, host composition, SPA/base-path routing, responsive behavior, or
-packaged consumption.
+Select checks in proportion to the change, but do not treat a component snapshot or successful build
+as proof of host composition, SPA/base-path routing, responsive behavior, or packaged consumption.
 
 ## Baseline and evidence
 
-Before source edits, inspect scoped status/diffs, record the plugin and parent Quartz revisions, run
-`npm ci`, and capture relevant baseline checks. When host behavior matters, inspect the current
-Quartz docs/source/types and a clean rendered host before freezing the implementation decision.
+Before source edits, inspect scoped status/diffs, record plugin and parent Quartz revisions, run
+`npm ci`, and capture relevant baseline checks. When host behavior matters, inspect current Quartz
+docs/source/types and a clean rendered host before freezing the implementation decision.
 
-After edits, record exact commands, results, revisions, pages, selectors, and any pre-existing
-warnings. Absence of an observed failure is not proof; assertions must exercise the intended and
-negative paths.
+After edits, record exact commands, results, revisions, pages, selectors, and pre-existing warnings.
+Assertions must exercise intended and negative paths; absence of an observed failure is not proof.
 
 ## Focused data and option tests
 
@@ -31,78 +29,100 @@ Retain parameterized cards/list coverage for:
   malformed, leading/trailing/doubled/dot/backslash slug cases;
 - exact runtime normalization for every option, shallow maps, own properties, accessors, inherited
   entries, revoked/throwing proxies, and soft failure;
-- icon alias/built-in precedence, all accepted accent forms, invalid/injection forms, no raw values
-  in hooks, no cross-book appearance leakage, and theme-neutral untouched defaults;
+- icon alias/built-in precedence, all accepted accent forms, invalid/injection forms, no raw values in
+  hooks, no cross-book appearance leakage, and theme-neutral defaults;
 - per-render `en-US`, `fi-FI`, and unsupported-locale fallback; and
 - large synthetic input that detects repeated full scans without timing-sensitive benchmarks.
 
-For sidebar inventory, parameterize input order and duplicates. Assert root/book context selection,
-authored root fallback, Overview-first behavior, folder destinations/default open states, selected
-versus exact-current state, cache isolation for all four normalized inventory inputs, and distinct
-note/Canvas/Base leaves. Generated leaves must pass own-provenance, exact suffix, non-unlisted, and
-collision tests and must never affect book eligibility, destination proof, count, ordering, or
-folder Overview metadata.
+For sidebar inventory, parameterize input order and duplicates. Assert:
 
-## Server-rendered components
+- root/book context selection and authored-root fallback;
+- book index excluded from visible children but retained as the dedicated home destination;
+- physical and generated nested folder-index destinations, titles, and hidden index notes;
+- selected versus exact-current state, active ancestry, and cache isolation;
+- distinct note/Canvas/Base leaves and collision/provenance rejection; and
+- FolderPage absence with physical indexes versus folders that genuinely lack a destination.
 
-For the root body, prove:
+## Server-rendered root component
 
-- overview is the first direct plugin-body child;
-- a non-empty transformed tree appears exactly once in the standard safe article wrapper after the
-  overview and before the unique `#rip-directories` target;
-- headings, links, callouts, tables, code, transclusion output, supported style/script nodes, and
-  safe `cssclasses` survive public HAST conversion;
-- an empty tree omits only the article;
+Prove:
+
+- `.rip-overview` is the first direct plugin-body child;
+- the latest preview follows the overview and contains at most three books in deterministic newest
+  order;
+- authored HAST appears exactly once after the preview and before unique `#rip-books`;
+- the contextual return action appears only with authored content and targets `#rip-books`;
+- the complete library contains every eligible book exactly once, independent of preview order;
+- headings, links, callouts, tables, code, transclusion output, supported style/script nodes, and safe
+  `cssclasses` survive public HAST conversion;
+- an empty tree omits only the authored-content wrapper;
 - `toc`, `readingTime`, `text`, `fileData`, and HAST inputs are not deleted or mutated;
-- statistics, deterministic locale/date output, no-date omission, browse anchor, root guard,
-  empty state, and cards/list accessible names are exact.
+- statistics, localized UTC dates, semantic `<time>`, no-date omission, empty state, and cards/list
+  accessible names are exact; and
+- every sort combination is deterministic, stable, and preserves all entries while leaving the
+  latest preview untouched.
 
-For the sidebar, prove one labelled navigation region, native details/lists/links, no application
-ARIA or custom tab stops, correct labels/menu/scope, exactly one selected item, exact-current only,
-Overview/folder ordering, correct relative destinations, safe decorative hooks, three distinct
-leaf SVGs, Explorer opt-in emission, and valid zero/one/many/long-label states.
+## Server-rendered sidebar component
+
+Prove one labelled navigation region and:
+
+- a compact root/book home anchor plus adjacent native book switcher;
+- descriptive home accessible names/tooltips, localized badge, exact-current `aria-current`, and
+  active/neutral transitions;
+- exactly one selected switcher entry with localized hidden selected text;
+- no visible book-index or nested-folder-index document entry;
+- ordinary folder-row anchors targeting actual index routes;
+- separate disclosure buttons with `aria-expanded`, `aria-controls`, no navigation, and no custom
+  positive tab index;
+- correct default open/closed states and nested active ancestry;
+- current note preservation while an ancestor is collapsed;
+- correct relative destinations under root, deep routes, and base-directory fixtures;
+- safe decorative hooks, distinct note/Canvas/Base SVGs, Explorer opt-in emission, and valid
+  zero/one/many/long-label states; and
+- scoped book accents on selected rows, exact-current home, and collapsed hidden active paths without
+  cross-book leakage.
 
 ## CSS and inline scripts
 
-Freeze all five permitted host-selector kinds and fail on an additional host suppression:
+Freeze the five permitted host-selector kinds and fail on additional host suppression:
 
 1. exact default-frame/direct-plugin tablet/mobile grid containment;
-2. exact direct-plugin mobile width/wrap containment and only its five allowed properties;
-3. exact default and Canvas direct Explorer sibling variants with true opt-in, plus false and
-   unrelated/nested visible cases;
-4. exact direct-plugin Canvas-frame border-box containment without stage/control/transform targets;
-5. exact default-frame book-scope breadcrumb rule hiding only the non-only first element.
+2. exact direct-plugin mobile width/wrap containment and only its allowed properties;
+3. exact default and Canvas direct Explorer sibling variants with true opt-in;
+4. exact direct-plugin Canvas-frame border-box containment; and
+5. exact default-frame book-scope breadcrumb rule hiding only the redundant non-only first element.
 
 Host-shaped DOM/CSS checks must leave Search, PageTitle, toolbars, Graph, TOC, Backlinks, the right
 slot, unrelated navigation, and custom frames untouched. Root breadcrumbs remain normal. Reject
 JavaScript that queries or rewrites Explorer, Breadcrumbs, or right-side components.
 
-Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, popup
-absolute positioning/scroll/z-index/underlay protection, print, forced colors, and reduced motion.
-Freeze the Make card radial gradient, bottom hairline, 300ms opacity, focus parity, two-pixel lift,
-and absence of the superseded accent-border/title hover.
+Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, switcher
+popup containment, print, forced colors, reduced motion, and coarse pointers. Freeze the card radial
+gradient, bottom hairline, 300ms opacity, focus parity, two-pixel lift, and absence of the superseded
+accent-border/title hover.
 
-Panel and sidebar scripts must cover initial load, repeated Quartz `nav`, cleanup, navigation away
-and back, multiple/zero matching components, no duplicate listeners, and no-JS core functionality.
-Panel navigation tests include modified-key rejection and Arrow/Home/End boundaries. Sidebar tests
-include one-open state, selected-link close, outside pointer close, Escape focus restoration, and
-scope restoration when the popup closes.
+Panel and sidebar scripts must cover initial load, repeated Quartz `nav`, cleanup, navigation away and
+back, multiple/zero matching components, no duplicate listeners, and no empty cleanup registration.
+Panel navigation covers modified-key rejection and Arrow/Home/End boundaries. Sorting covers invalid
+values and all four modes. Sidebar covers one-open switcher behavior, selected-link close, outside
+pointer, Escape focus restoration, folder disclosure, active-ancestor collapse without navigation,
+and cleanup.
 
-## Manifest, API, and package
+## Manifest, API, distribution, and package
 
 Assert:
 
 - `Object.keys(packageJson.quartz.components)` is exactly `["RootIndexSidebar"]`;
-- sidebar metadata/version/default left position/priority and boolean `replaceExplorer: true`
-  schema/default are aligned;
-- no manifest entry registers `RootIndexPanels`, but built root, `./components`, and `./types`
-  expose every documented runtime/type export;
+- sidebar metadata/version/default left position/priority and boolean `replaceExplorer` schema/default
+  are aligned;
+- no manifest entry registers `RootIndexPanels`, but built root, `./components`, and `./types` expose
+  every documented runtime/type export;
 - validators, declarations, source maps, side effects/resources, dependency graph, notices, CI,
-  package allowlist, and committed `dist/` cover all changed outputs;
+  package allowlist, and committed `dist/` cover every changed output;
 - every generated JavaScript entry has only intended externals, no accidentally bundled singleton,
   no unexpected bare runtime import, and no dependency source resolved from an ancestor; and
-- `npm pack --dry-run` plus a temporary consumer import prove the shipped sidebar/panel resources and
-  public types work without source files.
+- `npm pack --dry-run` plus a temporary consumer import prove shipped resources and public types work
+  without source files.
 
 ## Isolated Quartz integration
 
@@ -113,13 +133,13 @@ parent's upstream files. Cover relevant combinations of:
 - default and Canvas frames;
 - SPA on/off;
 - `en-US`, `fi-FI`, and unsupported locale;
-- root, root note, book landing, ordinary/nested note, FolderPage, TagPage, Canvas, Bases,
-  unlisted/encrypted control, and 404;
-- explicit and FolderPage-generated landing destinations; and
+- root, root note, book landing, ordinary/nested note, physical folder landing, FolderPage-generated
+  landing, TagPage, Canvas, Bases, unlisted/encrypted control, and 404;
+- FolderPage enabled and disabled, with physical-index controls; and
 - root/deep routes below a base directory such as `/group/project/`.
 
 Inspect generated HTML and resources, not only exit status. Require one sidebar and one root body,
-banner/authored-root/directory order, exact scope/state/icons/links, retained root metadata outputs,
+overview/latest/authored-root/full-library order, exact scope/state/icons/links, retained root metadata,
 existing destinations, base-path-safe resources, Graph in the default right slot, scoped Explorer
 replacement, book-first/root-normal breadcrumbs, Canvas stage visibility, and no duplicate SPA
 resources or browser errors.
@@ -130,34 +150,48 @@ against the exact commit. Never infer remote usability from a local cache overla
 
 ## Browser and accessibility review
 
-For popup, card, breakpoint, Canvas drawer, breadcrumb, or host-composition changes, use a real
-browser at representative desktop (>1200px), tablet (800–1200px), and mobile (<800px) widths.
-Measure viewport/document/body/left/center/right bounds and require no plugin-induced horizontal
-overflow.
+For popup, card, breakpoint, folder disclosure, Canvas drawer, breadcrumb, or host-composition
+changes, use a real browser at representative desktop (>1200px), tablet (800–1200px), and mobile
+(<800px) widths. Require no plugin-induced horizontal overflow.
 
 Verify:
 
-- selector opening causes zero Explorer layout shift, stays within the viewport, disables the
-  covered underlay, and restores it/focus correctly;
-- keyboard, pointer, touch, no-JS, SPA, Back/Forward, 200%/400% zoom, long labels, Unicode, light/dark,
-  forced colors, reduced motion, and coarse pointers remain usable;
-- root → book → nested → other book → root keeps one component/listener set and no console/network
-  errors;
-- real Canvas/Base routes show correct distinct/current leaves; Canvas drawer closed/open/closed at
-  1440, 801, 800, and mobile keeps inward desktop padding, mobile overlay, stage/controls, scoped
-  Explorer behavior, and zero horizontal scroll;
-- book/default breadcrumbs begin at the existing book-root link while root remains stock; and
-- card computed styles match the exact decorative contract without replacing the focus cue.
+- selector opening causes zero Explorer layout shift, stays within the viewport, disables covered
+  underlay, and restores focus correctly;
+- root → book → folder landing → nested note → collapse ancestor → other book → root preserves route,
+  Back/Forward semantics, one component/listener set, and no console/network errors;
+- keyboard, pointer, touch, no-JS, SPA, 200%/400% zoom, long labels, Unicode, light/dark, forced colors,
+  reduced motion, and coarse pointers remain usable;
+- selected home/neutral transitions and collapsed hidden active-path cues are visible without relying
+  only on color;
+- real Canvas/Base routes retain correct leaves and Canvas stage/controls at 1440, 801, 800, and
+  mobile; and
+- card computed styles match the decorative contract without replacing the focus cue.
+
+## GitLab Pages and FolderPage diagnostic
+
+When investigating non-root 404s:
+
+1. inspect the deployed `public/` artifact for expected ordinary note `.html` files;
+2. distinguish missing generated folder indexes from missing ordinary pages;
+3. inspect `CNAME`, `data-basepath`, canonical URLs, asset paths, and the 404-page home link;
+4. require the configured base path to match either custom-domain-root hosting or project-subpath
+   hosting consistently; and
+5. verify that disabling FolderPage removes only generated folder landing routes when physical
+   indexes are absent.
+
+A root-only Page Type cannot explain existing ordinary `.html` files becoming unreachable under an
+inconsistent public base path.
 
 ## Durable fixture and watch diagnostics
 
 When the change touches host integration or content semantics, audit the persistent three-book lab
-against [its reference](../reference/compatibility-fixture.md). Expected counts come from a clean
-render and the physical/listed model, not file counts or optimistic Canvas/Bases assumptions.
+against its reference. Expected counts come from a clean render and physical/listed model, not raw
+file counts or optimistic Canvas/Bases assumptions.
 
-Rerun the separate add/change/delete watch diagnostic for aggregate changes. Record stale behavior
-honestly, then stop the watcher and prove a clean/full build corrects root panels, overview, and
-sidebar inventory. This watch limitation is pre-approved; full-build defects are not.
+Rerun the add/change/delete watch diagnostic. Record stale watch behavior honestly, then stop the
+watcher and prove a clean/full build corrects root panels, latest dates, overview, and sidebar
+inventory. The known watch limitation is pre-approved; full-build defects are not.
 
 ## Command gate
 
