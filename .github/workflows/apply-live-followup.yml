@@ -1,0 +1,109 @@
+name: Apply live follow-up
+
+on:
+  push:
+    branches: ["agent/sidebar-root-library-rework"]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/sidebar-root-library-rework
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Apply requested changes
+        run: python scripts/apply-live-followup.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format changed files
+        run: >-
+          npx prettier --write
+          .github/instructions/architecture.instructions.md
+          .github/instructions/verification.instructions.md
+          CHANGELOG.md README.md package.json
+          src/components/RootIndexPanels.tsx
+          src/components/styles/panels.scss
+          src/components/styles/root-library.scss
+          src/components/styles/sidebar.scss
+          src/components/styles/sidebar-rework.scss
+          src/i18n/types.ts src/i18n/locales/en-US.ts src/i18n/locales/fi-FI.ts
+          src/options.ts src/types.ts
+          test/appearance.test.tsx
+          test/integration/parent-build.mjs
+          test/locales-page-type-manifest.test.tsx
+          test/sidebar-style.test.ts
+
+      - name: Run complete source gate
+        run: npm run check
+
+      - name: Build distribution
+        run: npm run build
+
+      - name: Verify distribution
+        run: |
+          npm run verify:dist
+          npm run verify:package
+
+      - name: Prepare configured Quartz integration host
+        run: |
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          echo "Configured Quartz host revision: $(git -C "$host" rev-parse HEAD)"
+
+      - name: Run configured Quartz integration
+        run: npm run test:integration
+
+      - name: Run watch-mode integration
+        run: npm run test:watch-integration
+
+      - name: Verify package dry run
+        run: npm pack --dry-run
+
+      - name: Remove temporary automation
+        run: |
+          rm scripts/apply-live-followup.py
+          rm .github/workflows/apply-live-followup.yml
+
+      - name: Final repository checks
+        run: |
+          test -f .github/siderbar-rework.md
+          test ! -e .github/workflows/sync-followup.yml
+          test ! -e .github/workflows/export-followup.yml
+          test ! -e .github/workflows/export-followup-trigger.yml
+          test ! -e .github/reference/live-followup-request.md
+          test ! -e .github/reference/.keep-followup
+          test ! -e .github/reference/followup-status.txt
+          test ! -e .github/reference/followup-current.txt
+          git diff --check
+          git status --short
+
+      - name: Commit verified implementation
+        run: |
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m "fix: polish library controls and sidebar states"
+          git show --no-patch --format='author=%an <%ae>%ncommitter=%cn <%ce>' HEAD
+          git push origin HEAD:agent/sidebar-root-library-rework
