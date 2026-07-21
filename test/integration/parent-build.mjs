@@ -1180,7 +1180,7 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   )
   assert.match(bodyHtml, /class="rip-browse-link" href="#rip-books"/)
   assert.match(bodyHtml, /<dd>6<\/dd>/, "root book statistic drifted")
-  assert.match(bodyHtml, /<dd>4<\/dd>/, "root total-note statistic drifted")
+  assert.match(bodyHtml, /<dd>5<\/dd>/, "root total-note statistic drifted")
   assert.ok(
     bodyHtml.includes(`>${expectedUpdated}</time></dd>`),
     `root last-updated statistic drifted: ${expectedUpdated}`,
