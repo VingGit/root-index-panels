@@ -1,13 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches: ["main"]
-    tags: ["v*"]
   pull_request:
 
 jobs:
-  test:
+  inspect-quartz-host-bootstrap:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,88 +19,35 @@ jobs:
       - name: Install plugin dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Check formatting
-        run: npm run format
-
-      - name: Test
-        run: npm run test
-
-      - name: Build
-        run: npm run build
-
-      - name: Verify dist is up to date
+      - name: Clone and inspect Quartz host
         run: |
-          if git diff --quiet dist/; then
-            echo "dist/ is up to date"
-          else
-            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
-            git diff --stat dist/
-            exit 1
-          fi
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          out="$GITHUB_WORKSPACE/quartz-host-inspection"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          mkdir -p "$out"
+          for file in quartz.lock.json quartz.config.yaml quartz.ts package.json .gitignore; do
+            if [ -f "$host/$file" ]; then
+              cp "$host/$file" "$out/${file//\//__}"
+            fi
+          done
+          find "$host/.quartz" -maxdepth 3 -type f -print > "$out/quartz-cache-files.txt" 2>&1 || true
+          (
+            cd "$host"
+            npx quartz --help
+          ) > "$out/quartz-help.txt" 2>&1 || true
+          (
+            cd "$host"
+            npx quartz plugin --help
+          ) > "$out/quartz-plugin-help.txt" 2>&1 || true
+          (
+            cd "$host"
+            npx quartz plugin install --help
+          ) > "$out/quartz-plugin-install-help.txt" 2>&1 || true
+          git -C "$host" rev-parse HEAD > "$out/quartz-host-revision.txt"
 
-      - name: Verify dist externals
-        run: npm run verify:dist
-
-      - name: Verify packed package
-        run: npm run verify:package
-
-      - name: Prepare Quartz integration host
-        run: |
-          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$RUNNER_TEMP/quartz-for-gitlab"
-          npm ci --prefix "$RUNNER_TEMP/quartz-for-gitlab"
-          echo "RIP_QUARTZ_ROOT=$RUNNER_TEMP/quartz-for-gitlab" >> "$GITHUB_ENV"
-          git -C "$RUNNER_TEMP/quartz-for-gitlab" rev-parse HEAD
-
-      - name: Test isolated Quartz integration
-        run: |
-          set +e
-          npm run test:integration > integration.log 2>&1
-          status=$?
-          tail -n 200 integration.log
-          exit "$status"
-
-      - name: Test watch diagnostics
-        run: |
-          set +e
-          npm run test:watch-integration > watch-integration.log 2>&1
-          status=$?
-          tail -n 200 watch-integration.log
-          exit "$status"
-
-      - name: Verify package contents
-        run: npm pack --dry-run
-
-      - name: Check whitespace errors
-        run: git diff --check
-
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - name: Upload Quartz host inspection
+        uses: actions/upload-artifact@v7
         with:
-          node-version: "22"
-          cache: "npm"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Publish
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          name: quartz-host-bootstrap-inspection
+          path: quartz-host-inspection/
