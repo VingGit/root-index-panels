@@ -153,7 +153,9 @@ function stageHost() {
   const stagedPlugins = path.join(workspace, ".quartz", "plugins")
   fs.mkdirSync(stagedPlugins, { recursive: true })
 
-  for (const entry of fs.existsSync(parentPlugins)\n    ? fs.readdirSync(parentPlugins, { withFileTypes: true })\n    : []) {
+  for (const entry of fs.existsSync(parentPlugins)
+    ? fs.readdirSync(parentPlugins, { withFileTypes: true })
+    : []) {
     if (!entry.isDirectory() || entry.name === PLUGIN_NAME) continue
     linkOrCopyDirectory(path.join(parentPlugins, entry.name), path.join(stagedPlugins, entry.name))
   }
