@@ -45,9 +45,11 @@ validated accent. Root and theme-default entries must never inherit the selected
 
 replace_once(
     ".github/instructions/verification.instructions.md",
-    """Switcher popup containment, print, forced colors, reduced motion, and coarse pointers. Freeze the card radial
+    """Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, switcher
+popup containment, print, forced colors, reduced motion, and coarse pointers. Freeze the card radial
 """,
-    """Switcher popup containment, per-entry accent isolation, print, forced colors, reduced motion, and coarse
+    """Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, switcher
+popup containment, per-entry accent isolation, print, forced colors, reduced motion, and coarse
 pointers. The switcher menu must reset the selected book's inherited custom accent while preserving
 book-specific overrides. Freeze the card radial
 """,
