@@ -4,7 +4,7 @@ import { compareBooks } from "../src/components/scripts/panels.inline"
 
 function book(title: string, date: number, index: number) {
   return {
-    element: document.createElement("li"),
+    element: {} as HTMLElement,
     title,
     date,
     index,
