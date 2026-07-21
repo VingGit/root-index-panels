@@ -87,6 +87,7 @@ jobs:
           .github/instructions/architecture.instructions.md
           .github/instructions/verification.instructions.md
           .github/reference/sidebar-root-library-rework.md
+          .github/workflows/apply-folder-page-prerequisite.yml
 
       - name: Run complete source gate
         id: source_gate
