@@ -4,10 +4,10 @@ on:
   pull_request:
 
 jobs:
-  diagnose-quartz-plugin-bootstrap:
+  verify-config-scoped-quartz-bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout synthetic merge
         uses: actions/checkout@v6
 
       - name: Setup Node
@@ -19,31 +19,26 @@ jobs:
       - name: Install plugin dependencies
         run: npm ci
 
-      - name: Clone Quartz host
+      - name: Build plugin
+        run: npm run build
+
+      - name: Prepare configured Quartz integration host
         run: |
           host="$RUNNER_TEMP/quartz-for-gitlab"
           git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
           npm ci --prefix "$host"
-          echo "QUARTZ_HOST=$host" >> "$GITHUB_ENV"
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          git -C "$host" rev-parse HEAD
+          test -f "$host/.quartz/plugins/index.ts"
 
-      - name: Run Quartz plugin bootstrap diagnostic
-        id: bootstrap
-        continue-on-error: true
+      - name: Run configured Quartz integration
         run: |
           set +e
-          npm run install-plugins --prefix "$QUARTZ_HOST" > quartz-plugin-bootstrap.log 2>&1
+          npm run test:integration > configured-integration.log 2>&1
           status=$?
-          printf '%s\n' "$status" > quartz-plugin-bootstrap.status
-          tail -n 120 quartz-plugin-bootstrap.log
-          find "$QUARTZ_HOST/.quartz" -maxdepth 3 -type f -print > quartz-cache-files.txt 2>&1 || true
+          tail -n 200 configured-integration.log
           exit "$status"
-
-      - name: Upload Quartz plugin bootstrap diagnostic
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: quartz-plugin-bootstrap-log
-          path: |
-            quartz-plugin-bootstrap.log
-            quartz-plugin-bootstrap.status
-            quartz-cache-files.txt
