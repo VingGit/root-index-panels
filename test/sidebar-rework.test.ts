@@ -30,7 +30,7 @@ describe("sidebar folder landing model", () => {
     expect(chapter.kind).toBe("folder")
     expect(chapter.slug).toBe("book/chapter/index")
     expect(chapter.children.map((child) => child.slug)).toEqual(["book/chapter/topic"])
-    expect(chapter.children.some((child) => child.slug.endsWith("/index"))).toBe(false)
+    expect(chapter.children.some((child) => child.slug?.endsWith("/index") === true)).toBe(false)
   })
 
   it("marks a closed ancestor without changing the selected route", () => {
