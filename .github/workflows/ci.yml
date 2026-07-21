@@ -4,10 +4,10 @@ on:
   pull_request:
 
 jobs:
-  inspect-quartz-host-bootstrap:
+  verify-quartz-plugin-bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout synthetic merge
         uses: actions/checkout@v6
 
       - name: Setup Node
@@ -19,35 +19,23 @@ jobs:
       - name: Install plugin dependencies
         run: npm ci
 
-      - name: Clone and inspect Quartz host
+      - name: Build plugin
+        run: npm run build
+
+      - name: Prepare complete Quartz integration host
         run: |
           host="$RUNNER_TEMP/quartz-for-gitlab"
-          out="$GITHUB_WORKSPACE/quartz-host-inspection"
           git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
           npm ci --prefix "$host"
-          mkdir -p "$out"
-          for file in quartz.lock.json quartz.config.yaml quartz.ts package.json .gitignore; do
-            if [ -f "$host/$file" ]; then
-              cp "$host/$file" "$out/${file//\//__}"
-            fi
-          done
-          find "$host/.quartz" -maxdepth 3 -type f -print > "$out/quartz-cache-files.txt" 2>&1 || true
-          (
-            cd "$host"
-            npx quartz --help
-          ) > "$out/quartz-help.txt" 2>&1 || true
-          (
-            cd "$host"
-            npx quartz plugin --help
-          ) > "$out/quartz-plugin-help.txt" 2>&1 || true
-          (
-            cd "$host"
-            npx quartz plugin install --help
-          ) > "$out/quartz-plugin-install-help.txt" 2>&1 || true
-          git -C "$host" rev-parse HEAD > "$out/quartz-host-revision.txt"
+          npm run install-plugins --prefix "$host"
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          git -C "$host" rev-parse HEAD
+          test -f "$host/.quartz/plugins/index.ts"
 
-      - name: Upload Quartz host inspection
-        uses: actions/upload-artifact@v7
-        with:
-          name: quartz-host-bootstrap-inspection
-          path: quartz-host-inspection/
+      - name: Run bootstrapped Quartz integration
+        run: |
+          set +e
+          npm run test:integration > bootstrapped-integration.log 2>&1
+          status=$?
+          tail -n 200 bootstrapped-integration.log
+          exit "$status"
