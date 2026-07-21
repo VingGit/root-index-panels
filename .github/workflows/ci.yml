@@ -3,6 +3,7 @@ name: Diagnose live GitLab Pages
 on:
   push:
     branches: ["diagnose-live-site"]
+  pull_request:
 
 jobs:
   diagnose:
