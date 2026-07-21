@@ -102,7 +102,9 @@ slot, unrelated navigation, and custom frames untouched. Root breadcrumbs remain
 JavaScript that queries or rewrites Explorer, Breadcrumbs, or right-side components.
 
 Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, switcher
-popup containment, print, forced colors, reduced motion, and coarse pointers. Freeze the card radial
+popup containment, per-entry accent isolation, print, forced colors, reduced motion, and coarse
+pointers. The switcher menu must reset the selected book's inherited custom accent while preserving
+book-specific overrides. Freeze the card radial
 gradient, bottom hairline, 300ms opacity, focus parity, two-pixel lift, and absence of the superseded
 accent-border/title hover.
 

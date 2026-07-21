@@ -169,6 +169,8 @@
 }
 
 .rip-sidebar-switcher-menu {
+  --rip-sidebar-accent: var(--secondary);
+
   position: absolute;
   z-index: 20;
   top: calc(100% + 0.35rem);
