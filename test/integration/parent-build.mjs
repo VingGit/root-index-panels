@@ -1195,6 +1195,25 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     "complete root library section duplicated",
   )
   assert.match(bodyHtml, /class="rip-browse-link" href="#rip-books"/)
+  assert.ok(
+    bodyHtml.includes(`class="rip-browse-link" href="#rip-books">${expectedLabels.exploreLibrary}`),
+    "root Explore library action was not localized",
+  )
+  assert.equal(classCount(bodyHtml, "rip-return-link"), 0, "obsolete return action rendered")
+  const latestStart = bodyHtml.indexOf('<section class="rip-latest"')
+  const latestEnd = bodyHtml.indexOf("</section>", latestStart)
+  assert.ok(latestStart >= 0 && latestEnd > latestStart, "could not isolate latest section")
+  const latestHeadingStart = bodyHtml.indexOf('<div class="rip-section-heading">', latestStart)
+  const latestHeadingEnd = bodyHtml.indexOf("</div>", latestHeadingStart)
+  assert.ok(
+    latestHeadingStart >= latestStart && latestHeadingEnd > latestHeadingStart,
+    "could not isolate latest section heading",
+  )
+  assert.doesNotMatch(
+    bodyHtml.slice(latestHeadingStart, latestHeadingEnd + 6),
+    /<p(?:\s|>)/,
+    "latest heading retained its redundant explanatory paragraph",
+  )
   assert.match(bodyHtml, /<dd>6<\/dd>/, "root book statistic drifted")
   assert.match(bodyHtml, /<dd>5<\/dd>/, "root total-note statistic drifted")
   assert.ok(
@@ -1573,7 +1592,12 @@ function runIntegration() {
           "./java/": ">3 notes</span>",
         },
         "Jul 18, 2026",
-        { switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" },
+        {
+          switchBook: "Switch book",
+          explorer: "Explorer",
+          bookHome: "Open iOS home",
+          exploreLibrary: "Explore library",
+        },
       )
       assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
@@ -1614,6 +1638,7 @@ function runIntegration() {
           switchBook: "Vaihda kirjaa",
           explorer: "Sisältöselain",
           bookHome: "Avaa kirjan iOS etusivu",
+          exploreLibrary: "Selaa kirjastoa",
         },
       )
       const custom = itemForHref(rootHtml, "./custom/")
@@ -1661,13 +1686,15 @@ function runIntegration() {
           "./java/": ">3 notes</span>",
         },
         "18 Jul 2026",
-        { switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" },
+        {
+          switchBook: "Switch book",
+          explorer: "Explorer",
+          bookHome: "Open iOS home",
+          exploreLibrary: "Explore library",
+        },
       )
-      assert.doesNotMatch(itemForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
-      assert.doesNotMatch(
-        sidebarBookAnchorForHref(rootHtml, "./custom/"),
-        /data-rip-icon=|rip-sidebar-book-icon/,
-      )
+      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
+      assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       const unsafe = itemForHref(rootHtml, "./unsafe/")
       assert.doesNotMatch(unsafe, /data-rip-accent=|--rip-panel-accent/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)

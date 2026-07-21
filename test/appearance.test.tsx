@@ -29,19 +29,25 @@ const styleSource = readFileSync(
 )
 
 describe.each(layouts)("appearance resolution and markup (%s)", (layout) => {
-  it("renders untouched defaults without an icon or accent hook", () => {
+  it("renders the theme-neutral open-book fallback without an accent hook", () => {
     const html = renderPanels(bookFiles(), { layout })
 
-    expect(html).not.toContain("rip-panel-icon")
-    expect(html).not.toContain("data-rip-icon")
+    expect(html).toContain('data-rip-icon="book-open"')
+    expect(html).toContain('class="rip-panel-icon"')
     expect(html).not.toContain("data-rip-accent")
     expect(html).not.toContain("--rip-panel-accent")
   })
 
-  it("treats defaultIcon as an explicit opt-in", () => {
-    const html = renderPanels(bookFiles(), { layout, defaultIcon: "book-open" })
+  it("treats an empty configured default as the open-book fallback", () => {
+    const html = renderPanels(bookFiles(), { layout, defaultIcon: "" })
 
     expect(html).toContain('data-rip-icon="book-open"')
+  })
+
+  it("lets a configured default override the open-book fallback", () => {
+    const html = renderPanels(bookFiles(), { layout, defaultIcon: "coffee" })
+
+    expect(html).toContain('data-rip-icon="coffee"')
     expect(html).toContain('class="rip-panel-icon"')
   })
 
@@ -73,7 +79,8 @@ describe.each(layouts)("appearance resolution and markup (%s)", (layout) => {
     expect(countOccurrences(html, 'data-rip-icon="terminal"')).toBe(2)
     expect(countOccurrences(html, 'data-rip-accent="brand"')).toBe(2)
     expect(countOccurrences(html, "--rip-panel-accent: #1a2b3c")).toBe(2)
-    expect(countOccurrences(html, "rip-panel-icon")).toBe(2)
+    expect(countOccurrences(html, "rip-panel-icon")).toBe(4)
+    expect(countOccurrences(html, 'data-rip-icon="book-open"')).toBe(2)
     expect(html).not.toContain('data-rip-title="Beta" data-rip-accent')
   })
 })
@@ -203,7 +210,7 @@ describe("icon resolution", () => {
     "handles non-record, inherited, and partial panel metadata %# without throwing",
     (panel) => {
       expect(() => renderAppearance(panel)).not.toThrow()
-      expect(renderAppearance(panel)).not.toContain("data-rip-icon")
+      expect(renderAppearance(panel)).toContain('data-rip-icon="book-open"')
     },
   )
 
@@ -217,7 +224,7 @@ describe("icon resolution", () => {
       },
     })
 
-    expect(renderAppearance(panel)).not.toContain("data-rip-icon")
+    expect(renderAppearance(panel)).toContain('data-rip-icon="book-open"')
     expect(getterCalls).toBe(0)
   })
 })

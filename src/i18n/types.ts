@@ -3,11 +3,9 @@ export interface RootIndexPanelsTranslation {
   bookCount(count: number): string
   totalNotesLabel: string
   lastUpdatedLabel: string
-  exploreBooks: string
+  exploreLibrary: string
   latestBooks: string
-  latestBooksDescription: string
   allBooks: string
-  returnToLibrary: string
   sortBooks: string
   sortNewest: string
   sortOldest: string

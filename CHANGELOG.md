@@ -9,13 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add a latest-edited three-book preview, localized edit dates, deterministic reader-controlled
-  library sorting, and a return-to-library action around authored root content.
+- Add a latest-edited three-book preview, localized edit dates, and deterministic reader-controlled
+  library sorting.
 - Add dedicated root/book home marks and independent folder disclosure buttons with active-path
   indicators.
 
 ### Changed
 
+- Rename the primary root action to “Explore library” and keep it visibly highlighted with a
+  theme-compatible hover treatment.
+- Give books without authored icon metadata a theme-colored open-book mark in the root library and
+  book switcher.
+- Constrain current note and folder backgrounds and rails to the selected row instead of the whole
+  sidebar tree.
 - Prioritize book terminology and the book collection throughout the root page and sidebar.
 - Open book and nested-folder landing pages from their navigation rows while keeping their
   `index.md` notes out of the visible navigation tree.
@@ -30,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove the bottom return-to-library action and the redundant latest-preview explanatory sentence.
 - Remove the obsolete branch-sync, filtered-diff, and automatic main-sync workflows.
 
 ## [0.1.1] - 2026-07-19

@@ -119,6 +119,10 @@
   color: var(--gray);
 }
 
+.rip-sidebar-note-link {
+  position: relative;
+}
+
 .rip-sidebar-folder-link[data-rip-state="current"],
 .rip-sidebar-note-link[data-rip-state="current"] {
   color: var(--rip-sidebar-accent, var(--secondary));

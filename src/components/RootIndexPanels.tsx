@@ -343,7 +343,7 @@ function RootOverview({
       </dl>
       {entries.length > 0 && (
         <a class="rip-browse-link" href="#rip-books">
-          {translation.exploreBooks}
+          {translation.exploreLibrary}
           <span aria-hidden="true">↓</span>
         </a>
       )}
@@ -384,11 +384,8 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
         <RootOverview entries={entries} locale={cfg.locale} translation={translation} />
         {latestEntries.length > 0 && (
           <section class="rip-latest" aria-labelledby="rip-latest-heading">
-            <div class="rip-section-heading rip-section-heading--stacked">
-              <div>
-                <h2 id="rip-latest-heading">{translation.latestBooks}</h2>
-                <p>{translation.latestBooksDescription}</p>
-              </div>
+            <div class="rip-section-heading">
+              <h2 id="rip-latest-heading">{translation.latestBooks}</h2>
             </div>
             <BookCollection
               entries={latestEntries}
@@ -401,10 +398,6 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
         {showRootContent && (
           <div class="rip-root-content markdown-preview-view markdown-rendered">
             {htmlToJsx(tree as Parameters<typeof htmlToJsx>[0])}
-            <a class="rip-return-link" href="#rip-books">
-              {translation.returnToLibrary}
-              <span aria-hidden="true">↓</span>
-            </a>
           </div>
         )}
         <section id="rip-books" class="rip-directories" aria-labelledby="rip-books-heading">

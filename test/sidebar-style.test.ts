@@ -7,6 +7,10 @@ const styleSource = readFileSync(
   "utf8",
 )
 const compactStyleSource = styleSource.replace(/\s+/g, "")
+const reworkStyleSource = readFileSync(
+  new URL("../src/components/styles/sidebar-rework.scss", import.meta.url),
+  "utf8",
+)
 
 describe("RootIndexSidebar Explorer replacement styles", () => {
   it("renders the native manual switcher as a bounded overlay surface", () => {
@@ -97,5 +101,11 @@ describe("RootIndexSidebar Explorer replacement styles", () => {
     expect(styleSource).toMatch(
       /@media \(min-width: 801px\)[\s\S]*?\.rip-sidebar-shell:not\(\[open\]\)\s*>\s*\.rip-sidebar-content\s*{[\s\S]*?display:\s*block;/,
     )
+  })
+  it("contains current backgrounds and rails to interactive rows", () => {
+    expect(styleSource).not.toContain('.rip-sidebar [data-rip-state="current"]')
+    expect(styleSource).not.toContain('.rip-sidebar [data-rip-state="ancestor"]')
+    expect(styleSource).toContain('.rip-sidebar-note-link[data-rip-state="current"]')
+    expect(reworkStyleSource).toMatch(/\.rip-sidebar-note-link\s*\{[\s\S]*?position:\s*relative;/)
   })
 })

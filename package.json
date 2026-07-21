@@ -128,7 +128,7 @@
       "sort": "alphabetical",
       "excludeDirs": [],
       "descriptionFallback": "",
-      "defaultIcon": "",
+      "defaultIcon": "book-open",
       "defaultAccent": "theme",
       "accents": {},
       "replaceExplorer": true

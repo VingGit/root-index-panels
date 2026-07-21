@@ -78,9 +78,11 @@ Generated navigation leaves never flow back into book eligibility, ordering inpu
 
 Body order is fixed:
 
-1. `.rip-overview` statistics and a no-JavaScript `#rip-books` action when books exist;
-2. `.rip-latest`, containing at most the three newest books in deterministic date order;
-3. authored root HAST, followed by a keyboard-accessible return-to-library link; and
+1. `.rip-overview` statistics and a persistently highlighted, localized no-JavaScript
+   `#rip-books` “Explore library” action when books exist;
+2. `.rip-latest`, containing only its localized heading and at most the three newest books in
+   deterministic date order;
+3. authored root HAST without a trailing return action; and
 4. `#rip-books`, containing the complete library or localized empty state.
 
 The latest preview is independent from the complete-library order. The complete collection starts
@@ -158,6 +160,8 @@ home receives its rail only on root `index`; root notes use ordinary host/root a
 
 The disclosure control has no resting outline. Hover and `:focus-visible` provide restrained border
 or outline cues compatible with Quartz tokens. Accent is never the only focus or current-state cue.
+Current-state backgrounds and rails must be anchored to the interactive row itself; broad descendant
+state selectors must not tint a containing folder or the full sidebar tree.
 
 The plugin is a layout/navigation component, not a theme. Use Quartz custom properties and semantic
 hooks. Do not impose fonts, a global palette, or opaque site-wide surfaces.
@@ -208,8 +212,9 @@ Normalize public options defensively because direct TypeScript calls bypass mani
   and normalized duplicates.
 
 Registry names match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. `theme` is reserved for accent behavior. Custom
-own aliases win built-in collisions. Unknown icons fall back once to `defaultIcon`, then render no
-icon.
+own aliases win built-in collisions. The normalized `defaultIcon` is `book-open`, including when a
+configuration omits it or supplies an empty string. Unknown authored icons fall back once to that
+default; an explicitly configured unresolved default still renders no icon.
 
 Accept accents only as `theme`, a valid own registry name whose value passes the direct grammar,
 `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, or exact `var(--name)`. Reject keywords, arbitrary
@@ -222,8 +227,9 @@ row has one whole-panel anchor.
 
 ## Localization and accessibility
 
-Plugin-owned `en-US` and `fi-FI` catalogs cover book/note counts, edit dates, latest/all library
-labels, sorting, return action, switcher, home marks, folder disclosure, Explorer, and empty state.
+Plugin-owned `en-US` and `fi-FI` catalogs cover book/note counts, edit dates, the Explore library
+action, latest/all library labels, sorting, switcher, home marks, folder disclosure, Explorer, and
+empty state.
 Select locale per render and fall back to English. Do not import Quartz private locale catalogs or
 hard-code reader-facing English in components.
 

@@ -61,8 +61,8 @@ describe("plugin localization", () => {
   })
 
   it.each([
-    ["en-US", "books", "total notes", "Explore books", "All books"],
-    ["fi-FI", "kirjaa", "muistiinpanoja yhteensä", "Selaa kirjoja", "Kaikki kirjat"],
+    ["en-US", "books", "total notes", "Explore library", "All books"],
+    ["fi-FI", "kirjaa", "muistiinpanoja yhteensä", "Selaa kirjastoa", "Kaikki kirjat"],
   ])("localizes the %s root overview", (locale, books, totalNotes, explore, allBooks) => {
     const html = renderPanels(
       [
@@ -218,6 +218,8 @@ describe("RootIndexPanelsPage", () => {
     expect(authoredIndex).toBeLessThan(booksIndex)
     expect(html).toContain('id="root-heading"')
     expect(html).toContain("Authored root prose sentinel.")
+    expect(html).not.toContain("rip-return-link")
+    expect(html).not.toContain("The three books edited most recently.")
     expect(html).toContain('id="rip-books"')
     expect(props.fileData).toBe(sharedFile)
     expect(props.fileData).toHaveProperty("toc")
@@ -236,7 +238,7 @@ describe("manifest and runtime public surface", () => {
     const defaults = manifest.defaultOptions
     const schema = manifest.configSchema
 
-    expect(defaults.defaultIcon).toBe("")
+    expect(defaults.defaultIcon).toBe("book-open")
     expect(defaults.defaultAccent).toBe("theme")
     expect(defaults.accents).toEqual({})
     expect(defaults.replaceExplorer).toBe(true)

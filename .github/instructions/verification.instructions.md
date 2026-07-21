@@ -51,7 +51,10 @@ Prove:
 - the latest preview follows the overview and contains at most three books in deterministic newest
   order;
 - authored HAST appears exactly once after the preview and before unique `#rip-books`;
-- the contextual return action appears only with authored content and targets `#rip-books`;
+- the localized Explore library action targets `#rip-books`, remains visibly highlighted at rest,
+  and has hover/focus/reduced-motion/forced-color coverage;
+- the latest section contains its heading without a redundant explanatory paragraph, and authored
+  content has no trailing return action;
 - the complete library contains every eligible book exactly once, independent of preview order;
 - headings, links, callouts, tables, code, transclusion output, supported style/script nodes, and safe
   `cssclasses` survive public HAST conversion;
@@ -80,7 +83,9 @@ Prove one labelled navigation region and:
 - safe decorative hooks, distinct note/Canvas/Base SVGs, Explorer opt-in emission, and valid
   zero/one/many/long-label states; and
 - scoped book accents on selected rows, exact-current home, and collapsed hidden active paths without
-  cross-book leakage.
+  cross-book leakage; and
+- current backgrounds and rails stay inside the selected interactive row rather than applying to a
+  containing folder or the full browser tree.
 
 ## CSS and inline scripts
 
