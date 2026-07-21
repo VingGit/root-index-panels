@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches: ["main", "agent/sidebar-root-library-rework"]
+    branches: ["main"]
     tags: ["v*"]
   pull_request:
 
 jobs:
   format-feature-branch:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/agent/sidebar-root-library-rework'
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/sidebar-root-library-rework'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -74,7 +74,6 @@ jobs:
           git push origin HEAD:agent/sidebar-root-library-rework
 
   test:
-    if: github.event_name != 'push' || github.ref != 'refs/heads/agent/sidebar-root-library-rework'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
