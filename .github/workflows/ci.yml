@@ -35,36 +35,45 @@ jobs:
         run: npx vitest run test/sidebar-rework.test.ts
 
       - name: Test library sorting
-        if: always()
         run: npx vitest run test/library-sort.test.ts
 
-      - name: Test appearance
-        if: always()
-        run: npx vitest run test/appearance.test.tsx
+      - name: Capture regression diagnostics
+        run: |
+          mkdir -p test-logs
+          status=0
+          for file in \
+            test/appearance.test.tsx \
+            test/book-inventory.test.tsx \
+            test/panels-script.test.ts \
+            test/sidebar-navigation.test.tsx \
+            test/sidebar-script.test.ts \
+            test/sidebar-style.test.ts \
+            test/locales-page-type-manifest.test.tsx
+          do
+            name="$(basename "$file")"
+            if npx vitest run "$file" > "test-logs/$name.txt" 2>&1; then
+              echo 0 > "test-logs/$name.status"
+            else
+              echo 1 > "test-logs/$name.status"
+              status=1
+            fi
+          done
+          exit "$status"
+        continue-on-error: true
 
-      - name: Test book inventory
+      - name: Upload regression diagnostics
         if: always()
-        run: npx vitest run test/book-inventory.test.tsx
+        uses: actions/upload-artifact@v7
+        with:
+          name: regression-test-logs
+          path: test-logs/
 
-      - name: Test panel scripts
-        if: always()
-        run: npx vitest run test/panels-script.test.ts
-
-      - name: Test sidebar navigation
-        if: always()
-        run: npx vitest run test/sidebar-navigation.test.tsx
-
-      - name: Test sidebar scripts
-        if: always()
-        run: npx vitest run test/sidebar-script.test.ts
-
-      - name: Test sidebar styles
-        if: always()
-        run: npx vitest run test/sidebar-style.test.ts
-
-      - name: Test locales and manifest
-        if: always()
-        run: npx vitest run test/locales-page-type-manifest.test.tsx
+      - name: Fail on regression test errors
+        run: |
+          if grep -q '^1$' test-logs/*.status; then
+            echo "::error::One or more regression tests failed."
+            exit 1
+          fi
 
       - name: Build
         run: npm run build
