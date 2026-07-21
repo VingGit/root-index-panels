@@ -55,3 +55,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.1.1...HEAD
 [0.1.1]: https://github.com/VingGit/root-index-panels/releases/tag/v0.1.1
+
