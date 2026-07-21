@@ -84,7 +84,7 @@ export function initRootIndexSidebar() {
   initSwitchers(cleanups)
   initFolderDisclosures(cleanups)
 
-  if (typeof window !== "undefined" && window.addCleanup) {
+  if (cleanups.length > 0 && typeof window !== "undefined" && window.addCleanup) {
     window.addCleanup(() => cleanups.forEach((cleanup) => cleanup()))
   }
 }
