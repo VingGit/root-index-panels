@@ -89,6 +89,7 @@ jobs:
           rm scripts/fix-live-followup-tests.py
           rm .github/workflows/apply-live-followup.yml
           rm .github/workflows/diagnose-followup-check.yml
+          rm .github/workflows/diagnose-followup-integration.yml
           rm .github/workflows/finish-live-followup.yml
 
       - name: Final repository checks
