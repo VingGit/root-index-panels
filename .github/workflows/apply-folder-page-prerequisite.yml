@@ -4,13 +4,17 @@ name: Apply FolderPage prerequisite
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: write
 
 jobs:
   apply-and-verify:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'pull_request' || github.head_ref == 'chore/folder-page-prerequisite-runner')
     runs-on: ubuntu-latest
 
     steps:
