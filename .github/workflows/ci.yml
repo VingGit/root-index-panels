@@ -35,10 +35,36 @@ jobs:
         run: npx vitest run test/sidebar-rework.test.ts
 
       - name: Test library sorting
+        if: always()
         run: npx vitest run test/library-sort.test.ts
 
-      - name: Test full suite
-        run: npm run test
+      - name: Test appearance
+        if: always()
+        run: npx vitest run test/appearance.test.tsx
+
+      - name: Test book inventory
+        if: always()
+        run: npx vitest run test/book-inventory.test.tsx
+
+      - name: Test panel scripts
+        if: always()
+        run: npx vitest run test/panels-script.test.ts
+
+      - name: Test sidebar navigation
+        if: always()
+        run: npx vitest run test/sidebar-navigation.test.tsx
+
+      - name: Test sidebar scripts
+        if: always()
+        run: npx vitest run test/sidebar-script.test.ts
+
+      - name: Test sidebar styles
+        if: always()
+        run: npx vitest run test/sidebar-style.test.ts
+
+      - name: Test locales and manifest
+        if: always()
+        run: npx vitest run test/locales-page-type-manifest.test.tsx
 
       - name: Build
         run: npm run build
