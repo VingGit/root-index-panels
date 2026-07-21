@@ -2,7 +2,7 @@ import type { RootIndexPanelsTranslation } from "../types"
 
 export const fiFI: RootIndexPanelsTranslation = {
   noteCount: (count) => `${count} ${count === 1 ? "muistiinpano" : "muistiinpanoa"}`,
-  bookCount: (count) => `${count} ${count === 1 ? "kirja" : "kirjaa"}`,
+  bookCount: (count) => (count === 1 ? "kirja" : "kirjaa"),
   totalNotesLabel: "muistiinpanoja yhteensä",
   lastUpdatedLabel: "muokattu viimeksi",
   exploreBooks: "Selaa kirjoja",
