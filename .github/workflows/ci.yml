@@ -2,12 +2,79 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "agent/sidebar-root-library-rework"]
     tags: ["v*"]
   pull_request:
 
 jobs:
+  format-feature-branch:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/agent/sidebar-root-library-rework'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/sidebar-root-library-rework
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply Prettier
+        run: |
+          npx prettier --write \
+            .github/reference/sidebar-root-library-rework.md \
+            .github/workflows/ci.yml \
+            CHANGELOG.md \
+            src/components/RootIndexPanels.tsx \
+            src/components/RootIndexSidebar.tsx \
+            src/components/scripts/panels.inline.ts \
+            src/components/scripts/sidebar.inline.ts \
+            src/components/styles/root-library.scss \
+            src/components/styles/sidebar-rework.scss \
+            src/i18n/locales/en-US.ts \
+            src/i18n/locales/fi-FI.ts \
+            src/i18n/types.ts \
+            src/icons.ts \
+            test/library-sort.test.ts \
+            test/sidebar-rework.test.ts
+
+      - name: Commit formatting
+        run: |
+          if git diff --quiet; then
+            echo "Formatting already clean"
+            exit 0
+          fi
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add \
+            .github/reference/sidebar-root-library-rework.md \
+            .github/workflows/ci.yml \
+            CHANGELOG.md \
+            src/components/RootIndexPanels.tsx \
+            src/components/RootIndexSidebar.tsx \
+            src/components/scripts/panels.inline.ts \
+            src/components/scripts/sidebar.inline.ts \
+            src/components/styles/root-library.scss \
+            src/components/styles/sidebar-rework.scss \
+            src/i18n/locales/en-US.ts \
+            src/i18n/locales/fi-FI.ts \
+            src/i18n/types.ts \
+            src/icons.ts \
+            test/library-sort.test.ts \
+            test/sidebar-rework.test.ts
+          git commit -m "Format sidebar rework"
+          git push origin HEAD:agent/sidebar-root-library-rework
+
   test:
+    if: github.event_name != 'push' || github.ref != 'refs/heads/agent/sidebar-root-library-rework'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
