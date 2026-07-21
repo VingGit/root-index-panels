@@ -3,6 +3,8 @@ name: Apply live follow-up
 on:
   push:
     branches: ["agent/sidebar-root-library-rework"]
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: write
