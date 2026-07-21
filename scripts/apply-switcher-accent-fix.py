@@ -19,16 +19,12 @@ replace_once(
 replace_once(
     "test/sidebar-style.test.ts",
     """    expect(styleSource).toMatch(
-      /\\.rip-sidebar-books\\s*\\{[\\s\\S]*?max-height:\\s*min\\(14rem, calc\\(100dvh - 12rem\\)\\);[\\s\\S]*?overflow-y:\\s*auto;[\\s\\S]*?overscroll-behavior:\\s*contain;/,
-    )
-""",
+      /\\.rip-sidebar-books\\s*\\{",
     """    expect(styleSource).toMatch(
       /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?--rip-sidebar-accent:\\s*var\\(--secondary\\);/,
     )
     expect(styleSource).toMatch(
-      /\\.rip-sidebar-books\\s*\\{[\\s\\S]*?max-height:\\s*min\\(14rem, calc\\(100dvh - 12rem\\)\\);[\\s\\S]*?overflow-y:\\s*auto;[\\s\\S]*?overscroll-behavior:\\s*contain;/,
-    )
-""",
+      /\\.rip-sidebar-books\\s*\\{",
 )
 
 replace_once(
