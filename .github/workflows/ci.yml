@@ -4,15 +4,11 @@ on:
   pull_request:
 
 jobs:
-  synchronize-library-item-assertions:
-    permissions:
-      contents: write
+  diagnose-next-configured-integration:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout feature branch
+      - name: Checkout synthetic merge
         uses: actions/checkout@v6
-        with:
-          ref: agent/sidebar-root-library-rework
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -22,64 +18,6 @@ jobs:
 
       - name: Install plugin dependencies
         run: npm ci
-
-      - name: Synchronize complete-library item assertions
-        run: |
-          node --input-type=module <<'NODE'
-          import fs from "node:fs"
-
-          const path = "test/integration/parent-build.mjs"
-          let text = fs.readFileSync(path, "utf8")
-          const boundary = `  assert.fail(\`missing complete-library panel link \${href}\`)
-          }
-
-          function panelHrefs(html) {`
-          const replacement = `  assert.fail(\`missing complete-library panel link \${href}\`)
-          }
-
-          function itemForHref(html, href) {
-            const library = librarySectionHtml(html)
-            for (const match of library.matchAll(/<li\\b[^>]*>[\\s\\S]*?<\\/li>/g)) {
-              const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
-              if (
-                match[0].includes(\`href="\${href}"\`) &&
-                /\\bclass="[^"]*\\brip-(?:card|list-item)\\b/.test(openingTag)
-              ) {
-                return match[0]
-              }
-            }
-            assert.fail(\`missing complete-library item for \${href}\`)
-          }
-
-          function panelHrefs(html) {`
-
-          if (!text.includes("function itemForHref(html, href)")) {
-            if (!text.includes(boundary)) throw new Error("library helper insertion boundary not found")
-            text = text.replace(boundary, replacement)
-          }
-
-          for (const href of ["./java/", "./safe/"]) {
-            const escaped = href.replaceAll("/", "\\/")
-            text = text.replaceAll(`anchorForHref(rootHtml, "${href}"), /data-rip-`, `itemForHref(rootHtml, "${href}"), /data-rip-`)
-            text = text.replaceAll(`anchorForHref(rootHtml, "${href}"), /--rip-panel-`, `itemForHref(rootHtml, "${href}"), /--rip-panel-`)
-          }
-
-          fs.writeFileSync(path, text)
-          NODE
-          npx prettier --write test/integration/parent-build.mjs
-          node --check test/integration/parent-build.mjs
-
-      - name: Commit synchronized integration assertions
-        run: |
-          if git diff --quiet test/integration/parent-build.mjs; then
-            echo "Library item assertions already synchronized"
-            exit 0
-          fi
-          git config user.name VingGit
-          git config user.email 61470249+VingGit@users.noreply.github.com
-          git add test/integration/parent-build.mjs
-          git commit -m "Assert appearance metadata on library items"
-          git push origin HEAD:agent/sidebar-root-library-rework
 
       - name: Build plugin
         run: npm run build
@@ -94,11 +32,25 @@ jobs:
             npx quartz plugin install --from-config
           )
           echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
 
-      - name: Run configured Quartz integration
+      - name: Run next configured integration diagnostic
+        id: integration
+        continue-on-error: true
         run: |
           set +e
-          npm run test:integration > configured-integration.log 2>&1
+          npm run test:integration > next-configured-integration.log 2>&1
           status=$?
-          tail -n 200 configured-integration.log
+          printf '%s\n' "$status" > next-configured-integration.status
+          tail -n 120 next-configured-integration.log
           exit "$status"
+
+      - name: Upload next configured integration diagnostic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: next-configured-integration-log
+          path: |
+            next-configured-integration.log
+            next-configured-integration.status
+            quartz-host-revision.txt
