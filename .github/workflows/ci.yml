@@ -34,6 +34,10 @@ jobs:
           path = Path("scripts/synchronize-rework-tests.py")
           text = path.read_text()
           text = text.replace(
+              "re.subn(pattern, replacement, text, count=1, flags=flags)",
+              "re.subn(pattern, lambda _match: replacement, text, count=1, flags=flags)",
+          )
+          text = text.replace(
               '        raise SystemExit(f"Could not locate synchronization boundary in {path}: {pattern[:100]}")',
               '        print(f"{path}: skipped unmatched boundary: {pattern[:100]}")\n        return',
           )
