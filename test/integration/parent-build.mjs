@@ -698,6 +698,20 @@ function anchorForHref(html, href) {
   assert.fail(`missing complete-library panel link ${href}`)
 }
 
+function itemForHref(html, href) {
+  const library = librarySectionHtml(html)
+  for (const match of library.matchAll(/<li\b[^>]*>[\s\S]*?<\/li>/g)) {
+    const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
+    if (
+      match[0].includes(`href="${href}"`) &&
+      /\bclass="[^"]*\brip-(?:card|list-item)\b/.test(openingTag)
+    ) {
+      return match[0]
+    }
+  }
+  assert.fail(`missing complete-library item for ${href}`)
+}
+
 function panelHrefs(html) {
   const library = librarySectionHtml(html)
   const hrefs = []
@@ -1196,11 +1210,11 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.match(rootMeta[0], /<span>[^<]*\d+[^<]*<\/span>/, "root reading time disappeared")
   assert.doesNotMatch(rootHtml, /\.\/tags\/|\.\/hidden-only\/|\.\/loose\//)
   assert.doesNotMatch(rootHtml, /#fff;outline:none/)
-  assert.match(anchorForHref(rootHtml, "./java/"), /data-rip-icon="coffee"/)
-  assert.match(anchorForHref(rootHtml, "./java/"), /data-rip-accent="ocean"/)
-  assert.match(anchorForHref(rootHtml, "./java/"), /--rip-panel-accent: #0f766e/)
-  assert.match(anchorForHref(rootHtml, "./safe/"), /data-rip-accent="direct"/)
-  assert.match(anchorForHref(rootHtml, "./safe/"), /--rip-panel-accent: #1234/)
+  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-icon="coffee"/)
+  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-accent="ocean"/)
+  assert.match(itemForHref(rootHtml, "./java/"), /--rip-panel-accent: #0f766e/)
+  assert.match(itemForHref(rootHtml, "./safe/"), /data-rip-accent="direct"/)
+  assert.match(itemForHref(rootHtml, "./safe/"), /--rip-panel-accent: #1234/)
   if (classCount(rootHtml, "rip--cards") === 1) {
     const libraryHtml = librarySectionHtml(rootHtml)
     assert.equal(classCount(rootHtml, "rip-grid"), 2, "latest and complete card grids must render")
