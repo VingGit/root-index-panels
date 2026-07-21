@@ -2,7 +2,7 @@ import type { RootIndexPanelsTranslation } from "../types"
 
 export const enUS: RootIndexPanelsTranslation = {
   noteCount: (count) => `${count} ${count === 1 ? "note" : "notes"}`,
-  bookCount: (count) => `${count} ${count === 1 ? "book" : "books"}`,
+  bookCount: (count) => (count === 1 ? "book" : "books"),
   totalNotesLabel: "total notes",
   lastUpdatedLabel: "last edited",
   exploreBooks: "Explore books",
