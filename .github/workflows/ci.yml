@@ -54,10 +54,20 @@ jobs:
         run: npm run verify:package
 
       - name: Test isolated Quartz integration
-        run: npm run test:integration
+        run: |
+          set +e
+          npm run test:integration > integration.log 2>&1
+          status=$?
+          tail -n 200 integration.log
+          exit "$status"
 
       - name: Test watch diagnostics
-        run: npm run test:watch-integration
+        run: |
+          set +e
+          npm run test:watch-integration > watch-integration.log 2>&1
+          status=$?
+          tail -n 200 watch-integration.log
+          exit "$status"
 
       - name: Verify package contents
         run: npm pack --dry-run
