@@ -1,0 +1,74 @@
+name: Diagnose follow-up integration
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/sidebar-root-library-rework
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Apply and build requested changes
+        run: |
+          python scripts/apply-live-followup.py
+          python scripts/fix-live-followup-tests.py
+          npm ci
+          npx prettier --write \
+            .github/instructions/architecture.instructions.md \
+            .github/instructions/verification.instructions.md \
+            CHANGELOG.md README.md package.json \
+            src/components/RootIndexPanels.tsx \
+            src/components/styles/panels.scss \
+            src/components/styles/root-library.scss \
+            src/components/styles/sidebar.scss \
+            src/components/styles/sidebar-rework.scss \
+            src/i18n/types.ts src/i18n/locales/en-US.ts src/i18n/locales/fi-FI.ts \
+            src/options.ts src/types.ts \
+            test/appearance.test.tsx \
+            test/integration/parent-build.mjs \
+            test/locales-page-type-manifest.test.tsx \
+            test/sidebar-style.test.ts
+          npm run build
+
+      - name: Prepare configured Quartz integration host
+        run: |
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
+
+      - name: Capture configured integration
+        continue-on-error: true
+        run: |
+          set +e
+          npm run test:integration > followup-integration.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > followup-integration.status
+          tail -n 180 followup-integration.log
+          exit "$status"
+
+      - name: Upload integration diagnostic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: followup-integration-diagnostic
+          path: |
+            followup-integration.log
+            followup-integration.status
+            quartz-host-revision.txt
