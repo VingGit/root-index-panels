@@ -1,13 +1,11 @@
-name: CI
+name: Diagnose live GitLab Pages
 
 on:
   push:
-    branches: ["main"]
-    tags: ["v*"]
-  pull_request:
+    branches: ["diagnose-live-site"]
 
 jobs:
-  test:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,88 +15,119 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
-          cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Check formatting
-        run: npm run format
-
-      - name: Run unit tests
-        run: npm run test
-
-      - name: Build
-        run: npm run build
-
-      - name: Verify dist is up to date
+      - name: Inspect live site and GitLab repository
         run: |
-          if git diff --quiet dist/; then
-            echo "dist/ is up to date"
-          else
-            echo "::error::dist/ is stale. Run 'npm run build' and commit the result."
-            git diff --stat dist/
-            exit 1
-          fi
+          set -euo pipefail
 
-      - name: Verify dist externals
-        run: npm run verify:dist
-
-      - name: Verify packed package
-        run: npm run verify:package
-
-      - name: Prepare configured Quartz integration host
-        run: |
+          output="$GITHUB_WORKSPACE/diagnosis"
           host="$RUNNER_TEMP/quartz-for-gitlab"
+          build="$RUNNER_TEMP/quartz-build"
+          mkdir -p "$output/live-assets" "$output/repository" "$output/fresh-build"
+
+          live_url="https://obsidian.utugit.fi/quartz-for-gitlab/"
+          cache_bust="${live_url}?diagnostic=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          curl --fail --silent --show-error --location --compressed \
+            -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
+            -D "$output/live-headers.txt" \
+            "$cache_bust" \
+            -o "$output/live-index.html"
+
+          python <<'PY'
+          from pathlib import Path
+          import re
+          from urllib.parse import urljoin
+
+          root = Path("diagnosis")
+          html = (root / "live-index.html").read_text(errors="replace")
+          base = "https://obsidian.utugit.fi/quartz-for-gitlab/"
+          urls = []
+          for value in re.findall(r'(?:href|src)="([^"]+)"', html):
+              clean = value.split("#", 1)[0]
+              if not clean or clean.startswith(("data:", "mailto:", "javascript:")):
+                  continue
+              if re.search(r'\.(?:css|js)(?:\?|$)', clean):
+                  urls.append(urljoin(base, clean))
+          (root / "live-asset-urls.txt").write_text("\n".join(dict.fromkeys(urls)) + "\n")
+          PY
+
+          while IFS= read -r url; do
+            [ -n "$url" ] || continue
+            name="$(printf '%s' "$url" | sha256sum | cut -c1-16)"
+            case "$url" in
+              *.css* ) ext=css ;;
+              * ) ext=js ;;
+            esac
+            curl --fail --silent --show-error --location --compressed \
+              -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
+              "$url" -o "$output/live-assets/$name.$ext"
+          done < "$output/live-asset-urls.txt"
+
           git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
-          npm ci --prefix "$host"
+          git -C "$host" rev-parse HEAD > "$output/repository/head.txt"
+          git -C "$host" log -1 --format=fuller > "$output/repository/head-log.txt"
+
+          for file in quartz.lock.json quartz.config.yaml .gitlab-ci.yml package.json; do
+            if [ -f "$host/$file" ]; then
+              mkdir -p "$output/repository/$(dirname "$file")"
+              cp "$host/$file" "$output/repository/$file"
+            fi
+          done
+
+          npm ci --prefix "$host" --no-audit --fund=false
           (
             cd "$host"
             npx quartz plugin install --from-config
           )
-          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
-          echo "Configured Quartz host revision: $(git -C "$host" rev-parse HEAD)"
 
-      - name: Run configured Quartz integration
-        run: npm run test:integration
+          plugin="$host/.quartz/plugins/root-index-panels"
+          if [ ! -d "$plugin" ]; then
+            echo "root-index-panels was not installed" >&2
+            exit 1
+          fi
 
-      - name: Run watch-mode integration
-        run: npm run test:watch-integration
+          find "$plugin" -maxdepth 2 -type f -printf '%P\n' | sort > "$output/repository/plugin-files.txt"
+          if [ -d "$plugin/.git" ]; then
+            git -C "$plugin" rev-parse HEAD > "$output/repository/plugin-head.txt"
+            git -C "$plugin" log -1 --format=fuller > "$output/repository/plugin-head-log.txt"
+          fi
+          grep -RInE 'rip-latest|rip-books|rip-sidebar-switcher|rip-overview' "$plugin" \
+            --exclude='*.map' > "$output/repository/plugin-markers.txt" || true
 
-      - name: Verify npm pack dry run
-        run: npm pack --dry-run
+          (
+            cd "$host"
+            npx quartz build --output "$build" --baseDir /quartz-for-gitlab
+          )
+          cp "$build/index.html" "$output/fresh-build/index.html"
 
-      - name: Check whitespace errors
-        run: git diff --check
+          {
+            echo '=== marker counts ==='
+            for marker in rip-latest rip-books rip-sidebar-switcher rip-overview; do
+              printf '%-24s live-html=%s live-assets=%s fresh-build=%s\n' \
+                "$marker" \
+                "$(grep -o "$marker" "$output/live-index.html" | wc -l)" \
+                "$(grep -Roh "$marker" "$output/live-assets" | wc -l)" \
+                "$(grep -o "$marker" "$output/fresh-build/index.html" | wc -l)"
+            done
+            echo
+            echo '=== live response headers ==='
+            cat "$output/live-headers.txt"
+            echo
+            echo '=== GitLab repository head ==='
+            cat "$output/repository/head-log.txt"
+            echo
+            echo '=== installed plugin head ==='
+            if [ -f "$output/repository/plugin-head-log.txt" ]; then
+              cat "$output/repository/plugin-head-log.txt"
+            else
+              echo 'Installed plugin directory has no .git metadata'
+            fi
+          } | tee "$output/summary.txt"
 
-  publish:
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - name: Upload diagnosis
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          node-version: "22"
-          cache: "npm"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Publish
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          name: live-site-diagnosis
+          path: diagnosis
