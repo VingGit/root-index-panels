@@ -27,9 +27,10 @@ factory constructs `RootIndexPanels(options)`. The advanced component also guard
 use.
 
 The manifest retains `pageType` and `component` categories but declares exactly one component:
-`RootIndexSidebar`, with `defaultPosition: "left"` and `defaultPriority: 40`. A fresh CLI add must
-create one left-layout declaration. `RootIndexPanels` remains exported but absent from component
-discovery so the installer cannot create a second body.
+`RootIndexSidebar`, with `defaultPosition: "left"` and `defaultPriority: 40`. It declares exactly
+`github:quartz-community/folder-page` in `quartz.dependencies`. A fresh CLI add must create one
+left-layout declaration. `RootIndexPanels` remains exported but absent from component discovery so the
+installer cannot create a second body.
 
 The Page Type performs no tree suppression or shared-data mutation. Root HAST, `toc`, `readingTime`,
 and `text` remain available to independent Quartz components and emitters.
@@ -43,8 +44,9 @@ and `text` remain available to independent Quartz components and emitters.
    `excludeDirs`; `index` is a valid first-level directory name.
 2. A candidate requires a listed physical descendant: `filePath` must exist and top-level
    `unlisted !== true`. Deduplicate full physical slugs; first eligible occurrence wins.
-3. A listed physical or ordinary generated FolderPage `<segment>/index` may prove a destination.
-   Canvas/Bases-provenance records cannot prove it.
+3. A listed physical or FolderPage-generated `<segment>/index` may prove the logical destination.
+   The required FolderPage plugin emits both physical and generated `/index` routes;
+   Canvas/Bases-provenance records cannot prove a destination.
 4. Emit only candidates with a destination. Use only a physical listed `<segment>/index` as the
    source of title, description, tags, and `panel` metadata.
 5. Count listed physical descendants once, excluding the book's own index. Authored nested indexes
@@ -190,10 +192,11 @@ Resolve panel, root, book, note, and valid folder destinations with public
 `@quartz-community/utils/path` helpers relative to the current full slug. Never concatenate an
 origin-relative route or duplicate a base path.
 
-FolderPage is an optional provider of folder/index destinations, not a dependency of the root-only
-Page Type or ordinary content emitter. With FolderPage disabled, physical `index.md` files continue
-to provide landing routes and ordinary notes must still build. A site-wide non-root 404 indicates a
-host emitter, artifact, or base-URL problem rather than intended plugin coupling.
+FolderPage is a required Quartz-plugin prerequisite. Quartz ContentPage excludes every slug ending
+in `/index`; FolderPage emits book and nested-folder routes whether their source is a physical
+`index.md` or a generated virtual page. The manifest dependency source is exactly
+`github:quartz-community/folder-page`. Missing configuration must fail Quartz dependency validation;
+a disabled entry is unsupported even if the current host reports only a warning.
 
 The generated public base path must match the final deployment URL. A custom domain served at `/`
 must not retain a project subpath such as `/quartz-for-gitlab` in `data-basepath`, canonical URLs,

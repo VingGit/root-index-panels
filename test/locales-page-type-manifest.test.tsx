@@ -256,6 +256,7 @@ describe("manifest and runtime public surface", () => {
     const component = manifest.components.RootIndexSidebar
 
     expect(manifest.category).toEqual(expect.arrayContaining(["pageType", "component"]))
+    expect(manifest.dependencies).toEqual(["github:quartz-community/folder-page"])
     expect(Object.keys(manifest.components)).toEqual(["RootIndexSidebar"])
     expect(component.defaultPosition).toBe("left")
     expect(component.defaultPriority).toBe(40)

@@ -41,7 +41,8 @@ For sidebar inventory, parameterize input order and duplicates. Assert:
 - physical and generated nested folder-index destinations, titles, and hidden index notes;
 - selected versus exact-current state, active ancestry, and cache isolation;
 - distinct note/Canvas/Base leaves and collision/provenance rejection; and
-- FolderPage absence with physical indexes versus folders that genuinely lack a destination.
+- required FolderPage-backed destinations and negative dependency validation when its config entry
+  is absent.
 
 ## Server-rendered root component
 
@@ -122,6 +123,8 @@ Assert:
 - `Object.keys(packageJson.quartz.components)` is exactly `["RootIndexSidebar"]`;
 - sidebar metadata/version/default left position/priority and boolean `replaceExplorer` schema/default
   are aligned;
+- `packageJson.quartz.dependencies` is exactly
+  `["github:quartz-community/folder-page"]` in source and the packed artifact;
 - no manifest entry registers `RootIndexPanels`, but built root, `./components`, and `./types` expose
   every documented runtime/type export;
 - validators, declarations, source maps, side effects/resources, dependency graph, notices, CI,
@@ -142,7 +145,8 @@ parent's upstream files. Cover relevant combinations of:
 - `en-US`, `fi-FI`, and unsupported locale;
 - root, root note, book landing, ordinary/nested note, physical folder landing, FolderPage-generated
   landing, TagPage, Canvas, Bases, unlisted/encrypted control, and 404;
-- FolderPage enabled and disabled, with physical-index controls; and
+- FolderPage enabled for physical and generated indexes, plus a missing-dependency build that fails
+  with the exact installation command; and
 - root/deep routes below a base directory such as `/group/project/`.
 
 Inspect generated HTML and resources, not only exit status. Require one sidebar and one root body,
@@ -184,11 +188,12 @@ When investigating non-root 404s:
 3. inspect `CNAME`, `data-basepath`, canonical URLs, asset paths, and the 404-page home link;
 4. require the configured base path to match either custom-domain-root hosting or project-subpath
    hosting consistently; and
-5. verify that disabling FolderPage removes only generated folder landing routes when physical
-   indexes are absent.
+5. verify that FolderPage is configured and enabled before interpreting missing `/index` routes as a
+   hosting failure.
 
-A root-only Page Type cannot explain existing ordinary `.html` files becoming unreachable under an
-inconsistent public base path.
+FolderPage emits physical and generated folder indexes. The ordinary ContentPage emitter continues to
+own non-index notes, while a root-only Page Type cannot explain already-generated ordinary `.html`
+files becoming unreachable under an inconsistent public base path.
 
 ## Durable fixture and watch diagnostics
 

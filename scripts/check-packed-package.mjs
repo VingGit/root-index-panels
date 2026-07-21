@@ -52,6 +52,19 @@ try {
   fs.mkdirSync(path.dirname(installedPackage), { recursive: true })
   fs.renameSync(path.join(extractionRoot, "package"), installedPackage)
 
+  const packedPackageJson = JSON.parse(
+    fs.readFileSync(path.join(installedPackage, "package.json"), "utf8"),
+  )
+  const expectedPluginDependencies = ["github:quartz-community/folder-page"]
+  if (
+    JSON.stringify(packedPackageJson.quartz?.dependencies) !==
+    JSON.stringify(expectedPluginDependencies)
+  ) {
+    throw new Error(
+      `packed manifest dependencies must equal ${JSON.stringify(expectedPluginDependencies)}`,
+    )
+  }
+
   junction(path.join(packageRoot, "node_modules", "preact"), path.join(modulesRoot, "preact"))
   junction(
     path.join(packageRoot, "node_modules", "@quartz-community", "types"),

@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Declare `github:quartz-community/folder-page` as a required Quartz-plugin prerequisite and reject
+  builds where its configuration entry is missing.
 - Rename the primary root action to “Explore library” and keep it visibly highlighted with a
   theme-compatible hover treatment.
 - Give books without authored icon metadata a theme-colored open-book mark in the root library and

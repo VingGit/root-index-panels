@@ -16,14 +16,14 @@
   or cloning entries.
 - Visible strings and edit dates come from the plugin locale catalog and `cfg.locale`.
 
-## FolderPage independence
+## FolderPage prerequisite
 
-`RootIndexPanelsPage` matches only the physical root `index` page. It does not emit ordinary note or
-folder routes and therefore cannot replace Quartz's normal content emitters. FolderPage is needed only
-when a folder has no physical `index.md` but still needs a generated folder landing route. Disabling
-FolderPage requires physical `index.md` files for every book or nested folder that should be
-navigable as a landing page; it should not remove ordinary note pages.
+`RootIndexPanelsPage` matches only the physical site-root `index` page. Quartz ContentPage excludes
+all other `/index` slugs, so `github:quartz-community/folder-page` is required to emit every book and
+nested-folder landing page. This remains true when a physical `index.md` provides the page content and
+metadata. The plugin manifest declares that exact dependency source; sites must configure and enable
+it before root-index-panels.
 
-If every non-root URL returns 404 after disabling FolderPage, inspect the built `public/` artifact for
-those HTML files and verify the Quartz content-page emitter and GitLab Pages base URL. That symptom is
-broader than this plugin's root-only Page Type matcher and is not an intended coupling.
+Ordinary non-index notes remain ContentPage routes. When diagnosing 404s, distinguish a missing or
+disabled FolderPage prerequisite from a deployment-base mismatch by inspecting the built `public/`
+artifact.

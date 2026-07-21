@@ -1,6 +1,8 @@
 import fs from "fs"
 import path from "path"
 
+const REQUIRED_PLUGIN_DEPENDENCIES = ["github:quartz-community/folder-page"] as const
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
@@ -51,6 +53,16 @@ export function validateManifest(): void {
 
   if (quartz.version !== pkg.version) {
     errors.push("quartz.version must equal package.version")
+  }
+
+  if (
+    !Array.isArray(quartz.dependencies) ||
+    quartz.dependencies.length !== REQUIRED_PLUGIN_DEPENDENCIES.length ||
+    quartz.dependencies.some(
+      (dependency, index) => dependency !== REQUIRED_PLUGIN_DEPENDENCIES[index],
+    )
+  ) {
+    errors.push(`quartz.dependencies must equal ${JSON.stringify(REQUIRED_PLUGIN_DEPENDENCIES)}`)
   }
 
   if (!isRecord(quartz.components)) {

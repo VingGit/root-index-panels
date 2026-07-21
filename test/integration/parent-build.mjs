@@ -277,8 +277,8 @@ function communityPlugin(name, extra = {}) {
   }
 }
 
-function pluginEntries(rootSource, rootOptions) {
-  return [
+function pluginEntries(rootSource, rootOptions, includeFolderPage = true) {
+  const entries = [
     communityPlugin("note-properties", {
       order: 5,
       options: {
@@ -367,6 +367,10 @@ function pluginEntries(rootSource, rootOptions) {
       layout: { ...ROOT_SIDEBAR_LAYOUT },
     },
   ]
+
+  return includeFolderPage
+    ? entries
+    : entries.filter((entry) => entry.source !== "github:quartz-community/folder-page")
 }
 
 function configuration({ locale, enableSPA }) {
@@ -383,10 +387,10 @@ function configuration({ locale, enableSPA }) {
   }
 }
 
-function writeConfig({ locale, enableSPA, rootSource, rootOptions }) {
+function writeConfig({ locale, enableSPA, rootSource, rootOptions, includeFolderPage = true }) {
   const config = {
     configuration: configuration({ locale, enableSPA }),
-    plugins: pluginEntries(rootSource, rootOptions),
+    plugins: pluginEntries(rootSource, rootOptions, includeFolderPage),
     layout: {
       groups: {},
       byPageType: {
@@ -430,6 +434,34 @@ function runQuartz(args, label, timeout = 300_000) {
         `${result.error ? `${result.error.stack ?? result.error}\n` : ""}` +
         `stdout:\n${result.stdout ?? ""}\nstderr:\n${result.stderr ?? ""}`,
     )
+  }
+
+  process.stdout.write(`✓ ${label}\n`)
+  return result
+}
+
+function runQuartzExpectFailure(args, label, expectedPatterns, timeout = 300_000) {
+  const executable = path.join(workspace, "quartz", "bootstrap-cli.mjs")
+  const result = spawnSync(process.execPath, [executable, ...args], {
+    cwd: workspace,
+    encoding: "utf8",
+    env: { ...process.env, CI: "1", NO_COLOR: "1" },
+    maxBuffer: 16 * 1024 * 1024,
+    timeout,
+  })
+
+  if (result.error) {
+    throw new Error(`${label} could not run\n${result.error.stack ?? result.error}`)
+  }
+  if (result.status === 0) {
+    throw new Error(
+      `${label} unexpectedly succeeded\nstdout:\n${result.stdout ?? ""}\nstderr:\n${result.stderr ?? ""}`,
+    )
+  }
+
+  const combinedOutput = `${result.stdout ?? ""}\n${result.stderr ?? ""}`
+  for (const pattern of expectedPatterns) {
+    assert.match(combinedOutput, pattern, `${label} did not report ${pattern}`)
   }
 
   process.stdout.write(`✓ ${label}\n`)
@@ -518,6 +550,38 @@ function exerciseFreshLocalInstall() {
     "installed cache must point at the local working tree",
   )
   assertRootSidebarLayoutConfig(false, "fresh local add")
+}
+
+function assertFolderPageDependencyFailure() {
+  const localSource = pluginRoot.replaceAll("\\", "/")
+  writeConfig({
+    locale: "en-US",
+    enableSPA: false,
+    rootSource: localSource,
+    rootOptions: {},
+    includeFolderPage: false,
+  })
+  writeQuartzEntry(false)
+
+  runQuartzExpectFailure(
+    [
+      "build",
+      "--directory",
+      "content",
+      "--output",
+      "public/missing-folder-page",
+      "--baseDir",
+      BASE_PATH,
+      "--concurrency",
+      "1",
+    ],
+    "missing FolderPage dependency rejected",
+    [
+      /requires "folder-page"/,
+      /npx quartz plugin add github:quartz-community\/folder-page/,
+      /Plugin dependency validation failed/,
+    ],
+  )
 }
 
 const fixtureFiles = {
@@ -1563,6 +1627,7 @@ function runIntegration() {
   assertMixedPreactBuiltInRender()
   exerciseFreshLocalInstall()
   writeFixture()
+  assertFolderPageDependencyFailure()
 
   buildVariant({
     name: "spa-en-us-yaml",
