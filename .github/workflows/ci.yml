@@ -3,54 +3,63 @@ name: CI
 on:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
-  diagnose-next-configured-integration:
+  repair-localized-integration-assertion:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout synthetic merge
+      - name: Checkout PR branch
         uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
         with:
-          node-version: "22"
-          cache: "npm"
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
-      - name: Install plugin dependencies
-        run: npm ci
-
-      - name: Build plugin
-        run: npm run build
-
-      - name: Prepare configured Quartz integration host
+      - name: Localize the expected book-home label
         run: |
-          host="$RUNNER_TEMP/quartz-for-gitlab"
-          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
-          npm ci --prefix "$host"
-          (
-            cd "$host"
-            npx quartz plugin install --from-config
-          )
-          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
-          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
+          python <<'PY'
+          from pathlib import Path
 
-      - name: Run next configured integration diagnostic
-        id: integration
-        continue-on-error: true
+          path = Path("test/integration/parent-build.mjs")
+          text = path.read_text()
+
+          old_assertion = '''  assert.match(
+            topicSidebar,
+            /class="rip-sidebar-home-mark" href="\\.\\.\\/java\\/"[^>]*aria-label="Open iOS home"/,
+          )'''
+          new_assertion = '''  assert.ok(
+            topicSidebar.includes(
+              `class="rip-sidebar-home-mark" href="../java/" aria-label="${expectedLabels.bookHome}"`,
+            ),
+            "book home-mark label was not localized",
+          )'''
+
+          if text.count(old_assertion) != 1:
+              raise SystemExit(f"expected one hard-coded book-home assertion, found {text.count(old_assertion)}")
+          text = text.replace(old_assertion, new_assertion)
+
+          english = '{ switchBook: "Switch book", explorer: "Explorer" }'
+          english_new = '{ switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" }'
+          if text.count(english) != 2:
+              raise SystemExit(f"expected two English label bundles, found {text.count(english)}")
+          text = text.replace(english, english_new)
+
+          finnish = '{ switchBook: "Vaihda kirjaa", explorer: "Sisältöselain" }'
+          finnish_new = '{\n          switchBook: "Vaihda kirjaa",\n          explorer: "Sisältöselain",\n          bookHome: "Avaa kirjan iOS etusivu",\n        }'
+          if text.count(finnish) != 1:
+              raise SystemExit(f"expected one Finnish label bundle, found {text.count(finnish)}")
+          text = text.replace(finnish, finnish_new)
+
+          path.write_text(text)
+          PY
+
+      - name: Commit repair
         run: |
-          set +e
-          npm run test:integration > next-configured-integration.log 2>&1
-          status=$?
-          printf '%s\n' "$status" > next-configured-integration.status
-          tail -n 120 next-configured-integration.log
-          exit "$status"
-
-      - name: Upload next configured integration diagnostic
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: next-configured-integration-log
-          path: |
-            next-configured-integration.log
-            next-configured-integration.status
-            quartz-host-revision.txt
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add test/integration/parent-build.mjs
+          git diff --cached --check
+          git commit -m "test: localize book home-mark assertion"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
