@@ -18,12 +18,12 @@ replace_once(
 
 replace_once(
     "test/sidebar-style.test.ts",
-    "    expect(styleSource).toMatch(\n      /\\.rip-sidebar-books\\s*\\{",
+    "    expect(styleSource).toMatch(\n      /\\.rip-sidebar-books\\s*{",
     "    expect(styleSource).toMatch(\n"
-    "      /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?--rip-sidebar-accent:\\s*var\\(--secondary\\);/,\n"
+    "      /\\.rip-sidebar-switcher-menu\\s*{[\\s\\S]*?--rip-sidebar-accent:\\s*var\\(--secondary\\);/,\n"
     "    )\n"
     "    expect(styleSource).toMatch(\n"
-    "      /\\.rip-sidebar-books\\s*\\{",
+    "      /\\.rip-sidebar-books\\s*{",
 )
 
 replace_once(
