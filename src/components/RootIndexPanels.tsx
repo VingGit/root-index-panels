@@ -374,7 +374,9 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
         dateIso: formattedDate?.iso,
       }
     })
-    const latestEntries = [...entries].sort((left, right) => right.date - left.date || compareTitle(left, right)).slice(0, 3)
+    const latestEntries = [...entries]
+      .sort((left, right) => right.date - left.date || compareTitle(left, right))
+      .slice(0, 3)
     const showRootContent = hasRootContent(tree)
 
     return (

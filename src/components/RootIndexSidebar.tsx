@@ -118,7 +118,11 @@ function BookLink({
       {selected && (
         <>
           <span class="rip-sidebar-sr-only">, {translation.selectedBook}</span>
-          <SidebarGlyph className="rip-sidebar-selected-check" icon={sidebarIcons.check} size={13} />
+          <SidebarGlyph
+            className="rip-sidebar-selected-check"
+            icon={sidebarIcons.check}
+            size={13}
+          />
         </>
       )}
     </a>

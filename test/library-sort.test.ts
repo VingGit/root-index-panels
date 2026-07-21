@@ -15,12 +15,12 @@ describe("root library sorting", () => {
   const books = [book("Zulu", 10, 0), book("alpha", 30, 1), book("Alpha", 20, 2)]
 
   it("sorts dates in both directions with deterministic title ties", () => {
-    expect([...books].sort((a, b) => compareBooks(a, b, "date-desc")).map((item) => item.date)).toEqual([
-      30, 20, 10,
-    ])
-    expect([...books].sort((a, b) => compareBooks(a, b, "date-asc")).map((item) => item.date)).toEqual([
-      10, 20, 30,
-    ])
+    expect(
+      [...books].sort((a, b) => compareBooks(a, b, "date-desc")).map((item) => item.date),
+    ).toEqual([30, 20, 10])
+    expect(
+      [...books].sort((a, b) => compareBooks(a, b, "date-asc")).map((item) => item.date),
+    ).toEqual([10, 20, 30])
   })
 
   it("sorts titles in both directions without dropping entries", () => {
