@@ -3,56 +3,54 @@ name: CI
 on:
   pull_request:
 
-permissions:
-  contents: write
-
 jobs:
-  repair-integration-assertions:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  diagnose-next-configured-integration:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR branch
+      - name: Checkout synthetic merge
         uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
+          node-version: "22"
+          cache: "npm"
 
-      - name: Align root appearance assertions with item markup
+      - name: Install plugin dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Prepare configured Quartz integration host
         run: |
-          python <<'PY'
-          from pathlib import Path
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
 
-          path = Path("test/integration/parent-build.mjs")
-          text = path.read_text()
-          replacements = {
-              'assert.match(anchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)':
-                  'assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)',
-              'assert.match(anchorForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)':
-                  'assert.match(itemForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)',
-              'const custom = anchorForHref(rootHtml, "./custom/")':
-                  'const custom = itemForHref(rootHtml, "./custom/")',
-              'assert.match(anchorForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)':
-                  'assert.match(itemForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)',
-              'assert.doesNotMatch(anchorForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)':
-                  'assert.doesNotMatch(itemForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)',
-              'const unsafe = anchorForHref(rootHtml, "./unsafe/")':
-                  'const unsafe = itemForHref(rootHtml, "./unsafe/")',
-          }
-
-          for old, new in replacements.items():
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f"expected one occurrence, found {count}: {old}")
-              text = text.replace(old, new)
-
-          path.write_text(text)
-          PY
-
-      - name: Commit repair
+      - name: Run next configured integration diagnostic
+        id: integration
+        continue-on-error: true
         run: |
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          git add test/integration/parent-build.mjs
-          git diff --cached --check
-          git commit -m "test: align root item appearance assertions"
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          set +e
+          npm run test:integration > next-configured-integration.log 2>&1
+          status=$?
+          printf '%s\n' "$status" > next-configured-integration.status
+          tail -n 120 next-configured-integration.log
+          exit "$status"
+
+      - name: Upload next configured integration diagnostic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: next-configured-integration-log
+          path: |
+            next-configured-integration.log
+            next-configured-integration.status
+            quartz-host-revision.txt
