@@ -89,7 +89,26 @@ jobs:
           .github/reference/sidebar-root-library-rework.md
 
       - name: Run complete source gate
-        run: npm run check
+        id: source_gate
+        continue-on-error: true
+        run: |
+          set +e
+          npm run check > folder-page-source-gate.log 2>&1
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          tail -n 200 folder-page-source-gate.log
+          exit "$status"
+
+      - name: Upload source-gate diagnostic
+        if: steps.source_gate.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-page-source-gate-log
+          path: folder-page-source-gate.log
+
+      - name: Stop after source-gate failure
+        if: steps.source_gate.outcome == 'failure'
+        run: exit 1
 
       - name: Build distribution
         run: npm run build
@@ -124,7 +143,7 @@ jobs:
         run: |
           rm scripts/apply-folder-page-prerequisite.py
           rm .github/workflows/apply-folder-page-prerequisite.yml
-          rm -f prerequisite-patch.log
+          rm -f prerequisite-patch.log folder-page-source-gate.log
 
       - name: Final repository checks
         run: |
