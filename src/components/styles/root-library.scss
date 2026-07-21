@@ -1,0 +1,133 @@
+.rip-latest {
+  margin-top: 1.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--lightgray);
+}
+
+.rip-section-heading--stacked {
+  align-items: flex-start;
+
+  > div {
+    min-width: 0;
+  }
+
+  p {
+    margin: 0.3rem 0 0;
+    color: var(--gray);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+}
+
+.rip-library-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .rip-section-heading {
+    min-width: 0;
+    flex: 1 1 auto;
+    margin: 0;
+  }
+}
+
+.rip-sort {
+  display: flex;
+  flex: 0 1 18rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--gray);
+  font-family: var(--codeFont);
+  font-size: 0.7rem;
+
+  select {
+    width: 100%;
+    min-height: 2.4rem;
+    padding: 0.35rem 2rem 0.35rem 0.55rem;
+    border: 1px solid var(--lightgray);
+    border-radius: 0.4rem;
+    color: var(--dark);
+    background: var(--light);
+    font: inherit;
+  }
+
+  select:hover {
+    border-color: var(--secondary);
+  }
+
+  select:focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 2px;
+  }
+}
+
+.rip-updated {
+  display: block;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  color: var(--gray);
+  font-family: var(--codeFont);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.rip-return-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--lightgray);
+  border-radius: 0.4rem;
+  color: var(--gray);
+  background: color-mix(in srgb, var(--light) 94%, var(--dark) 6%);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.rip-return-link:hover {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.rip-return-link:focus-visible {
+  outline: 3px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+#rip-books {
+  scroll-margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .rip-library-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rip-sort {
+    width: 100%;
+    flex-basis: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rip-return-link {
+    scroll-behavior: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  .rip-latest,
+  .rip-sort select,
+  .rip-return-link {
+    border-color: CanvasText;
+  }
+
+  .rip-sort select:focus-visible,
+  .rip-return-link:focus-visible {
+    outline-color: Highlight;
+  }
+}
