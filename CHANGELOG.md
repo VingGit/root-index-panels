@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require human-only README content, repository-local noreply commit identity,
   Prettier before every push, synchronized documentation and generated
   artifacts, and deletion of merged feature branches.
+- Apply the repository's Prettier rules to the consolidated agent documentation.
 
 ### Removed
 
