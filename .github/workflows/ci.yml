@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  fix-clean-quartz-integration:
+  repair-clean-quartz-harness:
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -30,50 +30,42 @@ jobs:
           echo "RIP_QUARTZ_ROOT=$RUNNER_TEMP/quartz-for-gitlab" >> "$GITHUB_ENV"
           git -C "$RUNNER_TEMP/quartz-for-gitlab" rev-parse HEAD > quartz-host-revision.txt
 
-      - name: Support a clean Quartz plugin cache
+      - name: Repair clean Quartz plugin-cache handling
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          node --input-type=module <<'NODE'
+          import fs from "node:fs"
 
-          path = Path("test/integration/parent-build.mjs")
-          text = path.read_text()
-          old = "for (const entry of fs.readdirSync(parentPlugins, { withFileTypes: true })) {"
-          new = """for (const entry of fs.existsSync(parentPlugins)
+          const path = "test/integration/parent-build.mjs"
+          const text = fs.readFileSync(path, "utf8")
+          const malformed = String.raw`for (const entry of fs.existsSync(parentPlugins)\n    ? fs.readdirSync(parentPlugins, { withFileTypes: true })\n    : []) {`
+          const valid = `for (const entry of fs.existsSync(parentPlugins)
             ? fs.readdirSync(parentPlugins, { withFileTypes: true })
-            : []) {"""
-          if old in text:
-              path.write_text(text.replace(old, new, 1))
-          elif new not in text:
-              raise SystemExit("clean Quartz plugin-cache boundary not found")
-          PY
-          npx prettier --write test/integration/parent-build.mjs
+            : []) {`
+          const original = "for (const entry of fs.readdirSync(parentPlugins, { withFileTypes: true })) {"
 
-      - name: Run clean Quartz integration diagnostic
-        id: integration
-        continue-on-error: true
+          if (text.includes(malformed)) {
+            fs.writeFileSync(path, text.replace(malformed, valid))
+          } else if (text.includes(original)) {
+            fs.writeFileSync(path, text.replace(original, valid))
+          } else if (!text.includes(valid)) {
+            throw new Error("clean Quartz plugin-cache boundary not found")
+          }
+          NODE
+          npx prettier --write test/integration/parent-build.mjs
+          node --check test/integration/parent-build.mjs
+
+      - name: Run clean Quartz integration
         run: |
           set +e
           npm run test:integration > clean-quartz-integration.log 2>&1
           status=$?
-          printf '%s\n' "$status" > clean-quartz-integration.status
-          tail -n 100 clean-quartz-integration.log
+          tail -n 120 clean-quartz-integration.log
           exit "$status"
 
-      - name: Upload clean Quartz integration diagnostic
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: clean-quartz-integration-log
-          path: |
-            clean-quartz-integration.log
-            clean-quartz-integration.status
-            quartz-host-revision.txt
-
-      - name: Commit clean Quartz harness support
-        if: always()
+      - name: Commit repaired integration harness
         run: |
           if git diff --quiet test/integration/parent-build.mjs; then
-            echo "Clean Quartz harness support already present"
+            echo "Integration harness already repaired"
             exit 0
           fi
           git config user.name VingGit
