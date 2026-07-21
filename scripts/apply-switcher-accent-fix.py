@@ -19,14 +19,14 @@ replace_once(
 replace_once(
     "test/sidebar-style.test.ts",
     """    expect(styleSource).toMatch(
-      /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?position:\\s*absolute;[\\s\\S]*?z-index:\\s*20;[\\s\\S]*?top:\\s*calc\\(100% \\+ 0\\.35rem\\);[\\s\\S]*?inset-inline:\\s*0;[\\s\\S]*?overflow:\\s*hidden;[\\s\\S]*?background:\\s*var\\(--light\\);[\\s\\S]*?box-shadow:/,
+      /\\.rip-sidebar-books\\s*\\{[\\s\\S]*?max-height:\\s*min\\(14rem, calc\\(100dvh - 12rem\\)\\);[\\s\\S]*?overflow-y:\\s*auto;[\\s\\S]*?overscroll-behavior:\\s*contain;/,
     )
 """,
     """    expect(styleSource).toMatch(
-      /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?position:\\s*absolute;[\\s\\S]*?z-index:\\s*20;[\\s\\S]*?top:\\s*calc\\(100% \\+ 0\\.35rem\\);[\\s\\S]*?inset-inline:\\s*0;[\\s\\S]*?overflow:\\s*hidden;[\\s\\S]*?background:\\s*var\\(--light\\);[\\s\\S]*?box-shadow:/,
+      /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?--rip-sidebar-accent:\\s*var\\(--secondary\\);/,
     )
     expect(styleSource).toMatch(
-      /\\.rip-sidebar-switcher-menu\\s*\\{[\\s\\S]*?--rip-sidebar-accent:\\s*var\\(--secondary\\);/,
+      /\\.rip-sidebar-books\\s*\\{[\\s\\S]*?max-height:\\s*min\\(14rem, calc\\(100dvh - 12rem\\)\\);[\\s\\S]*?overflow-y:\\s*auto;[\\s\\S]*?overscroll-behavior:\\s*contain;/,
     )
 """,
 )
