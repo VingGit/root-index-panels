@@ -143,6 +143,29 @@ book-open  coffee  terminal  container  layers  code-2  network
 git-branch  database  shield  cpu  globe  file-code-2
 ```
 
+### Adding another built-in icon
+
+The bundled book icons come from the [Lucide icon library](https://lucide.dev/icons/) and are
+imported through the pinned `lucide-preact` dependency. A Lucide icon name cannot be used directly in
+frontmatter until that icon has been registered by this plugin.
+
+To add another built-in choice:
+
+1. Find the icon on Lucide and note its exported component name, such as `BookCopy`.
+2. Choose a lowercase kebab-case frontmatter alias, such as `book-copy`.
+3. In `src/icons.ts`, import the component from `lucide-preact`, add the alias to `BuiltInIconName`,
+   and add `"book-copy": adaptLucideIcon(BookCopy)` to `builtInIcons`.
+4. Add the alias to the built-in list above and update the icon-resolution tests.
+5. Run `npm run check`, `npm run build`, `npm run verify:dist`, and `npm run verify:package`, then
+   update the plugin installation in Quartz.
+
+The new icon can then be selected on a book index:
+
+```yaml
+panel:
+  icon: book-copy
+```
+
 An accent can be:
 
 - `theme`, which uses normal Quartz theme behavior;
@@ -188,7 +211,7 @@ The root body displays, in order:
 
 1. book count, total note count, last edit, and a primary link to the complete library;
 2. the three most recently edited books, newest first;
-3. authored Markdown from `content/index.md`, followed by a contextual return-to-library link; and
+3. authored Markdown from `content/index.md`; and
 4. the complete card or list library with reader-controlled sorting.
 
 Each book card shows its latest accepted edit date when one is available.

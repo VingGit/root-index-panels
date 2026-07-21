@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   push, synchronized documentation and generated artifacts, and deletion of merged feature branches.
 - Apply the repository's Prettier rules to the consolidated agent documentation.
 
+### Fixed
+
+- Prevent the selected book's custom accent from recoloring root and theme-default entries in the book
+  switcher; each entry now uses its own accent or the host theme color.
+
 ### Removed
 
 - Remove the bottom return-to-library action and the redundant latest-preview explanatory sentence.

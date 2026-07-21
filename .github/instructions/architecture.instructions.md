@@ -161,7 +161,9 @@ home receives its rail only on root `index`; root notes use ordinary host/root a
 The disclosure control has no resting outline. Hover and `:focus-visible` provide restrained border
 or outline cues compatible with Quartz tokens. Accent is never the only focus or current-state cue.
 Current-state backgrounds and rails must be anchored to the interactive row itself; broad descendant
-state selectors must not tint a containing folder or the full sidebar tree.
+state selectors must not tint a containing folder or the full sidebar tree. The switcher menu resets
+its inherited accent to the host `--secondary` token, after which each book entry may apply its own
+validated accent. Root and theme-default entries must never inherit the selected book's custom accent.
 
 The plugin is a layout/navigation component, not a theme. Use Quartz custom properties and semantic
 hooks. Do not impose fonts, a global palette, or opaque site-wide surfaces.
