@@ -1301,9 +1301,11 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.match(topicDocument, /data-rip-state="current"/)
   assert.match(topicDocument, /data-rip-icon="note"[\s\S]*?<svg\b/)
   assert.doesNotMatch(topicScope, /rip-sidebar-book-overview-link|>Overview</)
-  assert.match(
-    topicSidebar,
-    /class="rip-sidebar-home-mark" href="\.\.\/java\/"[^>]*aria-label="Open iOS home"/,
+  assert.ok(
+    topicSidebar.includes(
+      `class="rip-sidebar-home-mark" href="../java/" aria-label="${expectedLabels.bookHome}"`,
+    ),
+    "book home-mark label was not localized",
   )
   assert.doesNotMatch(
     topicSidebar.match(/<a\b[^>]*class="rip-sidebar-home-mark"[^>]*>/)?.[0] ?? "",
@@ -1571,7 +1573,7 @@ function runIntegration() {
           "./java/": ">3 notes</span>",
         },
         "Jul 18, 2026",
-        { switchBook: "Switch book", explorer: "Explorer" },
+        { switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" },
       )
       assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
@@ -1608,7 +1610,11 @@ function runIntegration() {
           "./java/": "3 muistiinpanoa",
         },
         "18.7.2026",
-        { switchBook: "Vaihda kirjaa", explorer: "Sisältöselain" },
+        {
+          switchBook: "Vaihda kirjaa",
+          explorer: "Sisältöselain",
+          bookHome: "Avaa kirjan iOS etusivu",
+        },
       )
       const custom = itemForHref(rootHtml, "./custom/")
       assert.match(custom, /data-rip-icon="custom-mark"/)
@@ -1655,7 +1661,7 @@ function runIntegration() {
           "./java/": ">3 notes</span>",
         },
         "18 Jul 2026",
-        { switchBook: "Switch book", explorer: "Explorer" },
+        { switchBook: "Switch book", explorer: "Explorer", bookHome: "Open iOS home" },
       )
       assert.doesNotMatch(itemForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
       assert.doesNotMatch(
