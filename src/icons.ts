@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Check,
+  ChevronRight,
   ChevronsUpDown,
   CodeXml,
   Coffee,
@@ -45,10 +46,6 @@ type LucideIconNode = ReadonlyArray<
 >
 
 function readLucideIconNode(icon: typeof BookOpen): LucideIconNode {
-  // lucide-preact's generated icon wrapper is hook-free: invoking it only
-  // returns a VNode whose props contain the pinned icon-node definition. We
-  // deliberately do not render its internal Icon component, which consumes a
-  // Lucide context hook and can bind to a development worktree's second Preact.
   const wrapper = icon({}) as VNode<{ iconNode?: unknown }>
   if (!Array.isArray(wrapper.props.iconNode)) {
     throw new TypeError("The pinned lucide-preact icon-node contract changed")
@@ -84,6 +81,7 @@ export const sidebarIcons = Object.freeze({
   base: adaptLucideIcon(TableProperties),
   canvas: adaptLucideIcon(Workflow),
   check: adaptLucideIcon(Check),
+  chevronRight: adaptLucideIcon(ChevronRight),
   chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
   folder: adaptLucideIcon(Folder),
   home: adaptLucideIcon(House),
@@ -137,7 +135,6 @@ function resolveBuiltInIcon(name: string): PanelIconComponent | undefined {
 function resolveIconName(value: unknown, icons: unknown): ResolvedPanelIcon | undefined {
   const name = normalizeRegistryIdentifier(value)
   if (!name) return undefined
-
   const component = resolveCustomIcon(icons, name) ?? resolveBuiltInIcon(name)
   return component ? { name, component } : undefined
 }

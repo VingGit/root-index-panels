@@ -2534,37 +2534,61 @@ function collectBooks(allFiles, options) {
 // src/i18n/locales/en-US.ts
 var enUS = {
   noteCount: (count) => `${count} ${count === 1 ? "note" : "notes"}`,
-  directoryLabel: (count) => count === 1 ? "directory" : "directories",
+  bookCount: (count) => count === 1 ? "book" : "books",
   totalNotesLabel: "total notes",
-  lastUpdatedLabel: "last updated",
-  browseDirectories: "Browse directories",
+  lastUpdatedLabel: "last edited",
+  exploreBooks: "Explore books",
+  latestBooks: "Latest edited books",
+  latestBooksDescription: "The three books edited most recently.",
+  allBooks: "All books",
+  returnToLibrary: "Return to library",
+  sortBooks: "Sort books",
+  sortNewest: "Edit date, newest first",
+  sortOldest: "Edit date, oldest first",
+  sortTitleAscending: "Title, A\u2013Z",
+  sortTitleDescending: "Title, Z\u2013A",
+  updatedLabel: (date) => `Edited ${date}`,
   sidebarNavigation: "Book navigation",
-  switchManual: "Switch manual",
-  selectedManual: "selected manual",
+  switchBook: "Switch book",
+  selectedBook: "selected book",
+  bookHome: (title) => `Open ${title} home`,
+  rootHome: "Open site home",
+  toggleFolder: (title) => `Expand or collapse ${title}`,
   explorer: "Explorer",
   home: "Home",
   notes: "Notes",
   contents: "Contents",
-  overview: "Overview",
-  emptyState: "No subdirectories found."
+  emptyState: "No books found."
 };
 
 // src/i18n/locales/fi-FI.ts
 var fiFI = {
   noteCount: (count) => `${count} ${count === 1 ? "muistiinpano" : "muistiinpanoa"}`,
-  directoryLabel: (count) => count === 1 ? "hakemisto" : "hakemistoa",
-  totalNotesLabel: "muistiinpanoja",
-  lastUpdatedLabel: "p\xE4ivitetty",
-  browseDirectories: "Selaa hakemistoja",
+  bookCount: (count) => count === 1 ? "kirja" : "kirjaa",
+  totalNotesLabel: "muistiinpanoja yhteens\xE4",
+  lastUpdatedLabel: "muokattu viimeksi",
+  exploreBooks: "Selaa kirjoja",
+  latestBooks: "Viimeksi muokatut kirjat",
+  latestBooksDescription: "Kolme viimeksi muokattua kirjaa.",
+  allBooks: "Kaikki kirjat",
+  returnToLibrary: "Palaa kirjastoon",
+  sortBooks: "J\xE4rjest\xE4 kirjat",
+  sortNewest: "Muokkausp\xE4iv\xE4, uusin ensin",
+  sortOldest: "Muokkausp\xE4iv\xE4, vanhin ensin",
+  sortTitleAscending: "Nimi, A\u2013\xD6",
+  sortTitleDescending: "Nimi, \xD6\u2013A",
+  updatedLabel: (date) => `Muokattu ${date}`,
   sidebarNavigation: "Kirjojen navigointi",
-  switchManual: "Vaihda k\xE4sikirjaa",
-  selectedManual: "valittu k\xE4sikirja",
+  switchBook: "Vaihda kirjaa",
+  selectedBook: "valittu kirja",
+  bookHome: (title) => `Avaa kirjan ${title} etusivu`,
+  rootHome: "Avaa sivuston etusivu",
+  toggleFolder: (title) => `Laajenna tai supista ${title}`,
   explorer: "Sis\xE4lt\xF6selain",
   home: "Etusivu",
   notes: "Muistiinpanot",
   contents: "Sis\xE4llys",
-  overview: "Yleiskatsaus",
-  emptyState: "Alikansioita ei l\xF6ytynyt."
+  emptyState: "Kirjoja ei l\xF6ytynyt."
 };
 
 // src/i18n/index.ts
@@ -2696,6 +2720,11 @@ var BookOpen = createLucideIcon("book-open", [
 
 // node_modules/lucide-preact/dist/esm/icons/check.mjs
 var Check = createLucideIcon("check", [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]]);
+
+// node_modules/lucide-preact/dist/esm/icons/chevron-right.mjs
+var ChevronRight = createLucideIcon("chevron-right", [
+  ["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]
+]);
 
 // node_modules/lucide-preact/dist/esm/icons/chevrons-up-down.mjs
 var ChevronsUpDown = createLucideIcon("chevrons-up-down", [
@@ -2926,6 +2955,7 @@ var sidebarIcons = Object.freeze({
   base: adaptLucideIcon(TableProperties),
   canvas: adaptLucideIcon(Workflow),
   check: adaptLucideIcon(Check),
+  chevronRight: adaptLucideIcon(ChevronRight),
   chevronsUpDown: adaptLucideIcon(ChevronsUpDown),
   folder: adaptLucideIcon(Folder),
   home: adaptLucideIcon(House),
@@ -2975,7 +3005,10 @@ function resolvePanelIcon(panelIcon, options) {
 }
 
 // src/components/scripts/panels.inline.ts
-var panels_inline_default = 'function f(){let o=document.querySelectorAll(".rip-grid, .rip-list");if(o.length===0)return;let c=[];for(let r of o){let e=Array.from(r.querySelectorAll(".rip-card, .rip-list-item"));if(e.length===0)continue;let l=n=>{if(n.altKey||n.ctrlKey||n.metaKey||n.shiftKey)return;let a=document.activeElement;if(!a)return;let d=a.closest(".rip-card-link, .rip-list-link");if(!d)return;let s=d.closest(".rip-card, .rip-list-item");if(!s)return;let i=e.indexOf(s);if(i===-1)return;let t;switch(n.key){case"ArrowRight":case"ArrowDown":t=e[i+1];break;case"ArrowLeft":case"ArrowUp":t=e[i-1];break;case"Home":t=e[0];break;case"End":t=e[e.length-1];break}t&&(n.preventDefault(),t.querySelector(".rip-card-link, .rip-list-link")?.focus())};r.addEventListener("keydown",l),c.push(()=>r.removeEventListener("keydown",l))}typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{c.forEach(r=>r())})}document.addEventListener("nav",()=>{f()});\n';
+var panels_inline_default = 'function m(e,t){let r=Number(e.dataset.ripDate);return{element:e,date:Number.isFinite(r)?r:Number.NEGATIVE_INFINITY,title:e.dataset.ripTitle??"",index:t}}function l(e,t){let r=e.title.toLowerCase(),n=t.title.toLowerCase();return r<n?-1:r>n?1:e.title<t.title?-1:e.title>t.title?1:e.index-t.index}function f(e,t,r){return r==="date-desc"?t.date-e.date||l(e,t):r==="date-asc"?e.date-t.date||l(e,t):r==="title-desc"?l(t,e)||e.index-t.index:l(e,t)}function p(e){let t=document.querySelector("#rip-books"),r=t?.querySelector("[data-rip-sort-control]"),n=t?.querySelector("[data-rip-book-list]");if(!r||!n)return;let o=Array.from(n.children).filter(c=>c instanceof HTMLElement).map(m),a=()=>{let c=r.value;if(["date-desc","date-asc","title-asc","title-desc"].includes(c))for(let d of[...o].sort((s,i)=>f(s,i,c)))n.append(d.element)};r.addEventListener("change",a),a(),e.push(()=>r.removeEventListener("change",a))}function y(e){let t=document.querySelectorAll(".rip-grid, .rip-list");for(let r of t){let n=Array.from(r.querySelectorAll(".rip-card, .rip-list-item"));if(n.length===0)continue;let u=o=>{if(o.altKey||o.ctrlKey||o.metaKey||o.shiftKey)return;let a=document.activeElement;if(!a)return;let d=a.closest(".rip-card-link, .rip-list-link")?.closest(".rip-card, .rip-list-item");if(!d)return;let s=n.indexOf(d);if(s===-1)return;let i;switch(o.key){case"ArrowRight":case"ArrowDown":i=n[s+1];break;case"ArrowLeft":case"ArrowUp":i=n[s-1];break;case"Home":i=n[0];break;case"End":i=n[n.length-1];break}i&&(o.preventDefault(),i.querySelector(".rip-card-link, .rip-list-link")?.focus())};r.addEventListener("keydown",u),e.push(()=>r.removeEventListener("keydown",u))}}function b(){let e=[];p(e),y(e),e.length>0&&typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>e.forEach(t=>t()))}typeof document<"u"&&document.addEventListener("nav",()=>b());\n';
+
+// src/components/styles/root-library.scss
+var root_library_default = ".rip-latest {\n  margin-top: 1.25rem;\n  padding-bottom: 1.5rem;\n  border-bottom: 1px solid var(--lightgray);\n}\n\n.rip-section-heading--stacked {\n  align-items: flex-start;\n}\n.rip-section-heading--stacked > div {\n  min-width: 0;\n}\n.rip-section-heading--stacked p {\n  margin: 0.3rem 0 0;\n  color: var(--gray);\n  font-size: 0.82rem;\n  line-height: 1.5;\n}\n\n.rip-library-heading {\n  display: flex;\n  align-items: flex-end;\n  justify-content: space-between;\n  gap: 1rem;\n  margin-bottom: 1rem;\n}\n.rip-library-heading .rip-section-heading {\n  min-width: 0;\n  flex: 1 1 auto;\n  margin: 0;\n}\n\n.rip-sort {\n  display: flex;\n  flex: 0 1 18rem;\n  flex-direction: column;\n  gap: 0.25rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n}\n.rip-sort select {\n  width: 100%;\n  min-height: 2.4rem;\n  padding: 0.35rem 2rem 0.35rem 0.55rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.4rem;\n  color: var(--dark);\n  background: var(--light);\n  font: inherit;\n}\n.rip-sort select:hover {\n  border-color: var(--secondary);\n}\n.rip-sort select:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-updated {\n  display: block;\n  margin-top: auto;\n  padding-top: 0.35rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  line-height: 1.45;\n}\n\n.rip-return-link {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.45rem;\n  margin-top: 1rem;\n  padding: 0.45rem 0.65rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.4rem;\n  color: var(--gray);\n  background: color-mix(in srgb, var(--light) 94%, var(--dark) 6%);\n  font-size: 0.8rem;\n  text-decoration: none;\n}\n\n.rip-return-link:hover {\n  border-color: var(--secondary);\n  color: var(--secondary);\n}\n\n.rip-return-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n#rip-books {\n  scroll-margin-top: 1rem;\n}\n\n@media (max-width: 600px) {\n  .rip-library-heading {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .rip-sort {\n    width: 100%;\n    flex-basis: auto;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-return-link {\n    scroll-behavior: auto;\n  }\n}\n@media (forced-colors: active) {\n  .rip-latest,\n  .rip-sort select,\n  .rip-return-link {\n    border-color: CanvasText;\n  }\n  .rip-sort select:focus-visible,\n  .rip-return-link:focus-visible {\n    outline-color: Highlight;\n  }\n}";
 
 // src/components/styles/panels.scss
 var panels_default = '.rip {\n  width: 100%;\n  margin: 1.5rem 0 2.5rem;\n}\n.rip * {\n  box-sizing: border-box;\n}\n\n.rip-root-content {\n  margin-top: 1.25rem;\n  margin-bottom: 1.75rem;\n}\n\n.rip-overview {\n  display: flex;\n  align-items: flex-end;\n  justify-content: space-between;\n  gap: 1.25rem;\n  padding: 1.15rem 0 1.35rem;\n  border-top: 1px solid var(--lightgray);\n}\n\n.rip-stats {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 1.25rem 2.5rem;\n  margin: 0;\n}\n\n.rip-stat {\n  display: flex;\n  min-width: 5.5rem;\n  flex-direction: column;\n}\n.rip-stat dt {\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  letter-spacing: 0.03em;\n  line-height: 1.45;\n  text-transform: lowercase;\n}\n.rip-stat dd {\n  order: -1;\n  margin: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1.15rem;\n  font-weight: 700;\n  line-height: 1.35;\n}\n\n.rip-browse-link {\n  display: inline-flex;\n  flex: 0 0 auto;\n  align-items: center;\n  gap: 0.55rem;\n  padding: 0.55rem 0.75rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.45rem;\n  color: var(--gray);\n  background: var(--light);\n  font-size: 0.8rem;\n  text-decoration: none;\n}\n.rip-browse-link:hover {\n  border-color: var(--secondary);\n  color: var(--secondary);\n}\n.rip-browse-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n\n.rip-directories {\n  scroll-margin-top: 1rem;\n}\n\n.rip-section-heading {\n  display: flex;\n  align-items: center;\n  gap: 0.8rem;\n  margin: 0 0 1rem;\n}\n.rip-section-heading::after {\n  height: 1px;\n  flex: 1 1 auto;\n  background: var(--lightgray);\n  content: "";\n}\n.rip-section-heading h2 {\n  margin: 0;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.7rem;\n  font-weight: 500;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n.rip-section-heading span {\n  order: 2;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n}\n\n.rip-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-empty {\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.9rem;\n  font-style: italic;\n}\n\n.rip-desc {\n  flex: 1 1 auto;\n  margin: 0;\n  color: var(--gray);\n  font-size: 0.84rem;\n  line-height: 1.55;\n  overflow-wrap: anywhere;\n}\n\n.rip-panel-heading {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  gap: 0.65rem;\n}\n\n.rip-panel-icon {\n  display: inline-grid;\n  width: 2.35rem;\n  height: 2.35rem;\n  flex: 0 0 2.35rem;\n  place-items: center;\n  border: 1px solid var(--rip-panel-accent, var(--lightgray));\n  border-radius: 0.65rem;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  pointer-events: none;\n}\n.rip-panel-icon svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-count {\n  display: inline-block;\n  flex-shrink: 0;\n  padding: 0.1em 0.45em;\n  border: 1px solid var(--lightgray);\n  border-radius: 999px;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  line-height: 1.6;\n  white-space: nowrap;\n}\n\n.rip-tags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 0.3rem;\n  margin-top: auto;\n  padding-top: 0.4rem;\n}\n\n.rip-tag {\n  padding: 0.12em 0.48em;\n  border-radius: 999px;\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n  font-family: var(--codeFont);\n  font-size: 0.67rem;\n  overflow-wrap: anywhere;\n}\n\n.rip--cards .rip-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));\n  gap: 0.85rem;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n.rip--cards .rip-card {\n  min-width: 0;\n  margin: 0;\n}\n.rip--cards .rip-card-link {\n  position: relative;\n  isolation: isolate;\n  display: flex;\n  min-height: 10.5rem;\n  height: 100%;\n  flex-direction: column;\n  gap: 0.65rem;\n  padding: 1.05rem 1.1rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.8rem;\n  overflow: hidden;\n  color: var(--darkgray);\n  background: transparent;\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);\n  text-decoration: none;\n  transition: transform 150ms ease-out;\n}\n.rip--cards .rip-card-link::before, .rip--cards .rip-card-link::after {\n  position: absolute;\n  z-index: 0;\n  opacity: 0;\n  content: "";\n  pointer-events: none;\n  transition: opacity 300ms ease;\n}\n.rip--cards .rip-card-link::before {\n  inset: 0;\n  border-radius: inherit;\n  background: radial-gradient(ellipse 120% 80% at 50% 0%, var(--highlight) 0%, transparent 70%);\n  background: radial-gradient(ellipse 120% 80% at 50% 0%, color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 8%, transparent) 0%, transparent 70%);\n}\n.rip--cards .rip-card-link::after {\n  right: 0;\n  bottom: 0;\n  left: 0;\n  height: 1px;\n  background: linear-gradient(90deg, transparent, var(--secondary), transparent);\n  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--rip-panel-accent, var(--secondary)) 50%, transparent), transparent);\n}\n.rip--cards .rip-card-link > * {\n  position: relative;\n  z-index: 1;\n}\n.rip--cards .rip-card-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 3px;\n}\n.rip--cards .rip-card-link:focus-visible::before, .rip--cards .rip-card-link:focus-visible::after {\n  opacity: 1;\n}\n.rip--cards .rip-card-top {\n  display: flex;\n  min-width: 0;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 0.65rem;\n}\n.rip--cards .rip-card-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 1rem;\n  font-weight: 650;\n  line-height: 1.3;\n  overflow-wrap: anywhere;\n  transition: color 150ms ease;\n}\n@media (hover: hover) {\n  .rip--cards .rip-card-link:hover {\n    transform: translateY(-2px);\n  }\n  .rip--cards .rip-card-link:hover::before, .rip--cards .rip-card-link:hover::after {\n    opacity: 1;\n  }\n}\n\n.rip--list .rip-list {\n  margin: 0;\n  padding: 0;\n  border-top: 1px solid var(--lightgray);\n  list-style: none;\n}\n.rip--list .rip-list-item {\n  margin: 0;\n  border-bottom: 1px solid var(--lightgray);\n}\n.rip--list .rip-list-link {\n  display: flex;\n  flex-direction: column;\n  gap: 0.35rem;\n  padding: 0.8rem 0.35rem 0.8rem 0.55rem;\n  border-inline-start: 0.2rem solid transparent;\n  color: var(--darkgray);\n  text-decoration: none;\n  transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;\n}\n.rip--list .rip-list-link[data-rip-accent] {\n  border-inline-start-color: var(--rip-panel-accent);\n}\n.rip--list .rip-list-link:hover {\n  color: var(--rip-panel-accent, var(--secondary));\n  background: var(--highlight);\n}\n.rip--list .rip-list-link:hover .rip-list-title {\n  color: var(--rip-panel-accent, var(--secondary));\n}\n.rip--list .rip-list-link:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n.rip--list .rip-list-row {\n  display: flex;\n  min-width: 0;\n  align-items: center;\n  justify-content: space-between;\n  gap: 1rem;\n}\n.rip--list .rip-list-title {\n  min-width: 0;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-size: 0.96rem;\n  font-weight: 650;\n  overflow-wrap: anywhere;\n}\n.rip--list .rip-panel-icon {\n  width: 2rem;\n  height: 2rem;\n  flex-basis: 2rem;\n  border-radius: 0.55rem;\n}\n\n@media (max-width: 600px) {\n  .rip-overview {\n    align-items: stretch;\n    flex-direction: column;\n  }\n  .rip-stats {\n    gap: 1rem 1.5rem;\n  }\n  .rip-browse-link {\n    align-self: flex-start;\n  }\n  .rip--cards .rip-grid {\n    grid-template-columns: 1fr;\n  }\n  .rip--cards .rip-card-link {\n    min-height: 0;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip .rip-card-link,\n  .rip .rip-card-link::before,\n  .rip .rip-card-link::after,\n  .rip .rip-card-title,\n  .rip .rip-list-link {\n    transition: none;\n  }\n  .rip--cards .rip-card-link:hover {\n    transform: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip .rip-overview,\n  .rip .rip-browse-link,\n  .rip .rip-card-link,\n  .rip .rip-list,\n  .rip .rip-list-item,\n  .rip .rip-count,\n  .rip .rip-panel-icon {\n    border-color: CanvasText;\n  }\n  .rip .rip-card-link:focus-visible,\n  .rip .rip-list-link:focus-visible {\n    outline-color: Highlight;\n  }\n  .rip .rip-panel-icon,\n  .rip .rip-tag {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip .rip-list-link[data-rip-accent] {\n    border-inline-start-color: LinkText;\n  }\n  .rip .rip-card-link::before,\n  .rip .rip-card-link::after {\n    display: none;\n  }\n}';
@@ -2986,16 +3019,29 @@ function formatUpdatedDate(timestamp, locale) {
   const locales = requestedLocale === "en-US" ? [requestedLocale] : [requestedLocale, "en-US"];
   for (const candidateLocale of locales) {
     try {
-      return new Intl.DateTimeFormat(candidateLocale, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "UTC"
-      }).format(timestamp);
+      const date = new Date(timestamp);
+      return {
+        display: new Intl.DateTimeFormat(candidateLocale, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          timeZone: "UTC"
+        }).format(date),
+        iso: date.toISOString().slice(0, 10)
+      };
     } catch {
     }
   }
   return void 0;
+}
+function compareTitle2(left, right) {
+  const leftFolded = left.title.toLowerCase();
+  const rightFolded = right.title.toLowerCase();
+  if (leftFolded < rightFolded) return -1;
+  if (leftFolded > rightFolded) return 1;
+  if (left.title < right.title) return -1;
+  if (left.title > right.title) return 1;
+  return left.segment < right.segment ? -1 : left.segment > right.segment ? 1 : 0;
 }
 function ownDataValue4(value, key) {
   try {
@@ -3009,30 +3055,23 @@ function ownDataValue4(value, key) {
 function safeStringArray2(value) {
   try {
     if (!Array.isArray(value)) return [];
-    const values = [];
-    for (let index2 = 0; index2 < value.length; index2 += 1) {
-      let item;
-      try {
-        item = value[index2];
-      } catch {
-        continue;
-      }
-      if (typeof item === "string") values.push(item);
-    }
-    return values;
+    return value.filter((item) => typeof item === "string");
   } catch {
     return [];
   }
 }
 function rootArticleClass(fileData, layout) {
   const frontmatter = ownDataValue4(fileData, "frontmatter");
-  const rawClasses = ownDataValue4(frontmatter, "cssclasses");
-  const authoredClasses = safeStringArray2(rawClasses);
-  return ["rip", "popover-hint", `rip--${layout}`, ...authoredClasses].join(" ");
+  return [
+    "rip",
+    "popover-hint",
+    `rip--${layout}`,
+    ...safeStringArray2(ownDataValue4(frontmatter, "cssclasses"))
+  ].join(" ");
 }
 function hasRootContent(tree) {
-  const children = ownDataValue4(tree, "children");
   try {
+    const children = ownDataValue4(tree, "children");
     return Array.isArray(children) && children.length > 0;
   } catch {
     return false;
@@ -3042,6 +3081,8 @@ function panelAttributes(entry) {
   return {
     "data-rip-icon": entry.icon?.name,
     "data-rip-accent": entry.accent.kind === "named" ? entry.accent.name : entry.accent.kind === "direct" ? "direct" : void 0,
+    "data-rip-title": entry.title,
+    "data-rip-date": Number.isFinite(entry.date) ? String(entry.date) : "",
     style: entry.accent.kind === "theme" ? void 0 : `--rip-panel-accent: ${entry.accent.value}`
   };
 }
@@ -3050,37 +3091,43 @@ function PanelIcon({ entry }) {
   const Icon2 = entry.icon.component;
   return /* @__PURE__ */ jsx("span", { class: "rip-panel-icon", "aria-hidden": "true", inert: true, children: /* @__PURE__ */ jsx(Icon2, { "aria-hidden": "true", focusable: "false", width: 20, height: 20, "stroke-width": 1.8 }) });
 }
+function UpdatedDate({
+  entry,
+  translation
+}) {
+  if (!entry.dateDisplay || !entry.dateIso) return null;
+  return /* @__PURE__ */ jsx("time", { class: "rip-updated", dateTime: entry.dateIso, children: translation.updatedLabel(entry.dateDisplay) });
+}
 function ListPanel({
   entry,
   idPrefix,
-  showDescription,
-  showDocCount,
+  options,
   translation
 }) {
   const titleId = `${idPrefix}-title`;
   const countId = `${idPrefix}-count`;
   const descriptionId = `${idPrefix}-description`;
   const describedBy = [
-    showDocCount ? countId : void 0,
-    showDescription && entry.description ? descriptionId : void 0
+    options.showDocCount ? countId : void 0,
+    options.showDescription && entry.description ? descriptionId : void 0
   ].filter((id) => id !== void 0);
-  return /* @__PURE__ */ jsx("li", { class: "rip-list-item", children: /* @__PURE__ */ jsxs(
+  return /* @__PURE__ */ jsx("li", { class: "rip-list-item", ...panelAttributes(entry), children: /* @__PURE__ */ jsxs(
     "a",
     {
       href: entry.href,
       class: "rip-list-link",
       "aria-labelledby": titleId,
       "aria-describedby": describedBy.length > 0 ? describedBy.join(" ") : void 0,
-      ...panelAttributes(entry),
       children: [
         /* @__PURE__ */ jsxs("div", { class: "rip-list-row", children: [
           /* @__PURE__ */ jsxs("span", { class: "rip-panel-heading", children: [
             /* @__PURE__ */ jsx(PanelIcon, { entry }),
             /* @__PURE__ */ jsx("span", { class: "rip-list-title", id: titleId, children: entry.title })
           ] }),
-          showDocCount && /* @__PURE__ */ jsx("span", { class: "rip-count", id: countId, children: translation.noteCount(entry.docCount) })
+          options.showDocCount && /* @__PURE__ */ jsx("span", { class: "rip-count", id: countId, children: translation.noteCount(entry.docCount) })
         ] }),
-        showDescription && entry.description && /* @__PURE__ */ jsx("p", { class: "rip-desc", id: descriptionId, children: entry.description })
+        options.showDescription && entry.description && /* @__PURE__ */ jsx("p", { class: "rip-desc", id: descriptionId, children: entry.description }),
+        /* @__PURE__ */ jsx(UpdatedDate, { entry, translation })
       ]
     }
   ) });
@@ -3088,48 +3135,74 @@ function ListPanel({
 function CardPanel({
   entry,
   idPrefix,
-  showDescription,
-  showDocCount,
-  showTags,
+  options,
   translation
 }) {
-  const countLabel = translation.noteCount(entry.docCount);
   const titleId = `${idPrefix}-title`;
   const countId = `${idPrefix}-count`;
   const descriptionId = `${idPrefix}-description`;
   const tagsId = `${idPrefix}-tags`;
   const describedBy = [
-    showDocCount ? countId : void 0,
-    showDescription && entry.description ? descriptionId : void 0,
-    showTags && entry.tags.length > 0 ? tagsId : void 0
+    options.showDocCount ? countId : void 0,
+    options.showDescription && entry.description ? descriptionId : void 0,
+    options.showTags && entry.tags.length > 0 ? tagsId : void 0
   ].filter((id) => id !== void 0);
-  return /* @__PURE__ */ jsx("li", { class: "rip-card", children: /* @__PURE__ */ jsxs(
+  return /* @__PURE__ */ jsx("li", { class: "rip-card", ...panelAttributes(entry), children: /* @__PURE__ */ jsxs(
     "a",
     {
       href: entry.href,
       class: "rip-card-link",
       "aria-labelledby": titleId,
       "aria-describedby": describedBy.length > 0 ? describedBy.join(" ") : void 0,
-      ...panelAttributes(entry),
       children: [
         /* @__PURE__ */ jsxs("div", { class: "rip-card-top", children: [
           /* @__PURE__ */ jsxs("span", { class: "rip-panel-heading", children: [
             /* @__PURE__ */ jsx(PanelIcon, { entry }),
             /* @__PURE__ */ jsx("span", { class: "rip-card-title", id: titleId, children: entry.title })
           ] }),
-          showDocCount && /* @__PURE__ */ jsxs(Fragment, { children: [
+          options.showDocCount && /* @__PURE__ */ jsxs(Fragment, { children: [
             /* @__PURE__ */ jsx("span", { class: "rip-count", "aria-hidden": "true", children: entry.docCount }),
-            /* @__PURE__ */ jsx("span", { class: "rip-sr-only", id: countId, children: countLabel })
+            /* @__PURE__ */ jsx("span", { class: "rip-sr-only", id: countId, children: translation.noteCount(entry.docCount) })
           ] })
         ] }),
-        showDescription && entry.description && /* @__PURE__ */ jsx("p", { class: "rip-desc", id: descriptionId, children: entry.description }),
-        showTags && entry.tags.length > 0 && /* @__PURE__ */ jsx("div", { class: "rip-tags", id: tagsId, children: entry.tags.map((tag, index2) => /* @__PURE__ */ jsxs("span", { class: "rip-tag", children: [
+        options.showDescription && entry.description && /* @__PURE__ */ jsx("p", { class: "rip-desc", id: descriptionId, children: entry.description }),
+        options.showTags && entry.tags.length > 0 && /* @__PURE__ */ jsx("div", { class: "rip-tags", id: tagsId, children: entry.tags.map((tag, index2) => /* @__PURE__ */ jsxs("span", { class: "rip-tag", children: [
           "#",
           tag
-        ] }, `${tag}-${index2}`)) })
+        ] }, `${tag}-${index2}`)) }),
+        /* @__PURE__ */ jsx(UpdatedDate, { entry, translation })
       ]
     }
   ) });
+}
+function BookCollection({
+  entries,
+  idPrefix,
+  options,
+  translation
+}) {
+  if (options.layout === "list") {
+    return /* @__PURE__ */ jsx("ul", { class: "rip-list", "data-rip-book-list": true, children: entries.map((entry, index2) => /* @__PURE__ */ jsx(
+      ListPanel,
+      {
+        entry,
+        idPrefix: `${idPrefix}-${index2}`,
+        options,
+        translation
+      },
+      entry.segment
+    )) });
+  }
+  return /* @__PURE__ */ jsx("ul", { class: "rip-grid", "data-rip-book-list": true, children: entries.map((entry, index2) => /* @__PURE__ */ jsx(
+    CardPanel,
+    {
+      entry,
+      idPrefix: `${idPrefix}-${index2}`,
+      options,
+      translation
+    },
+    entry.segment
+  )) });
 }
 function RootOverview({
   entries,
@@ -3140,14 +3213,15 @@ function RootOverview({
     (total, entry) => Math.min(Number.MAX_SAFE_INTEGER, total + entry.docCount),
     0
   );
-  const updated = formatUpdatedDate(
-    entries.reduce((latest, entry) => Math.max(latest, entry.date), Number.NEGATIVE_INFINITY),
-    locale
+  const latestTimestamp = entries.reduce(
+    (latest, entry) => Math.max(latest, entry.date),
+    Number.NEGATIVE_INFINITY
   );
+  const updated = formatUpdatedDate(latestTimestamp, locale);
   return /* @__PURE__ */ jsxs("div", { class: "rip-overview", children: [
     /* @__PURE__ */ jsxs("dl", { class: "rip-stats", children: [
       /* @__PURE__ */ jsxs("div", { class: "rip-stat", children: [
-        /* @__PURE__ */ jsx("dt", { children: translation.directoryLabel(entries.length) }),
+        /* @__PURE__ */ jsx("dt", { children: translation.bookCount(entries.length) }),
         /* @__PURE__ */ jsx("dd", { children: entries.length })
       ] }),
       /* @__PURE__ */ jsxs("div", { class: "rip-stat", children: [
@@ -3156,11 +3230,11 @@ function RootOverview({
       ] }),
       updated && /* @__PURE__ */ jsxs("div", { class: "rip-stat", children: [
         /* @__PURE__ */ jsx("dt", { children: translation.lastUpdatedLabel }),
-        /* @__PURE__ */ jsx("dd", { children: updated })
+        /* @__PURE__ */ jsx("dd", { children: /* @__PURE__ */ jsx("time", { dateTime: updated.iso, children: updated.display }) })
       ] })
     ] }),
-    entries.length > 0 && /* @__PURE__ */ jsxs("a", { class: "rip-browse-link", href: "#rip-directories", children: [
-      translation.browseDirectories,
+    entries.length > 0 && /* @__PURE__ */ jsxs("a", { class: "rip-browse-link", href: "#rip-books", children: [
+      translation.exploreBooks,
       /* @__PURE__ */ jsx("span", { "aria-hidden": "true", children: "\u2193" })
     ] })
   ] });
@@ -3175,56 +3249,73 @@ var RootIndexPanels_default = ((userOptions) => {
   }) => {
     if (fileData.slug !== "index") return /* @__PURE__ */ jsx(Fragment, {});
     const translation = i18n(cfg.locale);
-    const entries = collectBooks(allFiles, options).map((entry) => ({
-      ...entry,
-      href: resolveRelative(fileData.slug, `${entry.segment}/index`),
-      icon: resolvePanelIcon(ownDataValue4(entry.panel, "icon"), options),
-      accent: resolvePanelAccent(ownDataValue4(entry.panel, "accent"), options)
-    }));
+    const entries = collectBooks(allFiles, options).map((entry) => {
+      const formattedDate = formatUpdatedDate(entry.date, cfg.locale);
+      return {
+        ...entry,
+        href: resolveRelative(fileData.slug, `${entry.segment}/index`),
+        icon: resolvePanelIcon(ownDataValue4(entry.panel, "icon"), options),
+        accent: resolvePanelAccent(ownDataValue4(entry.panel, "accent"), options),
+        dateDisplay: formattedDate?.display,
+        dateIso: formattedDate?.iso
+      };
+    });
+    const latestEntries = [...entries].sort((left, right) => right.date - left.date || compareTitle2(left, right)).slice(0, 3);
     const showRootContent = hasRootContent(tree);
-    const rootContent = showRootContent ? htmlToJsx(tree) : void 0;
     return /* @__PURE__ */ jsxs("article", { class: rootArticleClass(fileData, options.layout), children: [
       /* @__PURE__ */ jsx(RootOverview, { entries, locale: cfg.locale, translation }),
-      showRootContent && /* @__PURE__ */ jsx("div", { class: "rip-root-content markdown-preview-view markdown-rendered", children: rootContent }),
-      /* @__PURE__ */ jsxs(
-        "section",
-        {
-          id: "rip-directories",
-          class: "rip-directories",
-          "aria-labelledby": "rip-directories-heading",
-          children: [
-            /* @__PURE__ */ jsxs("div", { class: "rip-section-heading", children: [
-              /* @__PURE__ */ jsx("h2", { id: "rip-directories-heading", children: translation.browseDirectories }),
-              /* @__PURE__ */ jsx("span", { "aria-hidden": "true", children: entries.length })
-            ] }),
-            entries.length === 0 ? /* @__PURE__ */ jsx("p", { class: "rip-empty", children: translation.emptyState }) : options.layout === "list" ? /* @__PURE__ */ jsx("ul", { class: "rip-list", children: entries.map((entry, index2) => /* @__PURE__ */ jsx(
-              ListPanel,
-              {
-                entry,
-                idPrefix: `rip-panel-${index2}`,
-                showDescription: options.showDescription,
-                showDocCount: options.showDocCount,
-                translation
-              },
-              entry.segment
-            )) }) : /* @__PURE__ */ jsx("ul", { class: "rip-grid", children: entries.map((entry, index2) => /* @__PURE__ */ jsx(
-              CardPanel,
-              {
-                entry,
-                idPrefix: `rip-panel-${index2}`,
-                showDescription: options.showDescription,
-                showDocCount: options.showDocCount,
-                showTags: options.showTags,
-                translation
-              },
-              entry.segment
-            )) })
-          ]
-        }
-      )
+      latestEntries.length > 0 && /* @__PURE__ */ jsxs("section", { class: "rip-latest", "aria-labelledby": "rip-latest-heading", children: [
+        /* @__PURE__ */ jsx("div", { class: "rip-section-heading rip-section-heading--stacked", children: /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h2", { id: "rip-latest-heading", children: translation.latestBooks }),
+          /* @__PURE__ */ jsx("p", { children: translation.latestBooksDescription })
+        ] }) }),
+        /* @__PURE__ */ jsx(
+          BookCollection,
+          {
+            entries: latestEntries,
+            idPrefix: "rip-latest-book",
+            options,
+            translation
+          }
+        )
+      ] }),
+      showRootContent && /* @__PURE__ */ jsxs("div", { class: "rip-root-content markdown-preview-view markdown-rendered", children: [
+        htmlToJsx(tree),
+        /* @__PURE__ */ jsxs("a", { class: "rip-return-link", href: "#rip-books", children: [
+          translation.returnToLibrary,
+          /* @__PURE__ */ jsx("span", { "aria-hidden": "true", children: "\u2193" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("section", { id: "rip-books", class: "rip-directories", "aria-labelledby": "rip-books-heading", children: [
+        /* @__PURE__ */ jsxs("div", { class: "rip-library-heading", children: [
+          /* @__PURE__ */ jsxs("div", { class: "rip-section-heading", children: [
+            /* @__PURE__ */ jsx("h2", { id: "rip-books-heading", children: translation.allBooks }),
+            /* @__PURE__ */ jsx("span", { "aria-hidden": "true", children: entries.length })
+          ] }),
+          entries.length > 1 && /* @__PURE__ */ jsxs("label", { class: "rip-sort", children: [
+            /* @__PURE__ */ jsx("span", { children: translation.sortBooks }),
+            /* @__PURE__ */ jsxs("select", { "data-rip-sort-control": true, children: [
+              /* @__PURE__ */ jsx("option", { value: "date-desc", children: translation.sortNewest }),
+              /* @__PURE__ */ jsx("option", { value: "date-asc", children: translation.sortOldest }),
+              /* @__PURE__ */ jsx("option", { value: "title-asc", children: translation.sortTitleAscending }),
+              /* @__PURE__ */ jsx("option", { value: "title-desc", children: translation.sortTitleDescending })
+            ] })
+          ] })
+        ] }),
+        entries.length === 0 ? /* @__PURE__ */ jsx("p", { class: "rip-empty", children: translation.emptyState }) : /* @__PURE__ */ jsx(
+          BookCollection,
+          {
+            entries,
+            idPrefix: "rip-book",
+            options,
+            translation
+          }
+        )
+      ] })
     ] });
   };
-  RootIndexPanels.css = panels_default;
+  RootIndexPanels.css = `${panels_default}
+${root_library_default}`;
   RootIndexPanels.afterDOMLoaded = panels_inline_default;
   return RootIndexPanels;
 });
@@ -3601,7 +3692,10 @@ function selectSidebarNavigationScope(model, currentSlug2) {
 }
 
 // src/components/scripts/sidebar.inline.ts
-var sidebar_inline_default = 'function c(){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));if(r.length===0)return;let s=[];for(let e of r){let n=()=>{if(e.open)for(let o of r)o!==e&&(o.open=!1)},t=o=>{o.target?.closest?.("a")&&(e.open=!1)};e.addEventListener("toggle",n),e.addEventListener("click",t),s.push(()=>{e.removeEventListener("toggle",n),e.removeEventListener("click",t)})}let i=e=>{let n=e.target;if(n)for(let t of r)t.open&&!t.contains(n)&&(t.open=!1)},d=e=>{if(e.key!=="Escape")return;let n=r.find(o=>o.open);if(!n)return;e.preventDefault(),n.open=!1,n.firstElementChild?.focus?.()};document.addEventListener("pointerdown",i),document.addEventListener("keydown",d),s.push(()=>{document.removeEventListener("pointerdown",i),document.removeEventListener("keydown",d)}),typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>{s.forEach(e=>e())})}typeof document<"u"&&document.addEventListener("nav",()=>{c()});\n';
+var sidebar_inline_default = 'function a(o){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));for(let e of r){let t=()=>{if(e.open)for(let s of r)s!==e&&(s.open=!1)},n=s=>{s.target?.closest?.("a")&&(e.open=!1)};e.addEventListener("toggle",t),e.addEventListener("click",n),o.push(()=>{e.removeEventListener("toggle",t),e.removeEventListener("click",n)})}if(r.length===0)return;let i=e=>{let t=e.target;if(t)for(let n of r)n.open&&!n.contains(t)&&(n.open=!1)},c=e=>{if(e.key!=="Escape")return;let t=r.find(s=>s.open);if(!t)return;e.preventDefault(),t.open=!1,t.firstElementChild?.focus?.()};document.addEventListener("pointerdown",i),document.addEventListener("keydown",c),o.push(()=>{document.removeEventListener("pointerdown",i),document.removeEventListener("keydown",c)})}function l(o){let r=Array.from(document.querySelectorAll(".rip-sidebar [data-rip-disclosure]"));for(let i of r){let c=()=>{let e=i.getAttribute("aria-controls");if(!e)return;let t=document.getElementById(e),n=i.closest(".rip-sidebar-folder");if(!t||!n)return;let d=!(i.getAttribute("aria-expanded")==="true");i.setAttribute("aria-expanded",String(d)),t.hidden=!d,n.dataset.ripOpen=String(d)};i.addEventListener("click",c),o.push(()=>i.removeEventListener("click",c))}}function u(){let o=[];a(o),l(o),o.length>0&&typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>o.forEach(r=>r()))}typeof document<"u"&&document.addEventListener("nav",()=>u());\n';
+
+// src/components/styles/sidebar-rework.scss
+var sidebar_rework_default = '.rip-sidebar-book-control {\n  display: grid;\n  grid-template-columns: 2.75rem minmax(0, 1fr);\n  gap: 0.45rem;\n  align-items: stretch;\n}\n\n.rip-sidebar-book-control > .rip-sidebar-switcher {\n  min-width: 0;\n  margin-top: 0;\n}\n\n.rip-sidebar-home-mark {\n  position: relative;\n  display: grid;\n  min-width: 0;\n  place-items: center;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.5rem;\n  color: var(--dark);\n  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);\n}\n\n.rip-sidebar-home-mark::before,\n.rip-sidebar-folder-link::before,\n.rip-sidebar-note-link::before {\n  position: absolute;\n  inset-block: 0.35rem;\n  inset-inline-start: 0;\n  width: 0.18rem;\n  border-radius: 999px;\n  background: var(--rip-sidebar-accent, var(--secondary));\n  content: "";\n  opacity: 0;\n}\n\n.rip-sidebar-home-mark[data-rip-state=current] {\n  border-color: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 55%, var(--lightgray));\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n}\n\n.rip-sidebar-home-mark[data-rip-state=current]::before,\n.rip-sidebar-folder-link[data-rip-state=current]::before,\n.rip-sidebar-note-link[data-rip-state=current]::before {\n  opacity: 1;\n}\n\n.rip-sidebar-home-mark:hover {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-home-mark:focus-visible,\n.rip-sidebar-folder-link:focus-visible,\n.rip-sidebar-disclosure:focus-visible {\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home-mark .rip-sidebar-book-icon,\n.rip-sidebar-home-mark .rip-sidebar-root-icon {\n  border: 0;\n  background: transparent;\n}\n\n.rip-sidebar-home-badge {\n  position: absolute;\n  inset-inline-end: -0.22rem;\n  inset-block-end: -0.3rem;\n  max-width: 2.2rem;\n  overflow: hidden;\n  padding: 0.08rem 0.24rem;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 999px;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--light);\n  font-family: var(--codeFont);\n  font-size: 0.48rem;\n  font-weight: 700;\n  line-height: 1.25;\n  text-overflow: ellipsis;\n  text-transform: uppercase;\n  white-space: nowrap;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder {\n  min-width: 0;\n}\n\n.rip-sidebar-folder-row {\n  position: relative;\n  display: grid;\n  grid-template-columns: minmax(0, 1fr) 2rem;\n  min-width: 0;\n  align-items: center;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-folder-link,\n.rip-sidebar-folder-label-only {\n  position: relative;\n  display: flex;\n  min-width: 0;\n  min-height: 2.75rem;\n  align-items: center;\n  gap: 0.55rem;\n  padding: 0.42rem 0.35rem 0.42rem 0.6rem;\n  border-radius: 0.45rem;\n  font-weight: 550;\n}\n\n.rip-sidebar-folder-label-only {\n  color: var(--gray);\n}\n\n.rip-sidebar-folder-link[data-rip-state=current],\n.rip-sidebar-note-link[data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar-folder[data-rip-state=ancestor] > .rip-sidebar-folder-row > .rip-sidebar-folder-link,\n.rip-sidebar-folder[data-rip-state=ancestor] > .rip-sidebar-folder-row > .rip-sidebar-folder-label-only {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-disclosure {\n  display: inline-grid;\n  width: 1.75rem;\n  height: 1.75rem;\n  padding: 0;\n  border: 1px solid transparent;\n  border-radius: 0.35rem;\n  place-items: center;\n  color: var(--gray);\n  background: transparent;\n  cursor: pointer;\n}\n\n.rip-sidebar-disclosure:hover {\n  border-color: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 55%, var(--lightgray));\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-disclosure-icon {\n  display: inline-grid;\n  place-items: center;\n  transition: transform 120ms ease;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder[data-rip-open=true] > .rip-sidebar-folder-row > .rip-sidebar-disclosure .rip-sidebar-disclosure-icon {\n  transform: rotate(90deg);\n}\n\n.rip-sidebar-folder[data-rip-active-descendant=true][data-rip-open=false] > .rip-sidebar-folder-row > .rip-sidebar-disclosure {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 11%, transparent);\n}\n\n.rip-sidebar-folder[data-rip-active-descendant=true][data-rip-open=false] > .rip-sidebar-folder-row > .rip-sidebar-disclosure:hover,\n.rip-sidebar-folder[data-rip-active-descendant=true][data-rip-open=false] > .rip-sidebar-folder-row > .rip-sidebar-disclosure:focus-visible {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-children[hidden] {\n  display: none;\n}\n\n.rip-sidebar-folder-row + .rip-sidebar-children {\n  margin-inline-start: 1rem;\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-disclosure-icon {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-home-mark,\n  .rip-sidebar-disclosure:hover,\n  .rip-sidebar-disclosure:focus-visible {\n    border-color: CanvasText;\n  }\n  .rip-sidebar-home-mark:focus-visible,\n  .rip-sidebar-folder-link:focus-visible,\n  .rip-sidebar-disclosure:focus-visible {\n    outline-color: Highlight;\n  }\n  .rip-sidebar-home-mark[data-rip-state=current]::before,\n  .rip-sidebar-folder-link[data-rip-state=current]::before,\n  .rip-sidebar-note-link[data-rip-state=current]::before {\n    background: Highlight;\n  }\n}';
 
 // src/components/styles/sidebar.scss
 var sidebar_default = '.rip-sidebar {\n  width: 100%;\n  min-width: 0;\n  color: var(--darkgray);\n  font-size: 0.9rem;\n}\n.rip-sidebar *,\n.rip-sidebar *::before,\n.rip-sidebar *::after {\n  box-sizing: border-box;\n}\n.rip-sidebar a {\n  color: inherit;\n  text-decoration: none;\n}\n.rip-sidebar a:hover {\n  color: var(--rip-sidebar-accent, var(--secondary));\n}\n.rip-sidebar a:focus-visible,\n.rip-sidebar summary:focus-visible {\n  border-radius: 0.35rem;\n  outline: 3px solid var(--secondary);\n  outline-offset: 2px;\n}\n\n.rip-sidebar-home,\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  border-radius: 0.45rem;\n}\n\n.rip-sidebar-shell,\n.rip-sidebar-content {\n  width: 100%;\n  min-width: 0;\n}\n\n.rip-sidebar-content {\n  position: relative;\n}\n\n.rip-sidebar-toggle {\n  display: none;\n}\n\n.rip-sidebar-home {\n  padding: 0.45rem 0.55rem;\n  color: var(--dark);\n  font-family: var(--headerFont);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=current] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 12%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar [data-rip-state=ancestor] {\n  color: var(--rip-sidebar-accent, var(--secondary));\n  font-weight: 600;\n}\n\n.rip-sidebar-switcher {\n  position: relative;\n  z-index: 5;\n  margin-top: 0.35rem;\n}\n\n.rip-sidebar-switcher[open] {\n  z-index: 30;\n}\n\n.rip-sidebar-switcher > summary,\n.rip-sidebar-folder > details > summary {\n  display: flex;\n  min-height: 2.75rem;\n  min-width: 0;\n  align-items: center;\n  gap: 0.55rem;\n  color: var(--dark);\n  cursor: pointer;\n  list-style: none;\n  user-select: none;\n}\n\n.rip-sidebar-switcher > summary {\n  padding: 0.5rem 0.6rem;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.5rem;\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--light) 92%, var(--dark) 8%);\n  font-family: var(--headerFont);\n  font-weight: 600;\n  transition: border-color 120ms ease, background-color 120ms ease;\n}\n\n.rip-sidebar-switcher > summary:hover {\n  border-color: var(--rip-sidebar-accent, var(--secondary));\n}\n\n.rip-sidebar-switcher > summary::-webkit-details-marker,\n.rip-sidebar-folder > details > summary::-webkit-details-marker,\n.rip-sidebar-toggle::-webkit-details-marker {\n  display: none;\n}\n\n.rip-sidebar-switcher-label,\n.rip-sidebar-link-label,\n.rip-sidebar-folder-label {\n  min-width: 0;\n  overflow-wrap: anywhere;\n}\n\n.rip-sidebar-switcher-label {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rip-sidebar-switcher-chevron {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--gray);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon,\n.rip-sidebar-book-icon {\n  display: inline-grid;\n  width: 1.4rem;\n  height: 1.4rem;\n  flex: 0 0 1.4rem;\n  place-items: center;\n  border: 1px solid var(--rip-sidebar-accent, var(--lightgray));\n  border-radius: 0.38rem;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 15%, transparent);\n  pointer-events: none;\n}\n\n.rip-sidebar-root-icon svg,\n.rip-sidebar-book-icon svg,\n.rip-sidebar-node-icon svg,\n.rip-sidebar-selected-check svg,\n.rip-sidebar-switcher-chevron svg {\n  display: block;\n  pointer-events: none;\n}\n\n.rip-sidebar-switcher-menu {\n  position: absolute;\n  z-index: 20;\n  top: calc(100% + 0.35rem);\n  inset-inline: 0;\n  overflow: hidden;\n  border: 1px solid var(--lightgray);\n  border-radius: 0.55rem;\n  color: var(--darkgray);\n  background: var(--light);\n  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.28);\n}\n\n.rip-sidebar-switcher-heading {\n  margin: 0;\n  padding: 0.5rem 0.7rem;\n  border-bottom: 1px solid var(--lightgray);\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.68rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  line-height: 1.4;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-home-list,\n.rip-sidebar-books,\n.rip-sidebar-tree,\n.rip-sidebar-children {\n  margin: 0;\n  padding: 0;\n  list-style: none;\n}\n\n.rip-sidebar-home-list {\n  padding: 0.3rem 0.35rem;\n}\n\n.rip-sidebar-switcher-divider {\n  height: 1px;\n  margin-inline: 0.7rem;\n  background: var(--lightgray);\n}\n\n.rip-sidebar-books {\n  max-height: min(14rem, 100dvh - 12rem);\n  padding: 0.3rem 0.35rem 0.4rem;\n  overflow-y: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-switcher-menu [data-rip-selected=true] {\n  color: var(--rip-sidebar-accent, var(--dark));\n  background: var(--highlight);\n  background: color-mix(in srgb, var(--rip-sidebar-accent, var(--secondary)) 10%, transparent);\n  font-weight: 650;\n}\n\n.rip-sidebar-selected-check {\n  display: inline-grid;\n  flex: 0 0 auto;\n  margin-inline-start: auto;\n  place-items: center;\n  color: var(--rip-sidebar-accent, var(--secondary));\n  pointer-events: none;\n}\n\n.rip-sidebar-sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\n.rip-sidebar-book-link,\n.rip-sidebar-note-link,\n.rip-sidebar-overview-link {\n  padding: 0.42rem 0.6rem;\n}\n\n.rip-sidebar-switcher[open] + .rip-sidebar-scope {\n  visibility: hidden;\n  pointer-events: none;\n}\n\n.rip-sidebar-scope {\n  min-height: 0;\n  margin-top: 0.95rem;\n}\n\n.rip-sidebar-scope-title {\n  margin: 0 0 0.35rem;\n  padding-inline: 0.6rem;\n  color: var(--gray);\n  font-family: var(--codeFont);\n  font-size: 0.72rem;\n  font-weight: 600;\n  letter-spacing: 0.1em;\n  text-transform: uppercase;\n}\n\n.rip-sidebar-tree {\n  max-height: calc(100dvh - 19rem);\n  overflow: auto;\n  overscroll-behavior: contain;\n  scrollbar-width: thin;\n}\n\n.rip-sidebar-node-icon {\n  display: inline-grid;\n  width: 1rem;\n  height: 1rem;\n  flex: 0 0 1rem;\n  place-items: center;\n  color: inherit;\n  pointer-events: none;\n}\n\n.rip-sidebar-folder > details > summary {\n  padding: 0.42rem 0.6rem;\n  font-family: var(--bodyFont);\n  font-weight: 550;\n}\n\n.rip-sidebar-folder > details > summary::before {\n  width: 0.42rem;\n  height: 0.42rem;\n  flex: 0 0 0.42rem;\n  border-inline-end: 1.5px solid currentColor;\n  border-block-end: 1.5px solid currentColor;\n  content: "";\n  transform: rotate(-45deg);\n  transition: transform 120ms ease;\n}\n\n.rip-sidebar-folder > details[open] > summary::before {\n  transform: rotate(45deg);\n}\n\n.rip-sidebar-children {\n  margin-inline-start: 1rem;\n  padding-inline-start: 0.55rem;\n  border-inline-start: 1px solid var(--lightgray);\n}\n\n.rip-sidebar-overview-link {\n  margin-inline-start: 1rem;\n  color: var(--gray);\n  font-size: 0.82rem;\n}\n\n.rip-sidebar-book-overview-link {\n  margin: 0 0 0.15rem;\n}\n\n.left.sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n.page[data-frame=canvas] > #quartz-body > .center.canvas-frame > .canvas-sidebar:has(> .rip-sidebar[data-rip-replace-explorer=true]) > .explorer {\n  display: none !important;\n}\n\n.page[data-frame=canvas] > #quartz-body > .center.canvas-frame:has(> .canvas-sidebar > .rip-sidebar) {\n  box-sizing: border-box;\n}\n\n.page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar[data-rip-scope=book]) > #quartz-body > .center > .page-header > .popover-hint > .breadcrumb-container > .breadcrumb-element:first-child:not(:only-child) {\n  display: none;\n}\n\n@media (min-width: 801px) {\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: block;\n  }\n}\n@media (min-width: 800px) and (max-width: 1200px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);\n  }\n}\n@media (max-width: 800px) {\n  .page[data-frame=default]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {\n    grid-template-columns: minmax(0, 1fr) !important;\n  }\n  .left.sidebar:has(> .rip-sidebar) {\n    min-width: 0;\n    width: 100%;\n    max-width: 100%;\n    flex-wrap: wrap;\n    overflow-wrap: anywhere;\n  }\n  .rip-sidebar {\n    width: 100%;\n    flex: 1 0 100%;\n    order: 100;\n    padding-top: 0.5rem;\n  }\n  .rip-sidebar-toggle {\n    display: flex;\n    min-height: 2.75rem;\n    align-items: center;\n    padding: 0.55rem 0.65rem;\n    border: 1px solid var(--lightgray);\n    border-radius: 0.45rem;\n    color: var(--dark);\n    cursor: pointer;\n    font-family: var(--headerFont);\n    font-weight: 650;\n    list-style: none;\n  }\n  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {\n    display: none;\n  }\n  .rip-sidebar-content {\n    padding-top: 0.35rem;\n  }\n  .rip-sidebar-tree {\n    max-height: min(45dvh, 24rem);\n  }\n  .rip-sidebar-books {\n    max-height: min(14rem, 45dvh);\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-folder > details > summary::before {\n    transition: none;\n  }\n}\n@media (forced-colors: active) {\n  .rip-sidebar-switcher > summary,\n  .rip-sidebar-switcher-menu,\n  .rip-sidebar-switcher-heading,\n  .rip-sidebar-switcher-divider,\n  .rip-sidebar-children,\n  .rip-sidebar-root-icon,\n  .rip-sidebar-book-icon {\n    border-color: CanvasText;\n  }\n  .rip-sidebar-switcher-menu {\n    background: Canvas;\n    box-shadow: none;\n  }\n  .rip-sidebar-switcher-divider {\n    background: CanvasText;\n  }\n  .rip-sidebar [data-rip-state=current],\n  .rip-sidebar-switcher-menu [data-rip-selected=true] {\n    color: LinkText;\n    background: Canvas;\n  }\n  .rip-sidebar a:focus-visible,\n  .rip-sidebar summary:focus-visible {\n    outline-color: Highlight;\n  }\n}';
@@ -3664,7 +3758,7 @@ function BookLink({
         selected && /* @__PURE__ */ jsxs(Fragment, { children: [
           /* @__PURE__ */ jsxs("span", { class: "rip-sidebar-sr-only", children: [
             ", ",
-            translation.selectedManual
+            translation.selectedBook
           ] }),
           /* @__PURE__ */ jsx(
             SidebarGlyph,
@@ -3702,10 +3796,15 @@ function NavigationLink({
     }
   );
 }
+function nodeContainsSlug(node, current) {
+  if (node.slug && getSidebarLinkState(node.slug, current) !== void 0) return true;
+  return node.kind === "folder" && node.children.some((child) => nodeContainsSlug(child, current));
+}
 function NavigationNode({
   node,
   current,
   depth,
+  branchId,
   translation
 }) {
   if (node.kind !== "folder") {
@@ -3722,36 +3821,97 @@ function NavigationNode({
   }
   const state = node.slug ? getSidebarLinkState(node.slug, current) : void 0;
   const descendantIsActive = node.children.some((child) => nodeContainsSlug(child, current));
-  const summaryState = state ?? (descendantIsActive ? "ancestor" : void 0);
-  return /* @__PURE__ */ jsx("li", { class: "rip-sidebar-folder", children: /* @__PURE__ */ jsxs("details", { open: depth === 0 || state !== void 0 || descendantIsActive || void 0, children: [
-    /* @__PURE__ */ jsxs("summary", { "data-rip-state": summaryState, children: [
-      /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.folder }),
-      /* @__PURE__ */ jsx("span", { class: "rip-sidebar-folder-label", children: node.title })
-    ] }),
-    node.slug && /* @__PURE__ */ jsx(
-      NavigationLink,
-      {
-        slug: node.slug,
-        title: translation.overview,
-        current,
-        className: "rip-sidebar-overview-link"
-      }
-    ),
-    node.children.length > 0 && /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-children", children: node.children.map((child) => /* @__PURE__ */ jsx(
-      NavigationNode,
-      {
-        node: child,
-        current,
-        depth: depth + 1,
-        translation
-      },
-      child.key
-    )) })
-  ] }) });
+  const rowState = state ?? (descendantIsActive ? "ancestor" : void 0);
+  const defaultOpen = depth === 0 || state !== void 0 || descendantIsActive;
+  const childrenId = `rip-sidebar-children-${branchId}`;
+  return /* @__PURE__ */ jsxs(
+    "li",
+    {
+      class: "rip-sidebar-folder",
+      "data-rip-state": rowState,
+      "data-rip-active-descendant": descendantIsActive ? "true" : void 0,
+      "data-rip-open": defaultOpen ? "true" : "false",
+      children: [
+        /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-folder-row", children: [
+          node.slug ? /* @__PURE__ */ jsxs(
+            "a",
+            {
+              class: "rip-sidebar-folder-link",
+              href: resolveRelative(current, node.slug),
+              "aria-current": state === "current" ? "page" : void 0,
+              "data-rip-state": state,
+              children: [
+                /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.folder }),
+                /* @__PURE__ */ jsx("span", { class: "rip-sidebar-folder-label", children: node.title })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxs("span", { class: "rip-sidebar-folder-label-only", children: [
+            /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-node-icon", icon: sidebarIcons.folder }),
+            /* @__PURE__ */ jsx("span", { class: "rip-sidebar-folder-label", children: node.title })
+          ] }),
+          node.children.length > 0 && /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              class: "rip-sidebar-disclosure",
+              "aria-expanded": defaultOpen ? "true" : "false",
+              "aria-controls": childrenId,
+              "aria-label": translation.toggleFolder(node.title),
+              title: translation.toggleFolder(node.title),
+              "data-rip-disclosure": true,
+              children: /* @__PURE__ */ jsx(
+                SidebarGlyph,
+                {
+                  className: "rip-sidebar-disclosure-icon",
+                  icon: sidebarIcons.chevronRight,
+                  size: 14
+                }
+              )
+            }
+          )
+        ] }),
+        node.children.length > 0 && /* @__PURE__ */ jsx("ul", { id: childrenId, class: "rip-sidebar-children", hidden: !defaultOpen, children: node.children.map((child, index2) => /* @__PURE__ */ jsx(
+          NavigationNode,
+          {
+            node: child,
+            current,
+            depth: depth + 1,
+            branchId: `${branchId}-${index2}`,
+            translation
+          },
+          child.key
+        )) })
+      ]
+    }
+  );
 }
-function nodeContainsSlug(node, current) {
-  if (node.slug && getSidebarLinkState(node.slug, current) !== void 0) return true;
-  return node.kind === "folder" && node.children.some((child) => nodeContainsSlug(child, current));
+function HomeMark({
+  current,
+  selectedBook,
+  options,
+  rootTitle,
+  translation
+}) {
+  const target = selectedBook?.slug ?? "index";
+  const state = getSidebarLinkState(target, current);
+  const label = selectedBook ? translation.bookHome(selectedBook.title) : translation.rootHome;
+  return /* @__PURE__ */ jsxs(
+    "a",
+    {
+      class: "rip-sidebar-home-mark",
+      href: resolveRelative(current, target),
+      "aria-label": label,
+      title: label,
+      "aria-current": state === "current" ? "page" : void 0,
+      "data-rip-state": state === "current" ? "current" : void 0,
+      ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {},
+      children: [
+        selectedBook ? /* @__PURE__ */ jsx(BookIcon, { panel: selectedBook.panel, options }) : /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
+        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-home-badge", "aria-hidden": "true", children: translation.home }),
+        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-sr-only", children: selectedBook?.title ?? rootTitle })
+      ]
+    }
+  );
 }
 var RootIndexSidebar_default = ((userOptions) => {
   let options;
@@ -3773,7 +3933,7 @@ var RootIndexSidebar_default = ((userOptions) => {
     const selectedBook = scope.kind === "book" ? scope.book : void 0;
     const rootTitle = model.rootTitle ?? translation.home;
     const rootSelected = selectedBook === void 0;
-    const homeState = getSidebarLinkState("index", current);
+    const rootState = getSidebarLinkState("index", current);
     return /* @__PURE__ */ jsx(
       "nav",
       {
@@ -3781,48 +3941,47 @@ var RootIndexSidebar_default = ((userOptions) => {
         "aria-label": translation.sidebarNavigation,
         "data-rip-replace-explorer": options.replaceExplorer ? "true" : void 0,
         "data-rip-scope": scope.kind,
+        ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {},
         children: /* @__PURE__ */ jsxs("details", { class: "rip-sidebar-shell", open: true, children: [
           /* @__PURE__ */ jsx("summary", { class: "rip-sidebar-toggle", children: translation.sidebarNavigation }),
           /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-content", children: [
-            /* @__PURE__ */ jsxs("details", { class: "rip-sidebar-switcher", children: [
-              /* @__PURE__ */ jsxs(
-                "summary",
+            /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-book-control", children: [
+              /* @__PURE__ */ jsx(
+                HomeMark,
                 {
-                  "data-rip-selected": "true",
-                  ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {},
-                  children: [
-                    selectedBook ? /* @__PURE__ */ jsx(BookIcon, { panel: selectedBook.panel, options }) : /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
-                    /* @__PURE__ */ jsx("span", { class: "rip-sidebar-switcher-label", children: selectedBook?.title ?? rootTitle }),
-                    /* @__PURE__ */ jsx(
-                      SidebarGlyph,
-                      {
-                        className: "rip-sidebar-switcher-chevron",
-                        icon: sidebarIcons.chevronsUpDown,
-                        size: 13
-                      }
-                    )
-                  ]
+                  current,
+                  selectedBook,
+                  options,
+                  rootTitle,
+                  translation
                 }
               ),
-              /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-switcher-menu", children: [
-                /* @__PURE__ */ jsx("p", { class: "rip-sidebar-switcher-heading", children: translation.switchManual }),
-                /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-home-list", children: /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsxs(
-                  "a",
-                  {
-                    class: "rip-sidebar-home",
-                    href: resolveRelative(current, "index"),
-                    "aria-current": homeState === "current" ? "page" : void 0,
-                    "data-rip-state": homeState,
-                    "data-rip-selected": rootSelected ? "true" : void 0,
-                    children: [
-                      /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
-                      /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: rootTitle }),
-                      rootSelected && /* @__PURE__ */ jsxs(Fragment, { children: [
-                        /* @__PURE__ */ jsxs("span", { class: "rip-sidebar-sr-only", children: [
-                          ", ",
-                          translation.selectedManual
-                        ] }),
-                        /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsxs("details", { class: "rip-sidebar-switcher", children: [
+                /* @__PURE__ */ jsxs("summary", { "data-rip-selected": "true", children: [
+                  /* @__PURE__ */ jsx("span", { class: "rip-sidebar-switcher-label", children: selectedBook?.title ?? rootTitle }),
+                  /* @__PURE__ */ jsx(
+                    SidebarGlyph,
+                    {
+                      className: "rip-sidebar-switcher-chevron",
+                      icon: sidebarIcons.chevronsUpDown,
+                      size: 13
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs("div", { class: "rip-sidebar-switcher-menu", children: [
+                  /* @__PURE__ */ jsx("p", { class: "rip-sidebar-switcher-heading", children: translation.switchBook }),
+                  /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-home-list", children: /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsxs(
+                    "a",
+                    {
+                      class: "rip-sidebar-home",
+                      href: resolveRelative(current, "index"),
+                      "aria-current": rootState === "current" ? "page" : void 0,
+                      "data-rip-state": rootState,
+                      "data-rip-selected": rootSelected ? "true" : void 0,
+                      children: [
+                        /* @__PURE__ */ jsx(SidebarGlyph, { className: "rip-sidebar-root-icon", icon: sidebarIcons.home }),
+                        /* @__PURE__ */ jsx("span", { class: "rip-sidebar-link-label", children: rootTitle }),
+                        rootSelected && /* @__PURE__ */ jsx(
                           SidebarGlyph,
                           {
                             className: "rip-sidebar-selected-check",
@@ -3830,53 +3989,44 @@ var RootIndexSidebar_default = ((userOptions) => {
                             size: 13
                           }
                         )
-                      ] })
-                    ]
-                  }
-                ) }) }),
-                /* @__PURE__ */ jsx("div", { class: "rip-sidebar-switcher-divider", role: "separator" }),
-                /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-books", children: model.books.map((book) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
-                  BookLink,
-                  {
-                    book,
-                    current,
-                    options,
-                    selected: book.segment === selectedBook?.segment,
-                    translation
-                  }
-                ) }, book.segment)) })
+                      ]
+                    }
+                  ) }) }),
+                  /* @__PURE__ */ jsx("div", { class: "rip-sidebar-switcher-divider", role: "separator" }),
+                  /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-books", children: model.books.map((book) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+                    BookLink,
+                    {
+                      book,
+                      current,
+                      options,
+                      selected: book.segment === selectedBook?.segment,
+                      translation
+                    }
+                  ) }, book.segment)) })
+                ] })
               ] })
             ] }),
             (scope.kind === "book" || scope.children.length > 0) && /* @__PURE__ */ jsxs("section", { class: "rip-sidebar-scope", "aria-label": translation.explorer, children: [
               /* @__PURE__ */ jsx("h2", { class: "rip-sidebar-scope-title", children: translation.explorer }),
-              /* @__PURE__ */ jsxs("ul", { class: "rip-sidebar-tree", children: [
-                scope.kind === "book" && /* @__PURE__ */ jsx("li", { class: "rip-sidebar-book-overview", children: /* @__PURE__ */ jsx(
-                  NavigationLink,
-                  {
-                    slug: scope.book.slug,
-                    title: translation.overview,
-                    current,
-                    className: "rip-sidebar-note-link rip-sidebar-book-overview-link"
-                  }
-                ) }),
-                scope.children.map((node) => /* @__PURE__ */ jsx(
-                  NavigationNode,
-                  {
-                    node,
-                    current,
-                    depth: 0,
-                    translation
-                  },
-                  node.key
-                ))
-              ] })
+              /* @__PURE__ */ jsx("ul", { class: "rip-sidebar-tree", children: scope.children.map((node, index2) => /* @__PURE__ */ jsx(
+                NavigationNode,
+                {
+                  node,
+                  current,
+                  depth: 0,
+                  branchId: String(index2),
+                  translation
+                },
+                node.key
+              )) })
             ] })
           ] })
         ] })
       }
     );
   };
-  RootIndexSidebar.css = sidebar_default;
+  RootIndexSidebar.css = `${sidebar_default}
+${sidebar_rework_default}`;
   RootIndexSidebar.afterDOMLoaded = sidebar_inline_default;
   return RootIndexSidebar;
 });
@@ -3893,6 +4043,7 @@ lucide-preact/dist/esm/Icon.mjs:
 lucide-preact/dist/esm/createLucideIcon.mjs:
 lucide-preact/dist/esm/icons/book-open.mjs:
 lucide-preact/dist/esm/icons/check.mjs:
+lucide-preact/dist/esm/icons/chevron-right.mjs:
 lucide-preact/dist/esm/icons/chevrons-up-down.mjs:
 lucide-preact/dist/esm/icons/code-xml.mjs:
 lucide-preact/dist/esm/icons/coffee.mjs:

@@ -250,7 +250,7 @@ describe.each(layouts)("book inventory and routing (%s)", (layout) => {
       { layout },
     )
 
-    expect(withoutFolderPage).toContain("No subdirectories found.")
+    expect(withoutFolderPage).toContain("No books found.")
     expect(withoutFolderPage).not.toContain("Orphan")
     expect(withFolderPage).toContain("Orphan")
     expect(withFolderPage).toContain('href="./orphan/"')
