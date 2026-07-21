@@ -1573,9 +1573,9 @@ function runIntegration() {
         "Jul 18, 2026",
         { switchBook: "Switch book", explorer: "Explorer" },
       )
-      assert.match(anchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
+      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
-      assert.match(anchorForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)
+      assert.match(itemForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)
     },
   })
@@ -1610,7 +1610,7 @@ function runIntegration() {
         "18.7.2026",
         { switchBook: "Vaihda kirjaa", explorer: "Sisältöselain" },
       )
-      const custom = anchorForHref(rootHtml, "./custom/")
+      const custom = itemForHref(rootHtml, "./custom/")
       assert.match(custom, /data-rip-icon="custom-mark"/)
       assert.match(custom, /data-rip-test-icon="ts-custom"/)
       assert.match(custom, /data-rip-accent="direct"/)
@@ -1620,7 +1620,7 @@ function runIntegration() {
       assert.match(customSidebar, /data-rip-test-icon="ts-custom"/)
       assert.match(customSidebar, /data-rip-accent="direct"/)
       assert.match(customSidebar, /--rip-sidebar-accent: #abc/)
-      assert.match(anchorForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)
+      assert.match(itemForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)
       const scripts = emittedJavaScript(outputRoot)
       assert.doesNotMatch(scripts, /route-announcer/)
       assert.match(scripts, /location\.assign/)
@@ -1657,12 +1657,12 @@ function runIntegration() {
         "18 Jul 2026",
         { switchBook: "Switch book", explorer: "Explorer" },
       )
-      assert.doesNotMatch(anchorForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
+      assert.doesNotMatch(itemForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
       assert.doesNotMatch(
         sidebarBookAnchorForHref(rootHtml, "./custom/"),
         /data-rip-icon=|rip-sidebar-book-icon/,
       )
-      const unsafe = anchorForHref(rootHtml, "./unsafe/")
+      const unsafe = itemForHref(rootHtml, "./unsafe/")
       assert.doesNotMatch(unsafe, /data-rip-accent=|--rip-panel-accent/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)
     },
