@@ -75,6 +75,7 @@ jobs:
         run: |
           rm scripts/apply-switcher-accent-fix.py
           rm .github/workflows/apply-switcher-accent-fix.yml
+          rm .github/workflows/diagnose-switcher-accent-fix.yml
 
       - name: Final repository checks
         run: |
