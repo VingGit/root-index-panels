@@ -18,6 +18,26 @@ Do not place agent procedures, hidden workflow notes, source-file tours,
 exhaustive internal invariants, evidence logs, commit rules, or parent-worktree
 instructions in `README.md`. Agent-only material belongs under `.github/`.
 
+## README filename boundary
+
+The two README-like files have deliberately different names and audiences:
+
+- `/README.md` is the canonical human-facing repository homepage.
+- `/.github/AGENT_README.md` is the agent customization index.
+
+Keep both paths and roles unchanged. Never rename `AGENT_README.md` to
+`README.md`, create `/.github/README.md`, copy agent instructions into the root
+README, or replace the root README with agent-facing material.
+
+This distinction is also a workaround for GitHub's unresolved README precedence
+bug, where `/.github/README.md` can be rendered on the repository homepage
+instead of `/README.md`:
+https://github.com/orgs/community/discussions/163997
+
+Do not remove this workaround or rename either file merely because the contents
+look similar. A future change requires explicit maintainer authorization and
+verification that GitHub has corrected the precedence behavior.
+
 `CHANGELOG.md` records user-visible additions, changes, fixes, deprecations,
 removals, and security corrections. Update its `Unreleased` section whenever
 completed work changes observable behavior, compatibility, packaging,

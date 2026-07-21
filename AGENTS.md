@@ -10,6 +10,20 @@
   workflow notes, or agent-specific process text in `README.md`, `CHANGELOG.md`,
   source files, or other human-facing documentation.
 
+## README filename boundary
+
+- `/README.md` is the canonical repository homepage and is strictly for human
+  users and maintainers.
+- `/.github/AGENT_README.md` is the agent customization index and is strictly
+  for agents and maintainers working on agent configuration.
+- These files are intentionally separate. Never rename
+  `/.github/AGENT_README.md` to `/.github/README.md`, create another
+  `/.github/README.md`, merge the two audiences, or replace the root README
+  with agent-facing material.
+- This naming avoids GitHub's unresolved README precedence bug, where
+  `/.github/README.md` can be displayed on the repository homepage instead of
+  `/README.md`: https://github.com/orgs/community/discussions/163997
+
 ## Branch workflow
 
 - Never implement a feature directly on `main`.

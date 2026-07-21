@@ -1,5 +1,12 @@
 # Agent customization index
 
+This file is intentionally named `AGENT_README.md`, not `README.md`.
+`/README.md` is the canonical human-facing repository homepage, while this file
+indexes agent-only material. Never rename this file to `README.md`: GitHub's
+unresolved README precedence bug can cause `/.github/README.md` to replace the
+root README on the repository homepage:
+https://github.com/orgs/community/discussions/163997
+
 This directory contains the repository's agent instructions, reusable prompt
 files, durable technical references, and GitHub workflows. It is versioned on
 `main` so local agents, pull-request agents, and GitHub Copilot review use the
