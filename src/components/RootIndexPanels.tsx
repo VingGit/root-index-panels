@@ -10,10 +10,11 @@ import { resolvePanelAccent } from "../appearance"
 import { collectBooks, type BookEntry } from "../books"
 import { i18n, type RootIndexPanelsTranslation } from "../i18n"
 import { resolvePanelIcon } from "../icons"
-import { normalizeRootIndexPanelsOptions } from "../options"
+import { normalizeRootIndexPanelsOptions, type NormalizedRootIndexPanelsOptions } from "../options"
 import type { RootIndexPanelsOptions } from "../types"
 // @ts-expect-error — .inline.ts files are processed by the tsup inline-script-loader
 import script from "./scripts/panels.inline.ts"
+import libraryStyle from "./styles/root-library.scss"
 import style from "./styles/panels.scss"
 
 interface RenderEntry extends BookEntry {
@@ -31,9 +32,9 @@ function formatUpdatedDate(
   locale: unknown,
 ): { display: string; iso: string } | undefined {
   if (!Number.isFinite(timestamp) || Math.abs(timestamp) > maximumDateTimestamp) return undefined
-
   const requestedLocale = typeof locale === "string" ? locale : "en-US"
   const locales = requestedLocale === "en-US" ? [requestedLocale] : [requestedLocale, "en-US"]
+
   for (const candidateLocale of locales) {
     try {
       const date = new Date(timestamp)
@@ -47,24 +48,20 @@ function formatUpdatedDate(
         iso: date.toISOString().slice(0, 10),
       }
     } catch {
-      // Try the stable fallback, then omit the optional date if formatting is unavailable.
+      // Try the stable fallback, then omit the optional date.
     }
   }
   return undefined
 }
 
-function compareTitle(a: RenderEntry, b: RenderEntry): number {
-  const left = a.title.toLocaleLowerCase()
-  const right = b.title.toLocaleLowerCase()
-  if (left < right) return -1
-  if (left > right) return 1
-  if (a.title < b.title) return -1
-  if (a.title > b.title) return 1
-  return a.segment < b.segment ? -1 : a.segment > b.segment ? 1 : 0
-}
-
-function compareLatest(a: RenderEntry, b: RenderEntry): number {
-  return b.date - a.date || compareTitle(a, b)
+function compareTitle(left: RenderEntry, right: RenderEntry): number {
+  const leftFolded = left.title.toLowerCase()
+  const rightFolded = right.title.toLowerCase()
+  if (leftFolded < rightFolded) return -1
+  if (leftFolded > rightFolded) return 1
+  if (left.title < right.title) return -1
+  if (left.title > right.title) return 1
+  return left.segment < right.segment ? -1 : left.segment > right.segment ? 1 : 0
 }
 
 function ownDataValue(value: unknown, key: string): unknown {
@@ -80,17 +77,7 @@ function ownDataValue(value: unknown, key: string): unknown {
 function safeStringArray(value: unknown): string[] {
   try {
     if (!Array.isArray(value)) return []
-    const values: string[] = []
-    for (let index = 0; index < value.length; index += 1) {
-      let item: unknown
-      try {
-        item = value[index]
-      } catch {
-        continue
-      }
-      if (typeof item === "string") values.push(item)
-    }
-    return values
+    return value.filter((item): item is string => typeof item === "string")
   } catch {
     return []
   }
@@ -98,15 +85,17 @@ function safeStringArray(value: unknown): string[] {
 
 function rootArticleClass(fileData: unknown, layout: "cards" | "list"): string {
   const frontmatter = ownDataValue(fileData, "frontmatter")
-  const rawClasses = ownDataValue(frontmatter, "cssclasses")
-  const authoredClasses = safeStringArray(rawClasses)
-
-  return ["rip", "popover-hint", `rip--${layout}`, ...authoredClasses].join(" ")
+  return [
+    "rip",
+    "popover-hint",
+    `rip--${layout}`,
+    ...safeStringArray(ownDataValue(frontmatter, "cssclasses")),
+  ].join(" ")
 }
 
 function hasRootContent(tree: unknown): boolean {
-  const children = ownDataValue(tree, "children")
   try {
+    const children = ownDataValue(tree, "children")
     return Array.isArray(children) && children.length > 0
   } catch {
     return false
@@ -130,7 +119,6 @@ function panelAttributes(entry: RenderEntry): Record<string, string | undefined>
 
 function PanelIcon({ entry }: { entry: RenderEntry }) {
   if (!entry.icon) return null
-
   const Icon = entry.icon.component
   return (
     <span class="rip-panel-icon" aria-hidden="true" inert>
@@ -157,22 +145,20 @@ function UpdatedDate({
 function ListPanel({
   entry,
   idPrefix,
-  showDescription,
-  showDocCount,
+  options,
   translation,
 }: {
   entry: RenderEntry
   idPrefix: string
-  showDescription: boolean
-  showDocCount: boolean
+  options: NormalizedRootIndexPanelsOptions
   translation: RootIndexPanelsTranslation
 }) {
   const titleId = `${idPrefix}-title`
   const countId = `${idPrefix}-count`
   const descriptionId = `${idPrefix}-description`
   const describedBy = [
-    showDocCount ? countId : undefined,
-    showDescription && entry.description ? descriptionId : undefined,
+    options.showDocCount ? countId : undefined,
+    options.showDescription && entry.description ? descriptionId : undefined,
   ].filter((id): id is string => id !== undefined)
 
   return (
@@ -190,13 +176,13 @@ function ListPanel({
               {entry.title}
             </span>
           </span>
-          {showDocCount && (
+          {options.showDocCount && (
             <span class="rip-count" id={countId}>
               {translation.noteCount(entry.docCount)}
             </span>
           )}
         </div>
-        {showDescription && entry.description && (
+        {options.showDescription && entry.description && (
           <p class="rip-desc" id={descriptionId}>
             {entry.description}
           </p>
@@ -210,27 +196,22 @@ function ListPanel({
 function CardPanel({
   entry,
   idPrefix,
-  showDescription,
-  showDocCount,
-  showTags,
+  options,
   translation,
 }: {
   entry: RenderEntry
   idPrefix: string
-  showDescription: boolean
-  showDocCount: boolean
-  showTags: boolean
+  options: NormalizedRootIndexPanelsOptions
   translation: RootIndexPanelsTranslation
 }) {
-  const countLabel = translation.noteCount(entry.docCount)
   const titleId = `${idPrefix}-title`
   const countId = `${idPrefix}-count`
   const descriptionId = `${idPrefix}-description`
   const tagsId = `${idPrefix}-tags`
   const describedBy = [
-    showDocCount ? countId : undefined,
-    showDescription && entry.description ? descriptionId : undefined,
-    showTags && entry.tags.length > 0 ? tagsId : undefined,
+    options.showDocCount ? countId : undefined,
+    options.showDescription && entry.description ? descriptionId : undefined,
+    options.showTags && entry.tags.length > 0 ? tagsId : undefined,
   ].filter((id): id is string => id !== undefined)
 
   return (
@@ -248,23 +229,23 @@ function CardPanel({
               {entry.title}
             </span>
           </span>
-          {showDocCount && (
+          {options.showDocCount && (
             <>
               <span class="rip-count" aria-hidden="true">
                 {entry.docCount}
               </span>
               <span class="rip-sr-only" id={countId}>
-                {countLabel}
+                {translation.noteCount(entry.docCount)}
               </span>
             </>
           )}
         </div>
-        {showDescription && entry.description && (
+        {options.showDescription && entry.description && (
           <p class="rip-desc" id={descriptionId}>
             {entry.description}
           </p>
         )}
-        {showTags && entry.tags.length > 0 && (
+        {options.showTags && entry.tags.length > 0 && (
           <div class="rip-tags" id={tagsId}>
             {entry.tags.map((tag, index) => (
               <span class="rip-tag" key={`${tag}-${index}`}>
@@ -276,6 +257,48 @@ function CardPanel({
         <UpdatedDate entry={entry} translation={translation} />
       </a>
     </li>
+  )
+}
+
+function BookCollection({
+  entries,
+  idPrefix,
+  options,
+  translation,
+}: {
+  entries: RenderEntry[]
+  idPrefix: string
+  options: NormalizedRootIndexPanelsOptions
+  translation: RootIndexPanelsTranslation
+}) {
+  if (options.layout === "list") {
+    return (
+      <ul class="rip-list" data-rip-book-list>
+        {entries.map((entry, index) => (
+          <ListPanel
+            key={entry.segment}
+            entry={entry}
+            idPrefix={`${idPrefix}-${index}`}
+            options={options}
+            translation={translation}
+          />
+        ))}
+      </ul>
+    )
+  }
+
+  return (
+    <ul class="rip-grid" data-rip-book-list>
+      {entries.map((entry, index) => (
+        <CardPanel
+          key={entry.segment}
+          entry={entry}
+          idPrefix={`${idPrefix}-${index}`}
+          options={options}
+          translation={translation}
+        />
+      ))}
+    </ul>
   )
 }
 
@@ -328,53 +351,6 @@ function RootOverview({
   )
 }
 
-function BookCollection({
-  entries,
-  idPrefix,
-  layout,
-  options,
-  translation,
-}: {
-  entries: RenderEntry[]
-  idPrefix: string
-  layout: "cards" | "list"
-  options: ReturnType<typeof normalizeRootIndexPanelsOptions>
-  translation: RootIndexPanelsTranslation
-}) {
-  if (layout === "list") {
-    return (
-      <ul class="rip-list" data-rip-book-list>
-        {entries.map((entry, index) => (
-          <ListPanel
-            key={entry.segment}
-            entry={entry}
-            idPrefix={`${idPrefix}-${index}`}
-            showDescription={options.showDescription}
-            showDocCount={options.showDocCount}
-            translation={translation}
-          />
-        ))}
-      </ul>
-    )
-  }
-
-  return (
-    <ul class="rip-grid" data-rip-book-list>
-      {entries.map((entry, index) => (
-        <CardPanel
-          key={entry.segment}
-          entry={entry}
-          idPrefix={`${idPrefix}-${index}`}
-          showDescription={options.showDescription}
-          showDocCount={options.showDocCount}
-          showTags={options.showTags}
-          translation={translation}
-        />
-      ))}
-    </ul>
-  )
-}
-
 export default ((userOptions?: RootIndexPanelsOptions) => {
   const options = normalizeRootIndexPanelsOptions(userOptions)
 
@@ -387,7 +363,7 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
     if (fileData.slug !== "index") return <></>
 
     const translation = i18n(cfg.locale)
-    const entries: RenderEntry[] = collectBooks(allFiles, options).map((entry) => {
+    const entries = collectBooks(allFiles, options).map((entry): RenderEntry => {
       const formattedDate = formatUpdatedDate(entry.date, cfg.locale)
       return {
         ...entry,
@@ -398,12 +374,8 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
         dateIso: formattedDate?.iso,
       }
     })
-    const latestEntries = [...entries].sort(compareLatest).slice(0, 3)
-
+    const latestEntries = [...entries].sort((left, right) => right.date - left.date || compareTitle(left, right)).slice(0, 3)
     const showRootContent = hasRootContent(tree)
-    const rootContent = showRootContent
-      ? htmlToJsx(tree as Parameters<typeof htmlToJsx>[0])
-      : undefined
 
     return (
       <article class={rootArticleClass(fileData, options.layout)}>
@@ -419,7 +391,6 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
             <BookCollection
               entries={latestEntries}
               idPrefix="rip-latest-book"
-              layout={options.layout}
               options={options}
               translation={translation}
             />
@@ -427,7 +398,7 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
         )}
         {showRootContent && (
           <div class="rip-root-content markdown-preview-view markdown-rendered">
-            {rootContent}
+            {htmlToJsx(tree as Parameters<typeof htmlToJsx>[0])}
             <a class="rip-return-link" href="#rip-books">
               {translation.returnToLibrary}
               <span aria-hidden="true">↓</span>
@@ -458,7 +429,6 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
             <BookCollection
               entries={entries}
               idPrefix="rip-book"
-              layout={options.layout}
               options={options}
               translation={translation}
             />
@@ -468,7 +438,7 @@ export default ((userOptions?: RootIndexPanelsOptions) => {
     )
   }
 
-  RootIndexPanels.css = style
+  RootIndexPanels.css = `${style}\n${libraryStyle}`
   RootIndexPanels.afterDOMLoaded = script
   return RootIndexPanels
 }) satisfies QuartzComponentConstructor<RootIndexPanelsOptions>
