@@ -4,53 +4,41 @@ on:
   pull_request:
 
 jobs:
-  diagnose-next-configured-integration:
+  inspect-gitlab-template-deployment:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout synthetic merge
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "npm"
+      - name: Clone GitLab template
+        run: git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$RUNNER_TEMP/quartz-for-gitlab"
 
-      - name: Install plugin dependencies
-        run: npm ci
-
-      - name: Build plugin
-        run: npm run build
-
-      - name: Prepare configured Quartz integration host
+      - name: Collect deployment configuration
         run: |
           host="$RUNNER_TEMP/quartz-for-gitlab"
-          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
-          npm ci --prefix "$host"
-          (
-            cd "$host"
-            npx quartz plugin install --from-config
-          )
-          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
-          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
+          output="gitlab-template-deployment"
+          mkdir -p "$output/files"
 
-      - name: Run next configured integration diagnostic
-        id: integration
-        continue-on-error: true
-        run: |
-          set +e
-          npm run test:integration > next-configured-integration.log 2>&1
-          status=$?
-          printf '%s\n' "$status" > next-configured-integration.status
-          tail -n 120 next-configured-integration.log
-          exit "$status"
+          find "$host" -type f \
+            \( -name '.gitlab-ci.yml' -o -name 'quartz.config.yaml' -o -name 'quartz.ts' \
+               -o -name 'package.json' -o -name '*.sh' -o -name '*.mjs' -o -name '*.js' \
+               -o -name '*.ts' -o -name '*.yaml' -o -name '*.yml' \) \
+            -not -path '*/node_modules/*' -not -path '*/.git/*' \
+            -print0 | while IFS= read -r -d '' file; do
+              relative="${file#"$host"/}"
+              if grep -Eiq 'CI_PAGES_URL|CI_PROJECT_(PATH|NAME|NAMESPACE)|baseUrl|CNAME|utugit|pages' "$file"; then
+                mkdir -p "$output/files/$(dirname "$relative")"
+                cp "$file" "$output/files/$relative"
+              fi
+            done
 
-      - name: Upload next configured integration diagnostic
-        if: always()
+          grep -RInE 'CI_PAGES_URL|CI_PROJECT_(PATH|NAME|NAMESPACE)|baseUrl|CNAME|utugit|pages' "$host" \
+            --exclude-dir=.git --exclude-dir=node_modules > "$output/matches.txt" || true
+          git -C "$host" rev-parse HEAD > "$output/revision.txt"
+          find "$output" -type f -print | sort
+
+      - name: Upload deployment inspection
         uses: actions/upload-artifact@v7
         with:
-          name: next-configured-integration-log
-          path: |
-            next-configured-integration.log
-            next-configured-integration.status
-            quartz-host-revision.txt
+          name: gitlab-template-deployment
+          path: gitlab-template-deployment
