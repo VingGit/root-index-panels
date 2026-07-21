@@ -81,7 +81,7 @@ Prove one labelled navigation region and:
 - current note preservation while an ancestor is collapsed;
 - correct relative destinations under root, deep routes, and base-directory fixtures;
 - safe decorative hooks, distinct note/Canvas/Base SVGs, Explorer opt-in emission, and valid
-  zero/one/many/long-label states; and
+  zero/one/many/long-label states;
 - scoped book accents on selected rows, exact-current home, and collapsed hidden active paths without
   cross-book leakage; and
 - current backgrounds and rails stay inside the selected interactive row rather than applying to a

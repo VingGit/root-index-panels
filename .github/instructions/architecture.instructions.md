@@ -234,8 +234,8 @@ Select locale per render and fall back to English. Do not import Quartz private 
 hard-code reader-facing English in components.
 
 Cards/list reflow to one column, preserve forced-color focus, and remove nonessential motion under
-reduced-motion. Return actions never obscure narrow content. Folder rows, disclosures, switchers,
-links, and sort controls must remain keyboard accessible at zoom and mobile widths.
+reduced-motion. The Explore library action, folder rows, disclosures, switchers, links, and sort
+controls must remain keyboard accessible at zoom and mobile widths.
 
 ## Public API, build, and distribution
 
