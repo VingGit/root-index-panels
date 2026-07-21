@@ -1,3 +1,4 @@
+# One-time verified main-branch migration; removes itself after success.
 name: Apply FolderPage prerequisite
 
 on:
