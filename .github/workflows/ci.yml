@@ -38,7 +38,9 @@ jobs:
           path = Path("test/integration/parent-build.mjs")
           text = path.read_text()
           old = "for (const entry of fs.readdirSync(parentPlugins, { withFileTypes: true })) {"
-          new = "for (const entry of fs.existsSync(parentPlugins)\\n    ? fs.readdirSync(parentPlugins, { withFileTypes: true })\\n    : []) {"
+          new = """for (const entry of fs.existsSync(parentPlugins)
+            ? fs.readdirSync(parentPlugins, { withFileTypes: true })
+            : []) {"""
           if old in text:
               path.write_text(text.replace(old, new, 1))
           elif new not in text:
