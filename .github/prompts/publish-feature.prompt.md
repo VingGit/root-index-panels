@@ -5,7 +5,7 @@ agent: agent
 argument-hint: "Describe the completed feature, fix, or maintenance work"
 ---
 
-Publish the current completed work using the
+Publish `${input:scope:the current completed work}` using the
 [branch and publishing workflow](../instructions/publishing.instructions.md).
 
 1. confirm that the current branch is a temporary feature branch created from

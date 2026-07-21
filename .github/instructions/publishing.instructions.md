@@ -1,6 +1,6 @@
 ---
 name: Branch and publishing workflow
-description: Feature branches, commits, pull requests, cleanup, and releases
+description: Feature branches, commit identity, validation, pull requests, cleanup, and release boundaries
 applyTo: "**"
 ---
 
