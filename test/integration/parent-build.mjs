@@ -604,6 +604,11 @@ title: Authored nested index
 ---
 # Nested index
 `,
+  "content/java/nested/page.md": `---
+title: Nested Java page
+---
+# Nested page
+`,
   "content/java/private.md": `---
 title: Hidden Java page
 unlisted: true
@@ -670,8 +675,16 @@ function classCount(html, className) {
   return count
 }
 
+function librarySectionHtml(html) {
+  const start = html.indexOf('<section id="rip-books"')
+  const end = html.indexOf("</section>", start)
+  assert.ok(start >= 0 && end > start, "missing complete root library section")
+  return html.slice(start, end + "</section>".length)
+}
+
 function anchorForHref(html, href) {
-  for (const match of html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
+  const library = librarySectionHtml(html)
+  for (const match of library.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
     const openingTag = match[0].slice(0, match[0].indexOf(">") + 1)
     if (
       openingTag.includes(`href="${href}"`) &&
@@ -680,12 +693,13 @@ function anchorForHref(html, href) {
       return match[0]
     }
   }
-  assert.fail(`missing panel link ${href}`)
+  assert.fail(`missing complete-library panel link ${href}`)
 }
 
 function panelHrefs(html) {
+  const library = librarySectionHtml(html)
   const hrefs = []
-  for (const match of html.matchAll(/<a\b[^>]*>/g)) {
+  for (const match of library.matchAll(/<a\b[^>]*>/g)) {
     if (!/\bclass="[^"]*\brip-(?:card|list)-link\b/.test(match[0])) continue
     const href = match[0].match(/\bhref="([^"]+)"/)?.[1]
     if (href) hrefs.push(href)
@@ -1094,15 +1108,15 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.match(rootSwitcher, /class="rip-sidebar-switcher-label">Integration Root<\/span>/)
   assert.ok(
     rootSwitcher.includes(
-      `<p class="rip-sidebar-switcher-heading">${expectedLabels.switchManual}</p>`,
+      `<p class="rip-sidebar-switcher-heading">${expectedLabels.switchBook}</p>`,
     ),
-    "manual-switcher heading was not localized",
+    "book-switcher heading was not localized",
   )
   assert.match(rootSidebar, /class="rip-sidebar-home" href="\.\/" aria-current="page"/)
   assert.match(
     rootSwitcher,
     /class="rip-sidebar-home"[^>]*data-rip-selected="true"/,
-    "root manual must be selected on the root page",
+    "root scope must be selected on the root page",
   )
   assert.match(rootSidebar, /class="rip-sidebar-book-link" href="\.\/java\/"/)
   assert.ok(
@@ -1120,11 +1134,11 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     /<span class="rip-card-title"[^>]*>iOS<\/span>|<span class="rip-list-title"[^>]*>iOS<\/span>/,
   )
   assert.match(rootHtml, /Java authored description/)
-  const directoriesStart = bodyHtml.indexOf('<section id="rip-directories"')
+  const directoriesStart = bodyHtml.indexOf('<section id="rip-books"')
   const directoriesEnd = bodyHtml.indexOf("</section>", directoriesStart)
   assert.ok(
     directoriesStart >= 0 && directoriesEnd > directoriesStart,
-    "could not isolate the root directories section",
+    "could not isolate the complete root library section",
   )
   const directoriesHtml = bodyHtml.slice(directoriesStart, directoriesEnd + 10)
   assert.doesNotMatch(
@@ -1139,9 +1153,10 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
     "root overview must be the first direct child of the plugin body",
   )
   assert.ok(
-    bodyHtml.indexOf('class="rip-overview"') < bodyHtml.indexOf("ROOT BODY SENTINEL") &&
-      bodyHtml.indexOf("ROOT BODY SENTINEL") < bodyHtml.indexOf('id="rip-directories"'),
-    "root order must be overview, authored Markdown, then directories",
+    bodyHtml.indexOf('class="rip-overview"') < bodyHtml.indexOf('class="rip-latest"') &&
+      bodyHtml.indexOf('class="rip-latest"') < bodyHtml.indexOf("ROOT BODY SENTINEL") &&
+      bodyHtml.indexOf("ROOT BODY SENTINEL") < bodyHtml.indexOf('id="rip-books"'),
+    "root order must be overview, latest preview, authored Markdown, then the complete library",
   )
   assert.match(
     headHtml,
@@ -1158,12 +1173,16 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.equal(classCount(bodyHtml, "rip-stats"), 1, "root statistics must render once")
   assert.equal(classCount(bodyHtml, "rip-stat"), 3, "root statistics inventory drifted")
   assert.equal(classCount(bodyHtml, "rip-browse-link"), 1, "root browse link must render once")
-  assert.equal(classCount(bodyHtml, "rip-directories"), 1, "root directories section duplicated")
-  assert.match(bodyHtml, /class="rip-browse-link" href="#rip-directories"/)
-  assert.match(bodyHtml, /<dd>6<\/dd>/, "root directory statistic drifted")
+  assert.equal(
+    classCount(bodyHtml, "rip-directories"),
+    1,
+    "complete root library section duplicated",
+  )
+  assert.match(bodyHtml, /class="rip-browse-link" href="#rip-books"/)
+  assert.match(bodyHtml, /<dd>6<\/dd>/, "root book statistic drifted")
   assert.match(bodyHtml, /<dd>4<\/dd>/, "root total-note statistic drifted")
   assert.ok(
-    bodyHtml.includes(`<dd>${expectedUpdated}</dd>`),
+    bodyHtml.includes(`>${expectedUpdated}</time></dd>`),
     `root last-updated statistic drifted: ${expectedUpdated}`,
   )
   assert.equal(classCount(bodyHtml, "toc"), 1, "root authored Markdown lost its TOC")
@@ -1181,14 +1200,28 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.match(anchorForHref(rootHtml, "./safe/"), /data-rip-accent="direct"/)
   assert.match(anchorForHref(rootHtml, "./safe/"), /--rip-panel-accent: #1234/)
   if (classCount(rootHtml, "rip--cards") === 1) {
-    assert.equal(classCount(rootHtml, "rip-grid"), 1, "card grid must render once")
-    assert.equal(classCount(rootHtml, "rip-card"), expectedHrefs.length, "card count drifted")
+    const libraryHtml = librarySectionHtml(rootHtml)
+    assert.equal(classCount(rootHtml, "rip-grid"), 2, "latest and complete card grids must render")
+    assert.equal(
+      classCount(libraryHtml, "rip-card"),
+      expectedHrefs.length,
+      "complete card count drifted",
+    )
+    assert.ok(
+      classCount(rootHtml, "rip-card") <= expectedHrefs.length + 3,
+      "latest preview exceeded three cards",
+    )
     assert.match(anchorForHref(rootHtml, "./java/"), /#jvm/)
     assert.match(anchorForHref(rootHtml, "./java/"), /#language/)
     assert.doesNotMatch(anchorForHref(rootHtml, "./java/"), /#trimmed|#secret/)
   } else {
-    assert.equal(classCount(rootHtml, "rip-list"), 1, "list must render once")
-    assert.equal(classCount(rootHtml, "rip-list-item"), expectedHrefs.length, "list count drifted")
+    const libraryHtml = librarySectionHtml(rootHtml)
+    assert.equal(classCount(rootHtml, "rip-list"), 2, "latest and complete lists must render")
+    assert.equal(
+      classCount(libraryHtml, "rip-list-item"),
+      expectedHrefs.length,
+      "complete list count drifted",
+    )
     assert.equal(classCount(rootHtml, "rip-tags"), 0, "list layout must retain its tag-free markup")
   }
 
@@ -1244,18 +1277,23 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.equal(
     classCount(topicSwitcher, "rip-sidebar-selected-check"),
     1,
-    "book route must mark exactly one selected manual",
+    "book route must mark exactly one selected book",
   )
   assert.match(sidebarDocumentAnchorForHref(topicHtml, "../java/topic"), /aria-current="page"/)
   const topicDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/topic")
   assert.match(topicDocument, /data-rip-node-kind="note"/)
   assert.match(topicDocument, /data-rip-state="current"/)
   assert.match(topicDocument, /data-rip-icon="note"[\s\S]*?<svg\b/)
+  assert.doesNotMatch(topicScope, /rip-sidebar-book-overview-link|>Overview</)
   assert.match(
-    topicScope,
-    /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
+    topicSidebar,
+    /class="rip-sidebar-home-mark" href="\.\.\/java\/"[^>]*aria-label="Open iOS home"/,
   )
-  assert.match(sidebarDocumentAnchorForHref(topicHtml, "../java/"), /data-rip-node-kind="note"/)
+  assert.doesNotMatch(
+    topicSidebar.match(/<a\b[^>]*class="rip-sidebar-home-mark"[^>]*>/)?.[0] ?? "",
+    /aria-current=/,
+    "book home mark must be neutral on a descendant note",
+  )
   const canvasDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/integration-map.canvas")
   const baseDocument = sidebarDocumentAnchorForHref(topicHtml, "../java/integration-query.base")
   assert.match(canvasDocument, /data-rip-node-kind="canvas"/)
@@ -1272,11 +1310,20 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.notEqual(baseSvg, canvasSvg, "Base and Canvas pages must have distinct SVG glyphs")
   assert.match(
     topicScope,
-    /<li class="rip-sidebar-folder"><details open><summary>[\s\S]*?Authored nested index<\/span>/,
-    "inactive top-level folders must remain expanded",
+    /class="rip-sidebar-folder" data-rip-open="true"[\s\S]*?class="rip-sidebar-folder-link" href="\.\.\/java\/nested\/"[\s\S]*?Authored nested index<\/span>/,
+    "top-level nested folder must remain expanded and link to its landing page",
+  )
+  assert.match(
+    topicScope,
+    /class="rip-sidebar-disclosure" aria-expanded="true"[^>]*aria-controls="rip-sidebar-children-/,
+    "nested folder must expose an independent disclosure control",
+  )
+  assert.match(
+    sidebarDocumentAnchorForHref(topicHtml, "../java/nested/page"),
+    /data-rip-node-kind="note"/,
   )
   assert.doesNotMatch(topicScope, /Dotted directory guide|Loose root note/)
-  assertResolvesBelowBase("../java/", "java/topic", "/java/", "book Overview link")
+  assertResolvesBelowBase("../java/", "java/topic", "/java/", "book home link")
   assertResolvesBelowBase("../java/topic", "java/topic", "/java/topic", "current book note link")
   assertResolvesBelowBase(
     "../java/integration-map.canvas",
@@ -1403,7 +1450,7 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.equal(classCount(dottedHtml, "rip"), 0, "root Page Type leaked onto a second book")
   assertLeftCompanions(dottedHtml, "second book page")
   assertRightGraph(dottedHtml, "second book page")
-  assertResolvesBelowBase("../git.md/", "git.md/guide", "/git.md/", "second book Overview link")
+  assertResolvesBelowBase("../git.md/", "git.md/guide", "/git.md/", "second book home link")
 
   assertAssetReferencesResolve(rootPath, outputRoot)
   assertAssetReferencesResolve(topicPath, outputRoot)
@@ -1505,10 +1552,10 @@ function runIntegration() {
           "./custom/": ">0 notes</span>",
           "./generated/": ">1 note</span>",
           "./git.md/": ">1 note</span>",
-          "./java/": ">2 notes</span>",
+          "./java/": ">3 notes</span>",
         },
         "Jul 18, 2026",
-        { switchManual: "Switch manual", explorer: "Explorer" },
+        { switchBook: "Switch book", explorer: "Explorer" },
       )
       assert.match(anchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
       assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
@@ -1542,10 +1589,10 @@ function runIntegration() {
           "./custom/": "0 muistiinpanoa",
           "./generated/": "1 muistiinpano",
           "./git.md/": "1 muistiinpano",
-          "./java/": "2 muistiinpanoa",
+          "./java/": "3 muistiinpanoa",
         },
         "18.7.2026",
-        { switchManual: "Vaihda käsikirjaa", explorer: "Sisältöselain" },
+        { switchBook: "Vaihda kirjaa", explorer: "Sisältöselain" },
       )
       const custom = anchorForHref(rootHtml, "./custom/")
       assert.match(custom, /data-rip-icon="custom-mark"/)
@@ -1589,10 +1636,10 @@ function runIntegration() {
           "./custom/": ">0 notes</span>",
           "./generated/": ">1 note</span>",
           "./git.md/": ">1 note</span>",
-          "./java/": ">2 notes</span>",
+          "./java/": ">3 notes</span>",
         },
         "18 Jul 2026",
-        { switchManual: "Switch manual", explorer: "Explorer" },
+        { switchBook: "Switch book", explorer: "Explorer" },
       )
       assert.doesNotMatch(anchorForHref(rootHtml, "./custom/"), /data-rip-icon=|rip-panel-icon/)
       assert.doesNotMatch(
