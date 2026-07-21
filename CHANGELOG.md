@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidate repository agent instructions, reusable prompts, and technical references under `.github` on `main`.
+- Replace the permanent agent-development branch and cherry-pick workflow with temporary feature branches and pull requests.
+- Require human-only README content, repository-local noreply commit identity, Prettier before every push, synchronized documentation and generated artifacts, and deletion of merged feature branches.
+
+### Removed
+
+- Remove the obsolete branch-sync, filtered-diff, and automatic main-sync workflows.
+
 ## [0.1.1] - 2026-07-19
 
 ### Fixed
