@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/components/scripts/panels.inline.ts", () => ({ default: "" }))
 vi.mock("../src/components/styles/panels.scss", () => ({ default: "" }))
+vi.mock("../src/components/styles/root-library.scss", () => ({ default: "" }))
 vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "" }))
+vi.mock("../src/components/styles/sidebar-rework.scss", () => ({ default: "" }))
 
 import packageJson from "../package.json"
 import { validateManifest } from "../src/build/validate-manifest"
@@ -44,8 +46,8 @@ describe("plugin localization", () => {
   })
 
   it.each([
-    ["en-US", "No subdirectories found."],
-    ["fi-FI", "Alikansioita ei löytynyt."],
+    ["en-US", "No books found."],
+    ["fi-FI", "Kirjoja ei löytynyt."],
   ])("renders the exact %s empty state", (locale, expected) => {
     expect(renderPanels([physicalFile("index")], undefined, locale)).toContain(expected)
   })
@@ -55,13 +57,13 @@ describe("plugin localization", () => {
     const empty = renderPanels([physicalFile("index")], undefined, "sv-SE")
 
     expect(count).toContain(">1 note</span>")
-    expect(empty).toContain("No subdirectories found.")
+    expect(empty).toContain("No books found.")
   })
 
   it.each([
-    ["en-US", "directories", "total notes", "Browse directories"],
-    ["fi-FI", "hakemistoa", "muistiinpanoja", "Selaa hakemistoja"],
-  ])("localizes the %s root overview", (locale, directories, totalNotes, browse) => {
+    ["en-US", "books", "total notes", "Explore books", "All books"],
+    ["fi-FI", "kirjaa", "muistiinpanoja yhteensä", "Selaa kirjoja", "Kaikki kirjat"],
+  ])("localizes the %s root overview", (locale, books, totalNotes, explore, allBooks) => {
     const html = renderPanels(
       [
         physicalFile("git/index", { title: "Git" }),
@@ -74,10 +76,10 @@ describe("plugin localization", () => {
       locale,
     )
 
-    expect(html).toContain(`<dt>${directories}</dt><dd>2</dd>`)
+    expect(html).toContain(`<dt>${books}</dt><dd>2</dd>`)
     expect(html).toContain(`<dt>${totalNotes}</dt><dd>3</dd>`)
-    expect(html).toContain(`href="#rip-directories">${browse}`)
-    expect(html).toContain(`id="rip-directories-heading">${browse}</h2>`)
+    expect(html).toContain(`href="#rip-books">${explore}`)
+    expect(html).toContain(`id="rip-books-heading">${allBooks}</h2>`)
   })
 
   it("formats the newest overview date in UTC and omits an empty Markdown wrapper", () => {
@@ -90,7 +92,9 @@ describe("plugin localization", () => {
       physicalFile("java/topic"),
     ])
 
-    expect(html).toContain("<dt>last updated</dt><dd>Jan 3, 2024</dd>")
+    expect(html).toContain(
+      '<dt>last edited</dt><dd><time datetime="2024-01-03">Jan 3, 2024</time></dd>',
+    )
     expect(html).not.toContain("rip-root-content")
   })
 
@@ -100,7 +104,7 @@ describe("plugin localization", () => {
       physicalFile("java/topic"),
     ])
 
-    expect(html).not.toContain("<dt>last updated</dt>")
+    expect(html).not.toContain("<dt>last edited</dt>")
     expect(html).toContain("Java")
   })
 
@@ -204,15 +208,17 @@ describe("RootIndexPanelsPage", () => {
 
     const html = render(pageType.body()(props) as Parameters<typeof render>[0])
     const overviewIndex = html.indexOf('class="rip-overview"')
+    const latestIndex = html.indexOf('class="rip-latest"')
     const authoredIndex = html.indexOf('class="rip-root-content')
-    const directoriesIndex = html.indexOf('id="rip-directories"')
+    const booksIndex = html.indexOf('id="rip-books"')
     expect(html).toMatch(/<article class="[^"]*\brip\b[^"]*"><div class="rip-overview">/)
     expect(overviewIndex).toBeGreaterThan(-1)
-    expect(overviewIndex).toBeLessThan(authoredIndex)
-    expect(authoredIndex).toBeLessThan(directoriesIndex)
+    expect(overviewIndex).toBeLessThan(latestIndex)
+    expect(latestIndex).toBeLessThan(authoredIndex)
+    expect(authoredIndex).toBeLessThan(booksIndex)
     expect(html).toContain('id="root-heading"')
     expect(html).toContain("Authored root prose sentinel.")
-    expect(html).toContain('id="rip-directories"')
+    expect(html).toContain('id="rip-books"')
     expect(props.fileData).toBe(sharedFile)
     expect(props.fileData).toHaveProperty("toc")
     expect(props.fileData).toHaveProperty("readingTime")

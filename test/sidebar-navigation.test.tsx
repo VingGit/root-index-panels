@@ -3,6 +3,9 @@ import render from "preact-render-to-string"
 import { describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "sidebar-style" }))
+vi.mock("../src/components/styles/sidebar-rework.scss", () => ({
+  default: "sidebar-rework-style",
+}))
 vi.mock("../src/components/scripts/sidebar.inline.ts", () => ({ default: "sidebar-script" }))
 
 import RootIndexSidebar, { type RootIndexSidebarOptions } from "../src/components/RootIndexSidebar"
@@ -402,7 +405,7 @@ describe("RootIndexSidebar SSR", () => {
     expect(html).toContain('<span class="rip-sidebar-switcher-label">Home</span>')
     expect(html).toContain('class="rip-sidebar-root-icon" aria-hidden="true" inert')
     expect(html).toContain('class="rip-sidebar-switcher-chevron" aria-hidden="true" inert')
-    expect(menu).toContain('<p class="rip-sidebar-switcher-heading">Switch manual</p>')
+    expect(menu).toContain('<p class="rip-sidebar-switcher-heading">Switch book</p>')
     expect(menu.indexOf('class="rip-sidebar-home-list"')).toBeLessThan(
       menu.indexOf('class="rip-sidebar-switcher-divider"'),
     )
@@ -437,18 +440,18 @@ describe("RootIndexSidebar SSR", () => {
       /class="rip-sidebar-book-link" href="\.\.\/\.\.\/java\/"[^>]*data-rip-state="ancestor"[^>]*data-rip-selected="true"/,
     )
     expect(menu).toContain('class="rip-sidebar-selected-check"')
-    expect(menu).toContain(", selected manual</span>")
+    expect(menu).toContain(", selected book</span>")
     expect(html).toContain('data-rip-icon="coffee"')
     expect(html).toContain('data-rip-accent="ocean"')
     expect(html).toContain("--rip-sidebar-accent: #0f766e")
-    expect(scope).toMatch(/<details open>\s*<summary data-rip-state="ancestor">/)
+    expect(scope).toMatch(
+      /class="rip-sidebar-folder" data-rip-state="ancestor"[^>]*data-rip-open="true"/,
+    )
     expect(scope).toMatch(
       /href="\.\.\/\.\.\/java\/setup\/install" aria-current="page" data-rip-state="current"/,
     )
-    expect(scope).toMatch(
-      /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/\.\.\/java\/"[^>]*data-rip-state="ancestor"/,
-    )
-    expect(scope).toContain("Overview")
+    expect(scope).not.toContain("rip-sidebar-book-overview-link")
+    expect(scope).not.toContain(">Overview<")
     expect(scope).toContain("Java Topic")
     expect(scope).toContain('class="rip-sidebar-node-icon" aria-hidden="true" inert')
     expect(scope).not.toContain("Git Topic")
@@ -492,7 +495,7 @@ describe("RootIndexSidebar SSR", () => {
     expect(new Set([noteIcon, canvasIcon, baseIcon]).size).toBe(3)
   })
 
-  it("separates selected-manual context from the exact current page", () => {
+  it("separates selected-book context from the exact current page", () => {
     const rootNote = renderSidebar("loose", fixture())
     const rootMenu = switcherMenu(rootNote)
     expect(rootMenu).toMatch(/class="rip-sidebar-home" href="\.\/" data-rip-selected="true"/)
@@ -500,9 +503,10 @@ describe("RootIndexSidebar SSR", () => {
 
     const bookIndex = renderSidebar("java/index", fixture())
     const bookScope = sidebarScope(bookIndex)
-    expect(bookScope).toMatch(
-      /class="rip-sidebar-note-link rip-sidebar-book-overview-link" href="\.\.\/java\/" aria-current="page" data-rip-state="current"/,
+    expect(bookIndex).toMatch(
+      /class="rip-sidebar-home-mark" href="\.\.\/java\/"[^>]*aria-current="page" data-rip-state="current"/,
     )
+    expect(bookScope).not.toContain("rip-sidebar-book-overview-link")
     expect(switcherMenu(bookIndex)).toMatch(
       /class="rip-sidebar-book-link" href="\.\.\/java\/" aria-current="page" data-rip-state="current" data-rip-selected="true"/,
     )
@@ -533,12 +537,12 @@ describe("RootIndexSidebar SSR", () => {
     const scope = sidebarScope(renderSidebar("book/active/current", files))
 
     expect(scope).toMatch(
-      /<li class="rip-sidebar-folder"><details open><summary data-rip-state="ancestor">[\s\S]*?Active<\/span>/,
+      /class="rip-sidebar-folder" data-rip-state="ancestor"[^>]*data-rip-open="true"[\s\S]*?Active<\/span>/,
     )
+    expect(scope).toMatch(/class="rip-sidebar-folder" data-rip-open="true"[\s\S]*?Inactive<\/span>/)
     expect(scope).toMatch(
-      /<li class="rip-sidebar-folder"><details open><summary>[\s\S]*?Inactive<\/span>/,
+      /class="rip-sidebar-folder" data-rip-open="false"[\s\S]*?Deep<\/span>[\s\S]*?<ul[^>]* hidden>/,
     )
-    expect(scope).toMatch(/<li class="rip-sidebar-folder"><details><summary>[\s\S]*?Deep<\/span>/)
     expect(countOccurrences(scope, 'class="rip-sidebar-node-icon"')).toBeGreaterThan(4)
   })
 
@@ -561,7 +565,7 @@ describe("RootIndexSidebar SSR", () => {
     expect(html).not.toContain("data-rip-replace-explorer")
     expect(html).toContain(">Etusivu</span>")
     expect(html).toContain(">Kirjojen navigointi</summary>")
-    expect(html).toContain(">Vaihda käsikirjaa</p>")
+    expect(html).toContain(">Vaihda kirjaa</p>")
     expect(html).toContain('aria-label="Sisältöselain"')
     expect(html).toContain(">Sisältöselain</h2>")
   })
@@ -590,7 +594,7 @@ describe("RootIndexSidebar SSR", () => {
 
   it("attaches only the scoped stylesheet to the component", () => {
     const Sidebar = RootIndexSidebar()
-    expect(Sidebar.css).toBe("sidebar-style")
+    expect(Sidebar.css).toBe("sidebar-style\nsidebar-rework-style")
     expect(Sidebar.afterDOMLoaded).toBe("sidebar-script")
   })
 })

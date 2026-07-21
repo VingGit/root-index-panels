@@ -16,7 +16,8 @@ function renderAppearance(panel?: unknown, options?: RootIndexPanelsOptions | un
 }
 
 function appearancePanel(html: string): string {
-  const start = html.indexOf('<a href="./alpha/"')
+  const libraryStart = html.indexOf('id="rip-books"')
+  const start = html.indexOf('<a href="./alpha/"', libraryStart)
   const end = html.indexOf("</a>", start)
   return start >= 0 && end > start ? html.slice(start, end + 4) : ""
 }
@@ -68,10 +69,12 @@ describe.each(layouts)("appearance resolution and markup (%s)", (layout) => {
       { layout, accents: { brand: "#1a2b3c" } },
     )
 
-    expect(countOccurrences(html, 'data-rip-icon="terminal"')).toBe(1)
-    expect(countOccurrences(html, 'data-rip-accent="brand"')).toBe(1)
-    expect(countOccurrences(html, "--rip-panel-accent: #1a2b3c")).toBe(1)
-    expect(countOccurrences(html, "rip-panel-icon")).toBe(1)
+    // The newest preview and full library each render the same eligible book.
+    expect(countOccurrences(html, 'data-rip-icon="terminal"')).toBe(2)
+    expect(countOccurrences(html, 'data-rip-accent="brand"')).toBe(2)
+    expect(countOccurrences(html, "--rip-panel-accent: #1a2b3c")).toBe(2)
+    expect(countOccurrences(html, "rip-panel-icon")).toBe(2)
+    expect(html).not.toContain('data-rip-title="Beta" data-rip-accent')
   })
 })
 
@@ -368,14 +371,14 @@ describe.each(layouts)("decorative icon accessibility (%s)", (layout) => {
 
     expect(countOccurrences(panel, "<a ")).toBe(1)
     expect(countOccurrences(panel, "</a>")).toBe(1)
-    expect(panel).toContain('aria-labelledby="rip-panel-0-title"')
-    expect(panel).toContain('id="rip-panel-0-title">Alpha</span>')
-    expect(panel).toContain('aria-describedby="rip-panel-0-count"')
+    expect(panel).toContain('aria-labelledby="rip-book-0-title"')
+    expect(panel).toContain('id="rip-book-0-title">Alpha</span>')
+    expect(panel).toContain('aria-describedby="rip-book-0-count"')
     if (layout === "cards") {
       expect(panel).toContain('<span class="rip-count" aria-hidden="true">1</span>')
-      expect(panel).toContain('<span class="rip-sr-only" id="rip-panel-0-count">1 note</span>')
+      expect(panel).toContain('<span class="rip-sr-only" id="rip-book-0-count">1 note</span>')
     } else {
-      expect(panel).toContain('<span class="rip-count" id="rip-panel-0-count">1 note</span>')
+      expect(panel).toContain('<span class="rip-count" id="rip-book-0-count">1 note</span>')
     }
     expect(panel).not.toContain('aria-label="Alpha')
     expect(panel).toContain('<span class="rip-panel-icon" aria-hidden="true" inert>')

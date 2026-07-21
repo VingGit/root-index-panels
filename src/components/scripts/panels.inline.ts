@@ -51,7 +51,7 @@ function initLibrarySort(cleanups: Array<() => void>) {
 
   const sortItems = () => {
     const sort = control.value as LibrarySort
-    if (!( ["date-desc", "date-asc", "title-asc", "title-desc"] as const).includes(sort)) return
+    if (!(["date-desc", "date-asc", "title-asc", "title-desc"] as const).includes(sort)) return
     for (const item of [...items].sort((left, right) => compareBooks(left, right, sort))) {
       list.append(item.element)
     }
