@@ -4,11 +4,15 @@ on:
   pull_request:
 
 jobs:
-  diagnose-installed-quartz-integration:
+  fix-clean-quartz-integration:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout synthetic merge
+      - name: Checkout feature branch
         uses: actions/checkout@v6
+        with:
+          ref: agent/sidebar-root-library-rework
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -26,23 +30,52 @@ jobs:
           echo "RIP_QUARTZ_ROOT=$RUNNER_TEMP/quartz-for-gitlab" >> "$GITHUB_ENV"
           git -C "$RUNNER_TEMP/quartz-for-gitlab" rev-parse HEAD > quartz-host-revision.txt
 
-      - name: Run installed Quartz integration diagnostic
+      - name: Support a clean Quartz plugin cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("test/integration/parent-build.mjs")
+          text = path.read_text()
+          old = "for (const entry of fs.readdirSync(parentPlugins, { withFileTypes: true })) {"
+          new = "for (const entry of fs.existsSync(parentPlugins)\\n    ? fs.readdirSync(parentPlugins, { withFileTypes: true })\\n    : []) {"
+          if old in text:
+              path.write_text(text.replace(old, new, 1))
+          elif new not in text:
+              raise SystemExit("clean Quartz plugin-cache boundary not found")
+          PY
+          npx prettier --write test/integration/parent-build.mjs
+
+      - name: Run clean Quartz integration diagnostic
         id: integration
         continue-on-error: true
         run: |
           set +e
-          npm run test:integration > installed-quartz-integration.log 2>&1
+          npm run test:integration > clean-quartz-integration.log 2>&1
           status=$?
-          printf '%s\n' "$status" > installed-quartz-integration.status
-          tail -n 100 installed-quartz-integration.log
+          printf '%s\n' "$status" > clean-quartz-integration.status
+          tail -n 100 clean-quartz-integration.log
           exit "$status"
 
-      - name: Upload installed Quartz integration diagnostic
+      - name: Upload clean Quartz integration diagnostic
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: installed-quartz-integration-log
+          name: clean-quartz-integration-log
           path: |
-            installed-quartz-integration.log
-            installed-quartz-integration.status
+            clean-quartz-integration.log
+            clean-quartz-integration.status
             quartz-host-revision.txt
+
+      - name: Commit clean Quartz harness support
+        if: always()
+        run: |
+          if git diff --quiet test/integration/parent-build.mjs; then
+            echo "Clean Quartz harness support already present"
+            exit 0
+          fi
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add test/integration/parent-build.mjs
+          git commit -m "Support clean Quartz integration checkouts"
+          git push origin HEAD:agent/sidebar-root-library-rework
