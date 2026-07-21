@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  verify-config-scoped-quartz-bootstrap:
+  diagnose-configured-quartz-integration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout synthetic merge
@@ -32,13 +32,26 @@ jobs:
             npx quartz plugin install --from-config
           )
           echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
-          git -C "$host" rev-parse HEAD
+          git -C "$host" rev-parse HEAD > quartz-host-revision.txt
           test -f "$host/.quartz/plugins/index.ts"
 
-      - name: Run configured Quartz integration
+      - name: Run configured Quartz integration diagnostic
+        id: integration
+        continue-on-error: true
         run: |
           set +e
-          npm run test:integration > configured-integration.log 2>&1
+          npm run test:integration > configured-quartz-integration.log 2>&1
           status=$?
-          tail -n 200 configured-integration.log
+          printf '%s\n' "$status" > configured-quartz-integration.status
+          tail -n 120 configured-quartz-integration.log
           exit "$status"
+
+      - name: Upload configured Quartz integration diagnostic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: configured-quartz-integration-log
+          path: |
+            configured-quartz-integration.log
+            configured-quartz-integration.status
+            quartz-host-revision.txt
