@@ -59,16 +59,24 @@
   align-items: center;
   gap: 0.55rem;
   padding: 0.55rem 0.75rem;
-  border: 1px solid var(--lightgray);
+  border: 1px solid color-mix(in srgb, var(--secondary) 60%, var(--lightgray));
   border-radius: 0.45rem;
-  color: var(--gray);
-  background: var(--light);
+  color: var(--secondary);
+  background: color-mix(in srgb, var(--secondary) 13%, var(--light));
   font-size: 0.8rem;
+  font-weight: 650;
   text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 
   &:hover {
     border-color: var(--secondary);
-    color: var(--secondary);
+    background: color-mix(in srgb, var(--secondary) 21%, var(--light));
+    box-shadow: 0 0.25rem 0.8rem color-mix(in srgb, var(--secondary) 18%, transparent);
+    transform: translateY(-1px);
   }
 
   &:focus-visible {
@@ -405,6 +413,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .rip .rip-browse-link,
   .rip .rip-card-link,
   .rip .rip-card-link::before,
   .rip .rip-card-link::after,
@@ -413,6 +422,7 @@
     transition: none;
   }
 
+  .rip .rip-browse-link:hover,
   .rip--cards .rip-card-link:hover {
     transform: none;
   }

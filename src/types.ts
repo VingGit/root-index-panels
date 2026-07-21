@@ -19,7 +19,7 @@ export interface RootIndexPanelsOptions {
   excludeDirs?: string[]
   /** Description used when the selected book index has none. Default: `""`. */
   descriptionFallback?: string
-  /** Built-in or custom icon alias used when a book does not resolve one. */
+  /** Built-in or custom icon alias used when a book does not resolve one. Default: `book-open`. */
   defaultIcon?: string
   /** TypeScript-only custom SVG icon aliases. */
   icons?: Record<string, PanelIconComponent>

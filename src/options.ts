@@ -149,7 +149,8 @@ export function normalizeRootIndexPanelsOptions(
   const showDescription = ownDataValue(options, "showDescription")
   const showDocCount = ownDataValue(options, "showDocCount")
   const showTags = ownDataValue(options, "showTags")
-  const defaultIcon = normalizeRegistryIdentifier(ownDataValue(options, "defaultIcon")) ?? ""
+  const defaultIcon =
+    normalizeRegistryIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open"
   const icons = normalizeIconRegistry(ownDataValue(options, "icons"))
   const accents = normalizeAccentRegistry(ownDataValue(options, "accents"))
   const replaceExplorer = ownDataValue(options, "replaceExplorer")

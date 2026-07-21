@@ -80,7 +80,7 @@ plugins:
       excludeDirs:
         - archive
       descriptionFallback: ""
-      defaultIcon: ""
+      defaultIcon: book-open
       defaultAccent: theme
       accents:
         ocean: "var(--secondary)"
@@ -101,13 +101,16 @@ plugins:
 | `tagCount`            | `3`            | Maximum number of displayed tags.                                      |
 | `excludeDirs`         | `[]`           | First-level directories to omit; matching is case-sensitive.           |
 | `descriptionFallback` | `""`           | Text used when a book index has no description.                        |
-| `defaultIcon`         | `""`           | Built-in or TypeScript-registered icon used as a fallback.             |
+| `defaultIcon`         | `book-open`    | Built-in or TypeScript-registered icon used as a fallback.             |
 | `defaultAccent`       | `theme`        | `theme`, a named accent, or an allowed direct color.                   |
 | `accents`             | `{}`           | Named accent values available to book frontmatter.                     |
 | `replaceExplorer`     | `true`         | Replace stock Explorer beside this sidebar. Set `false` to show both.  |
 
 The reader can reorder the complete library by newest edit, oldest edit, ascending title, or
 descending title. This does not change the separate latest-three preview.
+
+Books without authored icon metadata use a theme-colored open-book mark in the root library and
+book switcher. Set `defaultIcon` to another built-in or TypeScript-registered alias to override it.
 
 `accents` works in YAML, although Quartz's current schema-driven editor cannot represent arbitrary
 maps. Later configuration surfaces replace the entire `accents` or `icons` map rather than merging
