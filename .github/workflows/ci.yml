@@ -53,36 +53,16 @@ jobs:
       - name: Verify packed package
         run: npm run verify:package
 
-      - name: Capture isolated Quartz integration
-        id: integration
-        continue-on-error: true
-        run: |
-          set +e
-          npm run test:integration > permanent-integration.log 2>&1
-          status=$?
-          printf '%s\n' "$status" > permanent-integration.status
-          cat permanent-integration.log
-          exit "$status"
-
-      - name: Upload isolated Quartz integration log
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: permanent-integration-log
-          path: |
-            permanent-integration.log
-            permanent-integration.status
+      - name: Test isolated Quartz integration
+        run: npm run test:integration
 
       - name: Test watch diagnostics
-        if: steps.integration.outcome == 'success'
         run: npm run test:watch-integration
 
       - name: Verify package contents
-        if: steps.integration.outcome == 'success'
         run: npm pack --dry-run
 
       - name: Check whitespace errors
-        if: steps.integration.outcome == 'success'
         run: git diff --check
 
   publish:
