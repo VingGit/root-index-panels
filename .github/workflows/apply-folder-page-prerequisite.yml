@@ -38,11 +38,21 @@ jobs:
           from pathlib import Path
           path = Path("scripts/apply-folder-page-prerequisite.py")
           source = path.read_text(encoding="utf-8")
-          old = 'raise SystemExit(f"{path}: expected one replacement target, found {count}")'
-          new = 'raise SystemExit(f"{path}: target={old[:160]!r}; expected one replacement target, found {count}")'
-          if source.count(old) != 1:
+
+          old_error = 'raise SystemExit(f"{path}: expected one replacement target, found {count}")'
+          new_error = 'raise SystemExit(f"{path}: target={old[:160]!r}; expected one replacement target, found {count}")'
+          if source.count(old_error) != 1:
               raise SystemExit("could not instrument patch helper")
-          path.write_text(source.replace(old, new), encoding="utf-8")
+          source = source.replace(old_error, new_error)
+
+          escaped_snippet = "    '''  process.stdout.write(`✓ ${label}\\n`)"
+          raw_snippet = "    r'''  process.stdout.write(`✓ ${label}\\n`)"
+          if source.count(escaped_snippet) != 2:
+              raise SystemExit(
+                  f"expected two JavaScript escape snippets, found {source.count(escaped_snippet)}"
+              )
+          source = source.replace(escaped_snippet, raw_snippet)
+          path.write_text(source, encoding="utf-8")
           PY
           set +e
           python scripts/apply-folder-page-prerequisite.py > prerequisite-patch.log 2>&1
