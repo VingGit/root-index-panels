@@ -1,14 +1,10 @@
-// RootIndexSidebar remains fully navigable without JavaScript. This small
-// enhancement gives its native disclosure the light-dismiss behavior expected
-// from a dropdown while preserving Quartz's SPA cleanup contract.
+// RootIndexSidebar keeps all navigation as ordinary SSR links. JavaScript only
+// enhances the book switcher dismissal and independent folder disclosures.
 
-export function initRootIndexSidebar() {
+function initSwitchers(cleanups: Array<() => void>) {
   const switchers = Array.from(
     document.querySelectorAll<HTMLDetailsElement>(".rip-sidebar .rip-sidebar-switcher"),
   )
-  if (switchers.length === 0) return
-
-  const cleanups: Array<() => void> = []
 
   for (const switcher of switchers) {
     const onToggle = () => {
@@ -30,6 +26,8 @@ export function initRootIndexSidebar() {
     })
   }
 
+  if (switchers.length === 0) return
+
   const onPointerDown = (event: PointerEvent) => {
     const target = event.target as Node | null
     if (!target) return
@@ -39,7 +37,6 @@ export function initRootIndexSidebar() {
   }
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "Escape") return
-
     const openSwitcher = switchers.find((switcher) => switcher.open)
     if (!openSwitcher) return
 
@@ -55,16 +52,43 @@ export function initRootIndexSidebar() {
     document.removeEventListener("pointerdown", onPointerDown)
     document.removeEventListener("keydown", onKeyDown)
   })
+}
+
+function initFolderDisclosures(cleanups: Array<() => void>) {
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>(".rip-sidebar [data-rip-disclosure]"),
+  )
+
+  for (const button of buttons) {
+    const onClick = () => {
+      const controls = button.getAttribute("aria-controls")
+      if (!controls) return
+      const children = document.getElementById(controls)
+      const folder = button.closest<HTMLElement>(".rip-sidebar-folder")
+      if (!children || !folder) return
+
+      const open = button.getAttribute("aria-expanded") === "true"
+      const nextOpen = !open
+      button.setAttribute("aria-expanded", String(nextOpen))
+      children.hidden = !nextOpen
+      folder.dataset.ripOpen = String(nextOpen)
+    }
+
+    button.addEventListener("click", onClick)
+    cleanups.push(() => button.removeEventListener("click", onClick))
+  }
+}
+
+export function initRootIndexSidebar() {
+  const cleanups: Array<() => void> = []
+  initSwitchers(cleanups)
+  initFolderDisclosures(cleanups)
 
   if (typeof window !== "undefined" && window.addCleanup) {
-    window.addCleanup(() => {
-      cleanups.forEach((cleanup) => cleanup())
-    })
+    window.addCleanup(() => cleanups.forEach((cleanup) => cleanup()))
   }
 }
 
 if (typeof document !== "undefined") {
-  document.addEventListener("nav", () => {
-    initRootIndexSidebar()
-  })
+  document.addEventListener("nav", () => initRootIndexSidebar())
 }
