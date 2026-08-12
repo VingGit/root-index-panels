@@ -126,8 +126,9 @@ invalidation boundary.
 
 ## Sidebar rendering and interaction
 
-The sidebar server-renders one labelled `<nav>` with ordinary links and lists. The mobile shell and
-book switcher may use native `<details>/<summary>`; folder navigation must not.
+The sidebar server-renders one labelled `<nav>` with ordinary links and lists. The root/book control
+stays directly visible at every viewport width; there is no outer responsive navigation shell. The
+book switcher and scoped Explorer may use native `<details>/<summary>`; folder navigation must not.
 
 The root/book control is split into:
 
@@ -136,6 +137,14 @@ The root/book control is split into:
 
 The home mark has a descriptive accessible name, tooltip, visible focus, compact localized badge,
 and exact-current rail. It becomes neutral when another note or folder in the same scope is active.
+
+The Explorer owns an initially open disclosure that remains available at every viewport width. On
+compact screens, an ordinary primary activation of an Explorer link closes the disclosure. A
+same-page activation prevents redundant navigation, then positions the first authored Markdown
+element at the viewport start; navigation to another route carries that intent across the Quartz
+`nav` lifecycle before positioning the destination. Desktop and modified-key activations retain
+normal link behavior. The selector and all server-rendered Explorer links remain usable without
+JavaScript.
 
 Each folder renders a row anchor and a separate disclosure button. The row opens the real folder
 index route. The button only toggles the already-rendered child list through `aria-expanded` and
@@ -149,9 +158,9 @@ accented closed chevron. Open folders return to the normal expanded treatment. N
 behave consistently.
 
 The switcher enhancement enforces one open selector, closes on selected link/outside pointer/Escape,
-and restores focus. Folder buttons and switchers initialize on Quartz `nav`; every installed listener
-is removed through `window.addCleanup`. Do not register empty cleanup callbacks when the component is
-absent.
+and restores focus. Folder buttons, switchers, and compact Explorer navigation initialize on Quartz
+`nav`; every installed listener is removed through `window.addCleanup`. Do not register empty cleanup
+callbacks when the component is absent.
 
 ## Scoped appearance
 

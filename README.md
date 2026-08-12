@@ -229,10 +229,15 @@ Each book card shows its latest accepted edit date when one is available.
 The sidebar separates navigation from switching:
 
 - the compact root or book mark opens the active landing page;
-- the adjacent selector changes the active book;
+- the adjacent selector changes the active book and remains directly visible at every screen width;
+- Explorer has its own disclosure instead of being wrapped with the selector;
 - a book's own `index.md` is not repeated as the first Explorer item;
 - a folder row opens that folder's real `index` route; and
 - the adjacent chevron only expands or collapses children.
+
+On compact screens, following an ordinary Explorer link closes Explorer and positions the destination
+at the first authored Markdown element. Desktop and modified-key link activations keep their normal
+behavior. All links and the book selector remain available without JavaScript.
 
 Collapsing a folder that contains the selected note does not navigate away. Its closed chevron and
 surface retain a muted book-accent cue so the hidden active path remains discoverable. Selected book

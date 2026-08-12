@@ -25,6 +25,35 @@ function renderSwitcher(name: string): HTMLDetailsElement {
   return nav.querySelector<HTMLDetailsElement>(".rip-sidebar-switcher")!
 }
 
+function renderExplorer({ current = false }: { current?: boolean } = {}): HTMLDetailsElement {
+  const nav = document.createElement("nav")
+  nav.className = "rip-sidebar"
+  nav.innerHTML = `
+    <section class="rip-sidebar-scope" aria-label="Explorer">
+      <details class="rip-sidebar-explorer" open>
+        <summary class="rip-sidebar-scope-title">Explorer</summary>
+        <ul class="rip-sidebar-tree">
+          <li><a href="/book/topic"${current ? ' aria-current="page"' : ""}>Topic</a></li>
+        </ul>
+      </details>
+    </section>
+  `
+  document.body.append(nav)
+  return nav.querySelector<HTMLDetailsElement>(".rip-sidebar-explorer")!
+}
+
+function setCompactNavigation(matches: boolean) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn(
+      () =>
+        ({
+          matches,
+        }) as MediaQueryList,
+    ),
+  })
+}
+
 function runCleanups() {
   const callbacks = cleanupCallbacks.splice(0)
   callbacks.forEach((cleanup) => cleanup())
@@ -35,6 +64,8 @@ beforeEach(() => {
   cleanupCallbacks = []
   addCleanup = vi.fn((cleanup: () => void) => cleanupCallbacks.push(cleanup))
   window.addCleanup = addCleanup
+  window.sessionStorage.clear()
+  setCompactNavigation(false)
 })
 
 afterEach(() => {
@@ -136,6 +167,106 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     second.open = true
     document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
     expect(second.open).toBe(false)
+  })
+
+  it("collapses compact Explorer navigation and positions the next page at authored content", () => {
+    setCompactNavigation(true)
+    const explorer = renderExplorer()
+    initRootIndexSidebar()
+
+    explorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
+    expect(explorer.open).toBe(false)
+
+    runCleanups()
+    document.body.replaceChildren()
+    const nextExplorer = renderExplorer()
+    const page = document.createElement("div")
+    page.className = "page"
+    page.dataset.frame = "default"
+    page.innerHTML = `
+      <div id="quartz-body">
+        <main class="center">
+          <article class="popover-hint">
+            <div class="markdown-preview-view markdown-rendered"><h1>First authored line</h1></div>
+          </article>
+        </main>
+      </div>
+    `
+    document.body.append(page)
+    const heading = page.querySelector<HTMLElement>("h1")!
+    heading.scrollIntoView = vi.fn()
+    window.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+
+    document.dispatchEvent(
+      new CustomEvent<{ url: FullSlug }>("nav", {
+        detail: { url: "book/topic" as FullSlug },
+      }),
+    )
+
+    expect(nextExplorer.open).toBe(false)
+    expect(heading.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
+  })
+
+  it("positions a compact current-page Explorer link without carrying navigation state", () => {
+    setCompactNavigation(true)
+    const explorer = renderExplorer({ current: true })
+    const page = document.createElement("div")
+    page.className = "page"
+    page.dataset.frame = "default"
+    page.innerHTML = `
+      <div id="quartz-body">
+        <main class="center">
+          <div class="markdown-preview-view markdown-rendered"><h1>First authored line</h1></div>
+        </main>
+      </div>
+    `
+    document.body.append(page)
+    const heading = page.querySelector<HTMLElement>("h1")!
+    heading.scrollIntoView = vi.fn()
+    window.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+    initRootIndexSidebar()
+
+    const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 })
+    explorer.querySelector("a")!.dispatchEvent(event)
+
+    expect(explorer.open).toBe(false)
+    expect(event.defaultPrevented).toBe(true)
+    expect(event.cancelBubble).toBe(true)
+    expect(heading.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" })
+    expect(window.sessionStorage.getItem("rip-sidebar-explorer-navigation")).toBeNull()
+  })
+
+  it("leaves Explorer open and does not reposition content outside compact navigation", () => {
+    const explorer = renderExplorer()
+    initRootIndexSidebar()
+
+    explorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
+
+    expect(explorer.open).toBe(true)
+    expect(window.sessionStorage.getItem("rip-sidebar-explorer-navigation")).toBeNull()
+  })
+
+  it("preserves modified compact Explorer activation for the browser", () => {
+    setCompactNavigation(true)
+    const explorer = renderExplorer()
+    initRootIndexSidebar()
+
+    explorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, ctrlKey: true }))
+
+    expect(explorer.open).toBe(true)
+    expect(window.sessionStorage.getItem("rip-sidebar-explorer-navigation")).toBeNull()
   })
 })
 
