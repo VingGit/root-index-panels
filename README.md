@@ -235,9 +235,9 @@ The sidebar separates navigation from switching:
 - a folder row opens that folder's real `index` route; and
 - the adjacent chevron only expands or collapses children.
 
-On compact screens, following an ordinary Explorer link closes Explorer and positions the destination
-at the first authored Markdown element. Desktop and modified-key link activations keep their normal
-behavior. All links and the book selector remain available without JavaScript.
+Navigation does not close Explorer or change the page scroll position. Canvas destinations render
+Explorer open when their outer drawer is opened. All links and the book selector remain available
+without JavaScript.
 
 Collapsing a folder that contains the selected note does not navigate away. Its closed chevron and
 surface retain a muted book-accent cue so the hidden active path remains discoverable. Selected book

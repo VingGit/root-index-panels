@@ -477,6 +477,7 @@ describe("RootIndexSidebar SSR", () => {
     const canvasScope = sidebarScope(renderSidebar("git-practice/history.canvas", files))
     const baseScope = sidebarScope(renderSidebar("sql-pocketbook/query-catalog.base", files))
 
+    expect(canvasScope).toContain('<details class="rip-sidebar-explorer" open>')
     expect(canvasScope).toMatch(
       /href="\.\.\/git-practice\/history\.canvas" aria-current="page" data-rip-state="current" data-rip-node-kind="canvas"/,
     )

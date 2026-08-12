@@ -1,54 +1,5 @@
 // RootIndexSidebar keeps all navigation as ordinary SSR links. JavaScript only
-// enhances disclosure behavior and compact Explorer navigation.
-
-const explorerNavigationKey = "rip-sidebar-explorer-navigation"
-let pendingExplorerNavigation = false
-
-function compactNavigationIsActive(): boolean {
-  try {
-    return window.matchMedia?.("(max-width: 800px)").matches ?? window.innerWidth <= 800
-  } catch {
-    return window.innerWidth <= 800
-  }
-}
-
-function rememberExplorerNavigation() {
-  pendingExplorerNavigation = true
-  try {
-    window.sessionStorage?.setItem(explorerNavigationKey, "true")
-  } catch {
-    // The in-memory flag still covers Quartz SPA navigation when storage is unavailable.
-  }
-}
-
-function consumeExplorerNavigation(): boolean {
-  let stored = false
-  try {
-    stored = window.sessionStorage?.getItem(explorerNavigationKey) === "true"
-    window.sessionStorage?.removeItem(explorerNavigationKey)
-  } catch {
-    // Fall back to the in-memory flag.
-  }
-
-  const shouldPositionContent = pendingExplorerNavigation || stored
-  pendingExplorerNavigation = false
-  return shouldPositionContent
-}
-
-function positionFirstAuthoredLine() {
-  const position = () => {
-    const firstAuthoredElement = document.querySelector<HTMLElement>(
-      '.page[data-frame="default"] > #quartz-body > .center .markdown-preview-view.markdown-rendered > :first-child',
-    )
-    firstAuthoredElement?.scrollIntoView({ behavior: "auto", block: "start" })
-  }
-
-  if (typeof window.requestAnimationFrame === "function") {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(position))
-  } else {
-    window.setTimeout(position, 0)
-  }
-}
+// enhances book switcher dismissal and independent folder disclosures.
 
 function initSwitchers(cleanups: Array<() => void>) {
   const switchers = Array.from(
@@ -128,55 +79,9 @@ function initFolderDisclosures(cleanups: Array<() => void>) {
   }
 }
 
-function initExplorerNavigation(cleanups: Array<() => void>) {
-  const explorers = Array.from(
-    document.querySelectorAll<HTMLDetailsElement>(".rip-sidebar .rip-sidebar-explorer"),
-  )
-
-  for (const explorer of explorers) {
-    const onClick = (event: MouseEvent) => {
-      if (
-        event.defaultPrevented ||
-        !compactNavigationIsActive() ||
-        event.button !== 0 ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey
-      ) {
-        return
-      }
-
-      const target = event.target as { closest?: (selector: string) => Element | null } | null
-      const link = target?.closest?.("a")
-      if (!link || !explorer.contains(link)) return
-
-      explorer.open = false
-      if (link.getAttribute("aria-current") === "page") {
-        event.preventDefault()
-        event.stopPropagation()
-        positionFirstAuthoredLine()
-      } else {
-        rememberExplorerNavigation()
-      }
-    }
-
-    explorer.addEventListener("click", onClick)
-    cleanups.push(() => explorer.removeEventListener("click", onClick))
-  }
-
-  if (consumeExplorerNavigation()) {
-    explorers.forEach((explorer) => {
-      explorer.open = false
-    })
-    positionFirstAuthoredLine()
-  }
-}
-
 export function initRootIndexSidebar() {
   const cleanups: Array<() => void> = []
   initSwitchers(cleanups)
-  initExplorerNavigation(cleanups)
   initFolderDisclosures(cleanups)
 
   if (cleanups.length > 0 && typeof window !== "undefined" && window.addCleanup) {

@@ -1477,6 +1477,7 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   const canvasScope = sidebarScopeHtml(canvasHtml)
   assert.match(canvasSidebar, /data-rip-replace-explorer="true"/)
   assert.match(canvasSidebar, /data-rip-scope="book"/)
+  assert.match(canvasScope, /<details class="rip-sidebar-explorer" open>/)
   const currentCanvasDocument = sidebarDocumentAnchorForHref(
     canvasHtml,
     "../java/integration-map.canvas",
