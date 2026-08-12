@@ -39,7 +39,6 @@
   border-radius: 0.45rem;
 }
 
-.rip-sidebar-shell,
 .rip-sidebar-content {
   width: 100%;
   min-width: 0;
@@ -47,10 +46,6 @@
 
 .rip-sidebar-content {
   position: relative;
-}
-
-.rip-sidebar-toggle {
-  display: none;
 }
 
 .rip-sidebar-home {
@@ -118,7 +113,7 @@
 
 .rip-sidebar-switcher > summary::-webkit-details-marker,
 .rip-sidebar-folder > details > summary::-webkit-details-marker,
-.rip-sidebar-toggle::-webkit-details-marker {
+.rip-sidebar-scope-title::-webkit-details-marker {
   display: none;
 }
 
@@ -257,7 +252,7 @@
   padding: 0.42rem 0.6rem;
 }
 
-.rip-sidebar-switcher[open] + .rip-sidebar-scope {
+.rip-sidebar-book-control:has(> .rip-sidebar-switcher[open]) + .rip-sidebar-scope {
   visibility: hidden;
   pointer-events: none;
 }
@@ -267,15 +262,48 @@
   margin-top: 0.95rem;
 }
 
+.rip-sidebar-explorer {
+  min-width: 0;
+}
+
 .rip-sidebar-scope-title {
-  margin: 0 0 0.35rem;
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
   padding-inline: 0.6rem;
   color: var(--gray);
+  cursor: pointer;
   font-family: var(--codeFont);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.1em;
+  list-style: none;
   text-transform: uppercase;
+}
+
+.rip-sidebar-scope-title::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  flex: 0 0 0.42rem;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  content: "";
+  transform: rotate(-45deg);
+  transition: transform 120ms ease;
+}
+
+.rip-sidebar-scope-title > h2 {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.rip-sidebar-explorer[open] > .rip-sidebar-scope-title::before {
+  transform: rotate(45deg);
 }
 
 .rip-sidebar-tree {
@@ -362,12 +390,6 @@
   display: none;
 }
 
-@media (min-width: 801px) {
-  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {
-    display: block;
-  }
-}
-
 @media (min-width: 800px) and (max-width: 1200px) {
   .page[data-frame="default"]:has(> #quartz-body > .left.sidebar > .rip-sidebar) > #quartz-body {
     grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
@@ -394,24 +416,6 @@
     padding-top: 0.5rem;
   }
 
-  .rip-sidebar-toggle {
-    display: flex;
-    min-height: 2.75rem;
-    align-items: center;
-    padding: 0.55rem 0.65rem;
-    border: 1px solid var(--lightgray);
-    border-radius: 0.45rem;
-    color: var(--dark);
-    cursor: pointer;
-    font-family: var(--headerFont);
-    font-weight: 650;
-    list-style: none;
-  }
-
-  .rip-sidebar-shell:not([open]) > .rip-sidebar-content {
-    display: none;
-  }
-
   .rip-sidebar-content {
     padding-top: 0.35rem;
   }
@@ -427,6 +431,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .rip-sidebar-switcher > summary,
+  .rip-sidebar-scope-title::before,
   .rip-sidebar-folder > details > summary::before {
     transition: none;
   }

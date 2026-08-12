@@ -326,70 +326,71 @@ export default ((userOptions?: RootIndexSidebarOptions) => {
         data-rip-scope={scope.kind}
         {...(selectedBook ? panelAttributes(selectedBook.panel, options) : {})}
       >
-        <details class="rip-sidebar-shell" open>
-          <summary class="rip-sidebar-toggle">{translation.sidebarNavigation}</summary>
-          <div class="rip-sidebar-content">
-            <div class="rip-sidebar-book-control">
-              <HomeMark
-                current={current}
-                selectedBook={selectedBook}
-                options={options}
-                rootTitle={rootTitle}
-                translation={translation}
-              />
-              <details class="rip-sidebar-switcher">
-                <summary data-rip-selected="true">
-                  <span class="rip-sidebar-switcher-label">{selectedBook?.title ?? rootTitle}</span>
-                  <SidebarGlyph
-                    className="rip-sidebar-switcher-chevron"
-                    icon={sidebarIcons.chevronsUpDown}
-                    size={13}
-                  />
-                </summary>
-                <div class="rip-sidebar-switcher-menu">
-                  <p class="rip-sidebar-switcher-heading">{translation.switchBook}</p>
-                  <ul class="rip-sidebar-home-list">
-                    <li>
-                      <a
-                        class="rip-sidebar-home"
-                        href={resolveRelative(current, "index" as FullSlug)}
-                        aria-current={rootState === "current" ? "page" : undefined}
-                        data-rip-state={rootState}
-                        data-rip-selected={rootSelected ? "true" : undefined}
-                      >
-                        <SidebarGlyph className="rip-sidebar-root-icon" icon={sidebarIcons.home} />
-                        <span class="rip-sidebar-link-label">{rootTitle}</span>
-                        {rootSelected && (
-                          <SidebarGlyph
-                            className="rip-sidebar-selected-check"
-                            icon={sidebarIcons.check}
-                            size={13}
-                          />
-                        )}
-                      </a>
-                    </li>
-                  </ul>
-                  <div class="rip-sidebar-switcher-divider" role="separator" />
-                  <ul class="rip-sidebar-books">
-                    {model.books.map((book) => (
-                      <li key={book.segment}>
-                        <BookLink
-                          book={book}
-                          current={current}
-                          options={options}
-                          selected={book.segment === selectedBook?.segment}
-                          translation={translation}
+        <div class="rip-sidebar-content">
+          <div class="rip-sidebar-book-control">
+            <HomeMark
+              current={current}
+              selectedBook={selectedBook}
+              options={options}
+              rootTitle={rootTitle}
+              translation={translation}
+            />
+            <details class="rip-sidebar-switcher">
+              <summary data-rip-selected="true">
+                <span class="rip-sidebar-switcher-label">{selectedBook?.title ?? rootTitle}</span>
+                <SidebarGlyph
+                  className="rip-sidebar-switcher-chevron"
+                  icon={sidebarIcons.chevronsUpDown}
+                  size={13}
+                />
+              </summary>
+              <div class="rip-sidebar-switcher-menu">
+                <p class="rip-sidebar-switcher-heading">{translation.switchBook}</p>
+                <ul class="rip-sidebar-home-list">
+                  <li>
+                    <a
+                      class="rip-sidebar-home"
+                      href={resolveRelative(current, "index" as FullSlug)}
+                      aria-current={rootState === "current" ? "page" : undefined}
+                      data-rip-state={rootState}
+                      data-rip-selected={rootSelected ? "true" : undefined}
+                    >
+                      <SidebarGlyph className="rip-sidebar-root-icon" icon={sidebarIcons.home} />
+                      <span class="rip-sidebar-link-label">{rootTitle}</span>
+                      {rootSelected && (
+                        <SidebarGlyph
+                          className="rip-sidebar-selected-check"
+                          icon={sidebarIcons.check}
+                          size={13}
                         />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </details>
-            </div>
+                      )}
+                    </a>
+                  </li>
+                </ul>
+                <div class="rip-sidebar-switcher-divider" role="separator" />
+                <ul class="rip-sidebar-books">
+                  {model.books.map((book) => (
+                    <li key={book.segment}>
+                      <BookLink
+                        book={book}
+                        current={current}
+                        options={options}
+                        selected={book.segment === selectedBook?.segment}
+                        translation={translation}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          </div>
 
-            {(scope.kind === "book" || scope.children.length > 0) && (
-              <section class="rip-sidebar-scope" aria-label={translation.explorer}>
-                <h2 class="rip-sidebar-scope-title">{translation.explorer}</h2>
+          {(scope.kind === "book" || scope.children.length > 0) && (
+            <section class="rip-sidebar-scope" aria-label={translation.explorer}>
+              <details class="rip-sidebar-explorer" open>
+                <summary class="rip-sidebar-scope-title">
+                  <h2>{translation.explorer}</h2>
+                </summary>
                 <ul class="rip-sidebar-tree">
                   {scope.children.map((node, index) => (
                     <NavigationNode
@@ -402,10 +403,10 @@ export default ((userOptions?: RootIndexSidebarOptions) => {
                     />
                   ))}
                 </ul>
-              </section>
-            )}
-          </div>
-        </details>
+              </details>
+            </section>
+          )}
+        </div>
       </nav>
     )
   }

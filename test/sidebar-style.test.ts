@@ -30,7 +30,7 @@ describe("RootIndexSidebar Explorer replacement styles", () => {
       /\.rip-sidebar-books\s*{[\s\S]*?max-height:\s*min\(14rem, calc\(100dvh - 12rem\)\);[\s\S]*?overflow-y:\s*auto;[\s\S]*?overscroll-behavior:\s*contain;/,
     )
     expect(styleSource).toMatch(
-      /\.rip-sidebar-switcher\[open\] \+ \.rip-sidebar-scope\s*{[\s\S]*?visibility:\s*hidden;[\s\S]*?pointer-events:\s*none;/,
+      /\.rip-sidebar-book-control:has\(> \.rip-sidebar-switcher\[open\]\) \+ \.rip-sidebar-scope\s*{[\s\S]*?visibility:\s*hidden;[\s\S]*?pointer-events:\s*none;/,
     )
   })
 
@@ -84,26 +84,27 @@ describe("RootIndexSidebar Explorer replacement styles", () => {
     )
   })
 
-  it("uses a contained native shell disclosure at the mobile breakpoint", () => {
+  it("keeps the selector visible and makes only Explorer collapsible", () => {
     expect(styleSource).toContain("@media (max-width: 800px)")
-    expect(styleSource).toContain(".rip-sidebar-toggle")
+    expect(styleSource).not.toContain(".rip-sidebar-toggle")
+    expect(styleSource).not.toContain(".rip-sidebar-shell")
+    expect(styleSource).toContain(".rip-sidebar-explorer")
+    expect(styleSource).toContain(".rip-sidebar-scope-title")
     expect(styleSource).toContain("min-height: 2.75rem")
     expect(styleSource).toMatch(
       /\.rip-sidebar-home,[\s\S]*?\.rip-sidebar-overview-link\s*{[\s\S]*?min-height:\s*2\.75rem/,
     )
-    expect(styleSource).toMatch(
-      /\.rip-sidebar-folder\s*>\s*details\s*>\s*summary\s*{[\s\S]*?min-height:\s*2\.75rem/,
-    )
-    expect(styleSource).toContain(".rip-sidebar-shell:not([open]) > .rip-sidebar-content")
+    expect(reworkStyleSource).toMatch(/\.rip-sidebar-folder-link,[\s\S]*?min-height:\s*2\.75rem/)
     expect(styleSource).toMatch(
       /\.left\.sidebar:has\(> \.rip-sidebar\)\s*{[\s\S]*?min-width:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?max-width:\s*100%;[\s\S]*?flex-wrap:\s*wrap;[\s\S]*?overflow-wrap:\s*anywhere;/,
     )
   })
 
-  it("cannot strand a mobile-collapsed shell when the viewport widens", () => {
+  it("keeps Explorer's reopening summary available at every viewport width", () => {
     expect(styleSource).toMatch(
-      /@media \(min-width: 801px\)[\s\S]*?\.rip-sidebar-shell:not\(\[open\]\)\s*>\s*\.rip-sidebar-content\s*{[\s\S]*?display:\s*block;/,
+      /\.rip-sidebar-scope-title\s*{[\s\S]*?display:\s*flex;[\s\S]*?min-height:\s*2\.75rem/,
     )
+    expect(styleSource).not.toContain("@media (min-width: 801px)")
   })
   it("contains current backgrounds and rails to interactive rows", () => {
     expect(styleSource).not.toContain('.rip-sidebar [data-rip-state="current"]')

@@ -71,6 +71,8 @@ Prove:
 Prove one labelled navigation region and:
 
 - a compact root/book home anchor plus adjacent native book switcher;
+- no outer responsive disclosure around the selector and Explorer;
+- an initially open scoped Explorer disclosure whose summary remains available at every width;
 - descriptive home accessible names/tooltips, localized badge, exact-current `aria-current`, and
   active/neutral transitions;
 - exactly one selected switcher entry with localized hidden selected text;
@@ -102,10 +104,10 @@ Host-shaped DOM/CSS checks must leave Search, PageTitle, toolbars, Graph, TOC, B
 slot, unrelated navigation, and custom frames untouched. Root breadcrumbs remain normal. Reject
 JavaScript that queries or rewrites Explorer, Breadcrumbs, or right-side components.
 
-Verify desktop/tablet/mobile display, native mobile close then wide resize, long labels, switcher
-popup containment, per-entry accent isolation, print, forced colors, reduced motion, and coarse
-pointers. The switcher menu must reset the selected book's inherited custom accent while preserving
-book-specific overrides. Freeze the card radial
+Verify desktop/tablet/mobile display, independently closable Explorer state through wide resize, long
+labels, switcher popup containment, per-entry accent isolation, print, forced colors, reduced motion,
+and coarse pointers. Obsolete outer-shell controls must be absent. The switcher menu must reset the
+selected book's inherited custom accent while preserving book-specific overrides. Freeze the card radial
 gradient, bottom hairline, 300ms opacity, focus parity, two-pixel lift, and absence of the superseded
 accent-border/title hover.
 
@@ -114,7 +116,8 @@ back, multiple/zero matching components, no duplicate listeners, and no empty cl
 Panel navigation covers modified-key rejection and Arrow/Home/End boundaries. Sorting covers invalid
 values and all four modes. Sidebar covers one-open switcher behavior, selected-link close, outside
 pointer, Escape focus restoration, folder disclosure, active-ancestor collapse without navigation,
-and cleanup.
+compact Explorer close plus same-route and post-navigation content positioning, desktop and
+modified-key exclusions, and cleanup.
 
 ## Manifest, API, distribution, and package
 
@@ -169,6 +172,9 @@ Verify:
 
 - selector opening causes zero Explorer layout shift, stays within the viewport, disables covered
   underlay, and restores focus correctly;
+- the selector remains directly visible at compact widths, while the Explorer independently closes
+  and an ordinary compact link positions the destination at its first authored Markdown element;
+- desktop and modified-key Explorer activations retain their normal disclosure and scroll behavior;
 - root → book → folder landing → nested note → collapse ancestor → other book → root preserves route,
   Back/Forward semantics, one component/listener set, and no console/network errors;
 - keyboard, pointer, touch, no-JS, SPA, 200%/400% zoom, long labels, Unicode, light/dark, forced colors,

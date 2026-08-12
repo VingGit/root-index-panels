@@ -397,8 +397,10 @@ describe("RootIndexSidebar SSR", () => {
 
     expect(html).toContain('<nav class="rip-sidebar"')
     expect(html).toContain('aria-label="Book navigation"')
+    expect(html).not.toContain('class="rip-sidebar-shell"')
+    expect(html).not.toContain('class="rip-sidebar-toggle"')
     expect(html).toContain(
-      '<details class="rip-sidebar-shell" open><summary class="rip-sidebar-toggle">Book navigation</summary>',
+      '<section class="rip-sidebar-scope" aria-label="Explorer"><details class="rip-sidebar-explorer" open><summary class="rip-sidebar-scope-title"><h2>Explorer</h2></summary>',
     )
     expect(html).toMatch(/class="rip-sidebar-home" href="\.\/" aria-current="page"/)
     expect(html).toContain('<details class="rip-sidebar-switcher">')
@@ -564,7 +566,7 @@ describe("RootIndexSidebar SSR", () => {
     expect(html).toContain('aria-label="Kirjojen navigointi"')
     expect(html).not.toContain("data-rip-replace-explorer")
     expect(html).toContain(">Etusivu</span>")
-    expect(html).toContain(">Kirjojen navigointi</summary>")
+    expect(html).not.toContain(">Kirjojen navigointi</summary>")
     expect(html).toContain(">Vaihda kirjaa</p>")
     expect(html).toContain('aria-label="Sisältöselain"')
     expect(html).toContain(">Sisältöselain</h2>")

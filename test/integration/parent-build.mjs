@@ -1027,8 +1027,7 @@ function assertResponsiveContainmentCss(outputRoot) {
   const frameSelector =
     ".page[data-frame=default]:has(>#quartz-body>.left.sidebar>.rip-sidebar)>#quartz-body"
   const leftSelector = ".left.sidebar:has(>.rip-sidebar)"
-  const shellContentSelector = ".rip-sidebar-shell:not([open])>.rip-sidebar-content"
-  const wideMedia = "@media(min-width:801px)"
+  const explorerSummarySelector = ".rip-sidebar-scope-title"
   const tabletMedia = "@media(min-width:800px)and(max-width:1200px)"
   const mobileMedia = "@media(max-width:800px)"
 
@@ -1062,13 +1061,15 @@ function assertResponsiveContainmentCss(outputRoot) {
     )
   }
 
-  const wideShellRules = atRuleBodies(css, wideMedia).flatMap((body) =>
-    ruleBodies(body, shellContentSelector),
-  )
+  const explorerSummaryRules = ruleBodies(css, explorerSummarySelector)
   assert.ok(
-    wideShellRules.some((body) => body.includes("display:block")),
-    "emitted CSS can strand a mobile-collapsed sidebar shell after widening",
+    explorerSummaryRules.some(
+      (body) => body.includes("display:flex") && body.includes("min-height:2.75rem"),
+    ),
+    "emitted CSS lost the always-available Explorer disclosure summary",
   )
+  assert.ok(!css.includes(".rip-sidebar-shell"), "emitted CSS retained the obsolete sidebar shell")
+  assert.ok(!css.includes(".rip-sidebar-toggle"), "emitted CSS retained the obsolete mobile toggle")
 
   const pluginScopedSelectors = [...css.matchAll(/([^{}]+)\{[^{}]*\}/g)]
     .map((match) => match[1])
@@ -1098,7 +1099,10 @@ function assertDesignCss(outputRoot) {
     "emitted switcher menu is no longer an overlay",
   )
 
-  const hiddenScopeRules = ruleBodies(css, ".rip-sidebar-switcher[open]+.rip-sidebar-scope")
+  const hiddenScopeRules = ruleBodies(
+    css,
+    ".rip-sidebar-book-control:has(>.rip-sidebar-switcher[open])+.rip-sidebar-scope",
+  )
   assert.ok(
     hiddenScopeRules.some(
       (body) => body.includes("visibility:hidden") && body.includes("pointer-events:none"),
@@ -1202,6 +1206,17 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.ok(
     rootScope.includes(`aria-label="${expectedLabels.explorer}"`),
     "Explorer label was not localized",
+  )
+  assert.ok(
+    rootScope.includes(
+      `<details class="rip-sidebar-explorer" open><summary class="rip-sidebar-scope-title"><h2>${expectedLabels.explorer}</h2></summary>`,
+    ),
+    "Explorer must own the independently collapsible native disclosure",
+  )
+  assert.doesNotMatch(
+    rootSidebar,
+    /rip-sidebar-(?:shell|toggle)/,
+    "the obsolete whole-sidebar mobile disclosure returned",
   )
   assert.match(rootScope, /Loose root note/)
   assert.match(rootScope, /WRONG ROOT JAVA METADATA/)
