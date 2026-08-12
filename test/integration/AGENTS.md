@@ -21,6 +21,8 @@
 - Exercise the public CLI remove/add flow rather than constructing a successful plugin cache state by assertion alone.
 - Use real Quartz builds for Page Type arbitration, plugin option surfaces, locale behavior, Preact identity, SPA/no-SPA assets, and base-path/subdirectory hosting.
 - Verify the manifest-driven left sidebar layout, scoped Explorer replacement, authored root body, and right-side Graph together in the real host frame.
+- Select repeated destinations through component-specific hooks; a book route may appear in the
+  sidebar, latest preview, and complete library simultaneously.
 - Keep known watch invalidation evidence separate from deployment gates: full builds are authoritative.
 
 ## Verification

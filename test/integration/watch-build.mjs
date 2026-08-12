@@ -342,16 +342,14 @@ function rootHtml() {
 }
 
 function javaPanel(html) {
-  const hrefIndex = html.indexOf('href="./java/"')
-  assert.notEqual(
-    hrefIndex,
-    -1,
+  const panel = html.match(
+    /<a(?=[^>]*class="rip-card-link")(?=[^>]*href="\.\/java\/")[^>]*>[\s\S]*?<\/a>/,
+  )?.[0]
+  assert.ok(
+    panel,
     `root output is missing the Java book panel; rendered Root Index Panels fragment: ${html.match(/<div class="rip[\s\S]{0,1000}/)?.[0] ?? "none"}`,
   )
-  const start = html.lastIndexOf("<a", hrefIndex)
-  const end = html.indexOf("</a>", hrefIndex)
-  assert.ok(start >= 0 && end > hrefIndex, "could not isolate the Java book panel")
-  return html.slice(start, end + 4)
+  return panel
 }
 
 function panelCount(html) {
