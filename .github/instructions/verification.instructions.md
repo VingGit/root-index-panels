@@ -101,8 +101,9 @@ Freeze the five permitted host-selector kinds and fail on additional host suppre
 5. exact default-frame book-scope breadcrumb rule hiding only the redundant non-only first element.
 
 Host-shaped DOM/CSS checks must leave Search, PageTitle, toolbars, Graph, TOC, Backlinks, the right
-slot, unrelated navigation, and custom frames untouched. Root breadcrumbs remain normal. Reject
-JavaScript that queries or rewrites Explorer, Breadcrumbs, or right-side components.
+slot, unrelated navigation, and custom frames untouched. Root breadcrumbs remain normal. JavaScript
+may change only this plugin's `.rip-sidebar-explorer` disclosure for the compact navigation contract;
+reject queries or rewrites of stock Explorer, Breadcrumbs, or right-side components.
 
 Verify desktop/tablet/mobile display, independently closable Explorer state through wide resize, long
 labels, switcher popup containment, per-entry accent isolation, print, forced colors, reduced motion,
@@ -116,8 +117,9 @@ back, multiple/zero matching components, no duplicate listeners, and no empty cl
 Panel navigation covers modified-key rejection and Arrow/Home/End boundaries. Sorting covers invalid
 values and all four modes. Sidebar covers one-open switcher behavior, selected-link close, outside
 pointer, Escape focus restoration, folder disclosure, active-ancestor collapse without navigation,
-Explorer state preservation across ordinary and Canvas navigation, absence of plugin-owned scroll
-positioning or navigation state, and cleanup.
+compact ordinary-page Explorer close before and after SPA navigation, desktop/current/modified/Canvas
+state preservation, absence of plugin-owned scroll positioning or persistent navigation state, and
+cleanup.
 
 ## Manifest, API, distribution, and package
 
@@ -172,8 +174,8 @@ Verify:
 
 - selector opening causes zero Explorer layout shift, stays within the viewport, disables covered
   underlay, and restores focus correctly;
-- the selector remains directly visible at compact widths and Explorer navigation leaves its
-  disclosure and the page scroll position untouched;
+- the selector remains directly visible at compact widths; ordinary Explorer page navigation closes
+  its disclosure without changing scroll, while desktop/current/modified activations leave it open;
 - Canvas destinations render Explorer open after direct loads and SPA navigation from any link;
 - root → book → folder landing → nested note → collapse ancestor → other book → root preserves route,
   Back/Forward semantics, one component/listener set, and no console/network errors;

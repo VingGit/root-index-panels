@@ -235,9 +235,10 @@ The sidebar separates navigation from switching:
 - a folder row opens that folder's real `index` route; and
 - the adjacent chevron only expands or collapses children.
 
-Navigation does not close Explorer or change the page scroll position. Canvas destinations render
-Explorer open when their outer drawer is opened. All links and the book selector remain available
-without JavaScript.
+At widths up to `800px`, following an ordinary Explorer page closes Explorer without changing the
+page scroll position. Wider screens, current-page or modified-key activations, and Canvas navigation
+leave Explorer open. Canvas destinations render Explorer open when their outer drawer is opened. All
+links and the book selector remain available without JavaScript.
 
 Collapsing a folder that contains the selected note does not navigate away. Its closed chevron and
 surface retain a muted book-accent cue so the hidden active path remains discoverable. Selected book

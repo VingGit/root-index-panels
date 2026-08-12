@@ -25,7 +25,15 @@ function renderSwitcher(name: string): HTMLDetailsElement {
   return nav.querySelector<HTMLDetailsElement>(".rip-sidebar-switcher")!
 }
 
-function renderExplorer({ canvas = false }: { canvas?: boolean } = {}): HTMLDetailsElement {
+function renderExplorer({
+  canvas = false,
+  current = false,
+  kind = "note",
+}: {
+  canvas?: boolean
+  current?: boolean
+  kind?: "note" | "canvas"
+} = {}): HTMLDetailsElement {
   const frame = document.createElement("div")
   frame.className = "page"
   frame.dataset.frame = canvas ? "canvas" : "default"
@@ -38,7 +46,7 @@ function renderExplorer({ canvas = false }: { canvas?: boolean } = {}): HTMLDeta
       <details class="rip-sidebar-explorer" open>
         <summary class="rip-sidebar-scope-title">Explorer</summary>
         <ul class="rip-sidebar-tree">
-          <li><a href="/book/history.canvas">History Canvas</a></li>
+          <li><a href="${kind === "canvas" ? "/book/history.canvas" : "/book/topic"}" data-rip-node-kind="${kind}"${current ? ' aria-current="page"' : ""}>Destination</a></li>
         </ul>
       </details>
     </section>
@@ -47,6 +55,18 @@ function renderExplorer({ canvas = false }: { canvas?: boolean } = {}): HTMLDeta
   container.append(nav)
   document.body.append(frame)
   return nav.querySelector<HTMLDetailsElement>(".rip-sidebar-explorer")!
+}
+
+function setCompactExplorer(matches: boolean) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: vi.fn(
+      () =>
+        ({
+          matches,
+        }) as MediaQueryList,
+    ),
+  })
 }
 
 function runCleanups() {
@@ -59,6 +79,8 @@ beforeEach(() => {
   cleanupCallbacks = []
   addCleanup = vi.fn((cleanup: () => void) => cleanupCallbacks.push(cleanup))
   window.addCleanup = addCleanup
+  setCompactExplorer(false)
+  window.history.replaceState({}, "", "/")
 })
 
 afterEach(() => {
@@ -162,7 +184,30 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     expect(second.open).toBe(false)
   })
 
-  it("leaves Explorer open while navigating to and rendering a Canvas page", () => {
+  it("closes Explorer after compact navigation to an ordinary page without changing scroll", () => {
+    setCompactExplorer(true)
+    const sourceExplorer = renderExplorer()
+    initRootIndexSidebar()
+
+    sourceExplorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
+    expect(sourceExplorer.open).toBe(false)
+
+    runCleanups()
+    document.body.replaceChildren()
+    const destinationExplorer = renderExplorer()
+    window.history.replaceState({}, "", "/book/topic")
+    document.dispatchEvent(
+      new CustomEvent<{ url: FullSlug }>("nav", {
+        detail: { url: "book/topic" as FullSlug },
+      }),
+    )
+
+    expect(destinationExplorer.open).toBe(false)
+  })
+
+  it("leaves Explorer open during desktop ordinary-page navigation", () => {
     const sourceExplorer = renderExplorer()
     initRootIndexSidebar()
 
@@ -170,10 +215,51 @@ describe("RootIndexSidebar dropdown enhancement", () => {
       .querySelector("a")!
       .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
     expect(sourceExplorer.open).toBe(true)
-    expect(addCleanup).not.toHaveBeenCalled()
 
+    runCleanups()
+    document.body.replaceChildren()
+    const destinationExplorer = renderExplorer()
+    window.history.replaceState({}, "", "/book/topic")
+    document.dispatchEvent(
+      new CustomEvent<{ url: FullSlug }>("nav", {
+        detail: { url: "book/topic" as FullSlug },
+      }),
+    )
+
+    expect(destinationExplorer.open).toBe(true)
+  })
+
+  it("preserves current-page and modified compact Explorer activations", () => {
+    setCompactExplorer(true)
+    const currentExplorer = renderExplorer({ current: true })
+    const modifiedExplorer = renderExplorer()
+    initRootIndexSidebar()
+
+    currentExplorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
+    modifiedExplorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, ctrlKey: true }))
+
+    expect(currentExplorer.open).toBe(true)
+    expect(modifiedExplorer.open).toBe(true)
+  })
+
+  it("leaves Explorer open while navigating to and rendering a Canvas page", () => {
+    setCompactExplorer(true)
+    const sourceExplorer = renderExplorer({ kind: "canvas" })
+    initRootIndexSidebar()
+
+    sourceExplorer
+      .querySelector("a")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
+    expect(sourceExplorer.open).toBe(true)
+
+    runCleanups()
     document.body.replaceChildren()
     const canvasExplorer = renderExplorer({ canvas: true })
+    window.history.replaceState({}, "", "/book/history.canvas")
 
     document.dispatchEvent(
       new CustomEvent<{ url: FullSlug }>("nav", {
@@ -182,7 +268,6 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     )
 
     expect(canvasExplorer.open).toBe(true)
-    expect(addCleanup).not.toHaveBeenCalled()
   })
 })
 
