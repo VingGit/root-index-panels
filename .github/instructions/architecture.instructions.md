@@ -138,14 +138,15 @@ The root/book control is split into:
 The home mark has a descriptive accessible name, tooltip, visible focus, compact localized badge,
 and exact-current rail. It becomes neutral when another note or folder in the same scope is active.
 
-The Explorer owns an initially open disclosure that remains available at every viewport width. At
-`max-width: 800px`, ordinary primary activation of a non-current, non-Canvas Explorer page closes
-the source disclosure and carries only its destination path in memory so the completed Quartz SPA
-navigation closes the destination disclosure too. Desktop, modified-key, current-page, and Canvas
-activations leave Explorer open. Navigation never changes the page scroll position or persists
-navigation intent in browser storage. Every destination server-renders Explorer open; the reader's
-explicit Explorer toggle remains independent of the Canvas drawer. The selector and all
-server-rendered Explorer links remain usable without JavaScript.
+The Explorer owns an initially open server-rendered disclosure that remains available at every
+viewport width. At `max-width: 800px`, initialization after every Quartz navigation closes Explorer
+on default-frame destinations unless the exact-current home mark identifies a root or book landing.
+This destination rule applies equally to Explorer, authored-content, Backlinks, direct-load, and
+Back/Forward navigation. Ordinary primary Explorer activation also closes the source immediately.
+Desktop, root/book landing, modified-key, current-page, and Canvas states remain open. Navigation
+never changes the page scroll position or persists navigation intent in browser storage. An explicit
+Explorer toggle remains independent of the Canvas drawer. The selector and all server-rendered
+Explorer links remain usable without JavaScript.
 
 Each folder renders a row anchor and a separate disclosure button. The row opens the real folder
 index route. The button only toggles the already-rendered child list through `aria-expanded` and

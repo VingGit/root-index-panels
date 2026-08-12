@@ -29,10 +29,12 @@ function renderExplorer({
   canvas = false,
   current = false,
   kind = "note",
+  landing = false,
 }: {
   canvas?: boolean
   current?: boolean
   kind?: "note" | "canvas"
+  landing?: boolean
 } = {}): HTMLDetailsElement {
   const frame = document.createElement("div")
   frame.className = "page"
@@ -42,6 +44,7 @@ function renderExplorer({
   const nav = document.createElement("nav")
   nav.className = "rip-sidebar"
   nav.innerHTML = `
+    <a class="rip-sidebar-home-mark" href="/book/"${landing ? ' aria-current="page"' : ""}>Home</a>
     <section class="rip-sidebar-scope" aria-label="Explorer">
       <details class="rip-sidebar-explorer" open>
         <summary class="rip-sidebar-scope-title">Explorer</summary>
@@ -184,11 +187,13 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     expect(second.open).toBe(false)
   })
 
-  it("closes Explorer after compact navigation to an ordinary page without changing scroll", () => {
+  it("closes compact non-landing Explorer after every navigation source", () => {
     setCompactExplorer(true)
     const sourceExplorer = renderExplorer()
     initRootIndexSidebar()
+    expect(sourceExplorer.open).toBe(false)
 
+    sourceExplorer.open = true
     sourceExplorer
       .querySelector("a")!
       .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
@@ -205,6 +210,14 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     )
 
     expect(destinationExplorer.open).toBe(false)
+  })
+
+  it("leaves compact book and root landing Explorers open", () => {
+    setCompactExplorer(true)
+    const landingExplorer = renderExplorer({ landing: true })
+    initRootIndexSidebar()
+
+    expect(landingExplorer.open).toBe(true)
   })
 
   it("leaves Explorer open during desktop ordinary-page navigation", () => {
@@ -235,6 +248,9 @@ describe("RootIndexSidebar dropdown enhancement", () => {
     const modifiedExplorer = renderExplorer()
     initRootIndexSidebar()
 
+    currentExplorer.open = true
+    modifiedExplorer.open = true
+
     currentExplorer
       .querySelector("a")!
       .dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }))
@@ -248,7 +264,7 @@ describe("RootIndexSidebar dropdown enhancement", () => {
 
   it("leaves Explorer open while navigating to and rendering a Canvas page", () => {
     setCompactExplorer(true)
-    const sourceExplorer = renderExplorer({ kind: "canvas" })
+    const sourceExplorer = renderExplorer({ kind: "canvas", landing: true })
     initRootIndexSidebar()
 
     sourceExplorer

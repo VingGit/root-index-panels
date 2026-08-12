@@ -2,8 +2,6 @@
 // enhances book switcher dismissal, compact Explorer dismissal, and independent
 // folder disclosures.
 
-let pendingCompactExplorerPath: string | undefined
-
 function compactExplorerIsActive(): boolean {
   try {
     return window.matchMedia?.("(max-width: 800px)").matches ?? window.innerWidth <= 800
@@ -95,16 +93,12 @@ function initExplorerNavigation(cleanups: Array<() => void>) {
     document.querySelectorAll<HTMLDetailsElement>(".rip-sidebar .rip-sidebar-explorer"),
   )
 
-  if (pendingCompactExplorerPath !== undefined) {
-    const destinationPath = pendingCompactExplorerPath
-    pendingCompactExplorerPath = undefined
-    if (
-      window.location.pathname === destinationPath &&
-      !document.querySelector('.page[data-frame="canvas"]')
-    ) {
-      explorers.forEach((explorer) => {
-        explorer.open = false
-      })
+  if (compactExplorerIsActive()) {
+    for (const explorer of explorers) {
+      const sidebar = explorer.closest<HTMLElement>(".rip-sidebar")
+      const canvasFrame = explorer.closest<HTMLElement>('.page[data-frame="canvas"]')
+      const landingPage = sidebar?.querySelector('.rip-sidebar-home-mark[aria-current="page"]')
+      if (!canvasFrame && !landingPage) explorer.open = false
     }
   }
 
@@ -133,7 +127,6 @@ function initExplorerNavigation(cleanups: Array<() => void>) {
         return
       }
 
-      pendingCompactExplorerPath = new URL(link.href, window.location.href).pathname
       explorer.open = false
     }
 

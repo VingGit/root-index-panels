@@ -17,8 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Keep the book selector directly visible at every width, make Explorer independently collapsible,
-  close it after compact ordinary-page navigation without changing page scroll, and leave it open
-  for desktop and Canvas navigation.
+  close it on compact non-landing destinations regardless of navigation source without changing page
+  scroll, and leave it open for root/book landings, desktop, and Canvas navigation.
 - Declare `github:quartz-community/folder-page` as a required Quartz-plugin prerequisite and reject
   builds where its configuration entry is missing.
 - Rename the primary root action to “Explore library” and keep it visibly highlighted with a

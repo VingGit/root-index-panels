@@ -117,9 +117,10 @@ back, multiple/zero matching components, no duplicate listeners, and no empty cl
 Panel navigation covers modified-key rejection and Arrow/Home/End boundaries. Sorting covers invalid
 values and all four modes. Sidebar covers one-open switcher behavior, selected-link close, outside
 pointer, Escape focus restoration, folder disclosure, active-ancestor collapse without navigation,
-compact ordinary-page Explorer close before and after SPA navigation, desktop/current/modified/Canvas
-state preservation, absence of plugin-owned scroll positioning or persistent navigation state, and
-cleanup.
+compact non-landing Explorer close on initial and repeated navigation from Explorer, authored links,
+and Backlinks; immediate ordinary Explorer-source close; root/book landing and
+desktop/current/modified/Canvas state preservation; absence of plugin-owned scroll positioning or
+persistent navigation state; and cleanup.
 
 ## Manifest, API, distribution, and package
 
@@ -174,8 +175,9 @@ Verify:
 
 - selector opening causes zero Explorer layout shift, stays within the viewport, disables covered
   underlay, and restores focus correctly;
-- the selector remains directly visible at compact widths; ordinary Explorer page navigation closes
-  its disclosure without changing scroll, while desktop/current/modified activations leave it open;
+- the selector remains directly visible at compact widths; every default-frame non-landing
+  destination closes Explorer regardless of source without changing scroll, while root/book landing,
+  desktop/current/modified states leave it open;
 - Canvas destinations render Explorer open after direct loads and SPA navigation from any link;
 - root → book → folder landing → nested note → collapse ancestor → other book → root preserves route,
   Back/Forward semantics, one component/listener set, and no console/network errors;
