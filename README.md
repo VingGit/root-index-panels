@@ -43,7 +43,7 @@ books. A book's count includes its listed Markdown descendants but not its own `
 ```bash
 npx quartz plugin add @quartz-community/folder-page
 npx quartz plugin enable folder-page
-npx quartz plugin add github:VingGit/root-index-panels
+npx quartz plugin add @vinggit/root-index-panels
 npx quartz plugin enable root-index-panels
 ```
 
@@ -77,10 +77,10 @@ Edit the generated entry in `quartz.config.yaml`:
 
 ```yaml
 plugins:
-  - source: @quartz-community/folder-page
+  - source: "@quartz-community/folder-page"
     enabled: true
 
-  - source: github:VingGit/root-index-panels
+  - source: "@vinggit/root-index-panels"
     enabled: true
     options:
       layout: cards

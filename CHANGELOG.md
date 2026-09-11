@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-11
+
 ### Changed
 
 - Publish future releases from the personal npm scope `@vinggit/root-index-panels` and use the npm-published `@quartz-community/folder-page` dependency source.
@@ -75,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/VingGit/root-index-panels/releases/tag/v0.2.0
 [0.1.1]: https://github.com/VingGit/root-index-panels/releases/tag/v0.1.1
