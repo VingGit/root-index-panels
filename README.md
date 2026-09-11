@@ -177,8 +177,10 @@ color-inheriting SVG masks from jsDelivr using the same exact Lucide version pin
 They therefore require the reader's browser and Content Security Policy to allow image requests to
 `cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons remain self-contained and make no
 external icon request. The repository checks npm daily and advances the exact Lucide pin to the
-newest release only after the package checks and Quartz integration suites pass. If a newly released
-icon is unavailable in your checkout, update the plugin before treating the icon as missing.
+newest release only after the package checks and Quartz integration suites pass. Each successful
+Lucide update advances the plugin's minor version, tags that release, publishes it to npm, and creates
+the matching GitHub release. If a newly released icon is unavailable in your checkout, update the
+plugin before treating the icon as missing.
 
 You can also use the direct form as the plugin fallback:
 

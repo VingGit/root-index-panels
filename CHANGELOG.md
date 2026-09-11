@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `user-group` to the bundled Lucide icon aliases.
-- Add a daily GitHub Actions maintenance job that updates `lucide-preact` to the latest npm release, regenerates and verifies the package, runs the Quartz integration suites, and commits only a verified dependency bump to `main`.
+- Add a daily GitHub Actions maintenance job that updates `lucide-preact` to the latest npm release, regenerates and verifies the package, runs the Quartz integration suites, advances the plugin minor version, tags it, and dispatches the npm/GitHub release pipeline.
 
 ### Changed
 
