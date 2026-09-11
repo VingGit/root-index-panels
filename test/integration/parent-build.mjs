@@ -575,8 +575,8 @@ function assertFolderPageDependencyFailure() {
     ],
     "missing FolderPage dependency rejected",
     [
-      /requires "folder-page"/,
-      /npx quartz plugin add github:quartz-community\/folder-page/,
+      /requires "@quartz-community\/folder-page"/,
+      /npx quartz plugin add @quartz-community\/folder-page/,
       /Plugin dependency validation failed/,
     ],
   )
