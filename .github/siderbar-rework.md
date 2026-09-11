@@ -6,7 +6,7 @@ argument-hint: "Apply the sidebar and root-library rework described here"
 ---
 
 Implement the version 14–23 sidebar and root-library rework in
-`@quartz-community/root-index-panels`.
+`@vinggit/root-index-panels`.
 
 Read [`AGENT_README.md`](./AGENT_README.md),
 [`copilot-instructions.md`](./copilot-instructions.md), the applicable files under

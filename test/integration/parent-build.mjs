@@ -132,10 +132,7 @@ function copyQuartzSource() {
 }
 
 function stageHost() {
-  assert.equal(
-    readJson(path.join(pluginRoot, "package.json")).name,
-    "@quartz-community/root-index-panels",
-  )
+  assert.equal(readJson(path.join(pluginRoot, "package.json")).name, "@vinggit/root-index-panels")
   assert.ok(
     fs.existsSync(path.join(pluginRoot, "dist", "index.js")),
     "build plugin dist/ before integration",
@@ -370,7 +367,7 @@ function pluginEntries(rootSource, rootOptions, includeFolderPage = true) {
 
   return includeFolderPage
     ? entries
-    : entries.filter((entry) => entry.source !== "github:quartz-community/folder-page")
+    : entries.filter((entry) => entry.source !== "@quartz-community/folder-page")
 }
 
 function configuration({ locale, enableSPA }) {

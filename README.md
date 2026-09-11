@@ -9,7 +9,7 @@ readers return to the current book landing page, switch books, and browse that b
 Your Quartz site must:
 
 - contain `content/index.md`; and
-- have `github:quartz-community/folder-page` installed and enabled.
+- have `@quartz-community/folder-page` installed and enabled.
 
 FolderPage is a required Quartz-plugin prerequisite. Quartz ContentPage intentionally excludes every
 slug ending in `/index`; FolderPage is the Page Type that emits book and nested-folder landing pages.
@@ -41,7 +41,7 @@ books. A book's count includes its listed Markdown descendants but not its own `
 ## Installation
 
 ```bash
-npx quartz plugin add github:quartz-community/folder-page
+npx quartz plugin add @quartz-community/folder-page
 npx quartz plugin enable folder-page
 npx quartz plugin add github:VingGit/root-index-panels
 npx quartz plugin enable root-index-panels
@@ -55,11 +55,13 @@ The installer adds one component, `RootIndexSidebar`, to the left layout at prio
 page body is supplied separately by the plugin's Page Type; do not add `RootIndexPanels` to a layout
 slot.
 
-To update an existing installation to the latest revision:
+To update an npm installation to the latest published release:
 
 ```bash
-npx quartz plugin install --latest root-index-panels
+npm install @vinggit/root-index-panels@latest
 ```
+
+Git-source installs remain supported for development and testing, but npm is the canonical release channel.
 
 To disable, re-enable, or remove it:
 
@@ -75,7 +77,7 @@ Edit the generated entry in `quartz.config.yaml`:
 
 ```yaml
 plugins:
-  - source: github:quartz-community/folder-page
+  - source: @quartz-community/folder-page
     enabled: true
 
   - source: github:VingGit/root-index-panels
@@ -336,7 +338,7 @@ npm run test:watch-integration
 npm pack --dry-run
 ```
 
-`dist/` is committed because GitHub installations consume the prebuilt package.
+`dist/` is committed so Git-source installs can consume the prebuilt package; npm releases ship the same built output.
 
 ## License
 

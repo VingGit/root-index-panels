@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Publish future releases from the personal npm scope `@vinggit/root-index-panels` and use the npm-published `@quartz-community/folder-page` dependency source.
+- Make built-in icon generation insensitive to LF versus CRLF working-tree line endings so checks behave consistently on Windows.
+
 ## [0.2.0] - 2026-09-11
 
 ### Added

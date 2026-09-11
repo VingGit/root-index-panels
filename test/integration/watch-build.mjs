@@ -128,10 +128,7 @@ function copyCurrentPluginPackage(destination) {
 }
 
 function stageHost() {
-  assert.equal(
-    readJson(path.join(pluginRoot, "package.json")).name,
-    "@quartz-community/root-index-panels",
-  )
+  assert.equal(readJson(path.join(pluginRoot, "package.json")).name, "@vinggit/root-index-panels")
   assert.ok(
     fs.existsSync(path.join(pluginRoot, "dist", "index.js")),
     "build plugin dist/ before running the watch diagnostic",

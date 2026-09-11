@@ -131,7 +131,7 @@ Assert:
 - sidebar metadata/version/default left position/priority and boolean `replaceExplorer` schema/default
   are aligned;
 - `packageJson.quartz.dependencies` is exactly
-  `["github:quartz-community/folder-page"]` in source and the packed artifact;
+  `["@quartz-community/folder-page"]` in source and the packed artifact;
 - no manifest entry registers `RootIndexPanels`, but built root, `./components`, and `./types` expose
   every documented runtime/type export;
 - validators, declarations, source maps, side effects/resources, dependency graph, notices, CI, the
