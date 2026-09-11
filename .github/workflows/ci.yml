@@ -105,6 +105,11 @@ jobs:
       - name: Show npm version
         run: npm --version
 
+      - name: Refresh release lockfile with registry packages
+        run: |
+          rm package-lock.json
+          npm install --package-lock-only --ignore-scripts
+
       - name: Install dependencies
         run: npm ci
 
