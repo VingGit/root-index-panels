@@ -56,6 +56,18 @@ jobs:
 
             if (file === "README.md") {
               text = text.replace(
+                "npx quartz plugin add github:VingGit/root-index-panels",
+                "npx quartz plugin add @vinggit/root-index-panels",
+              )
+              text = text.replace(
+                "source: @quartz-community/folder-page",
+                'source: "@quartz-community/folder-page"',
+              )
+              text = text.replace(
+                "source: github:VingGit/root-index-panels",
+                'source: "@vinggit/root-index-panels"',
+              )
+              text = text.replace(
                 "To update an existing installation to the latest revision:\n\n```bash\nnpx quartz plugin install --latest root-index-panels\n```",
                 "To update an npm installation to the latest published release:\n\n```bash\nnpm install @vinggit/root-index-panels@latest\n```\n\nGit-source installs remain supported for development and testing, but npm is the canonical release channel.",
               )
@@ -70,13 +82,21 @@ jobs:
 
           const changelog = "CHANGELOG.md"
           let text = fs.readFileSync(changelog, "utf8")
-          const marker = "## [Unreleased]\n"
-          if (!text.includes("@vinggit/root-index-panels")) {
+          if (text.includes("## [Unreleased]\n\n### Changed\n\n- Publish future releases")) {
             text = text.replace(
-              marker,
-              `${marker}\n### Changed\n\n- Publish future releases from the personal npm scope \`@vinggit/root-index-panels\` and use the npm-published \`@quartz-community/folder-page\` dependency source.\n- Make built-in icon generation insensitive to LF versus CRLF working-tree line endings so checks behave consistently on Windows.\n`,
+              "## [Unreleased]\n\n### Changed\n\n- Publish future releases",
+              "## [Unreleased]\n\n## [0.2.1] - 2026-09-11\n\n### Changed\n\n- Publish future releases",
+            )
+          } else if (!text.includes("## [0.2.1] - 2026-09-11")) {
+            text = text.replace(
+              "## [Unreleased]\n",
+              "## [Unreleased]\n\n## [0.2.1] - 2026-09-11\n\n### Changed\n\n- Publish future releases from the personal npm scope `@vinggit/root-index-panels` and use the npm-published `@quartz-community/folder-page` dependency source.\n- Make built-in icon generation insensitive to LF versus CRLF working-tree line endings so checks behave consistently on Windows.\n",
             )
           }
+          text = text.replace(
+            "[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...HEAD",
+            "[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...HEAD\n[0.2.1]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...v0.2.1",
+          )
           fs.writeFileSync(changelog, text)
           NODE
 
