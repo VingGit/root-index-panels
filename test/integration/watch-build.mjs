@@ -204,7 +204,12 @@ const theme = {
 }
 
 function communityPlugin(name, extra = {}) {
-  return { source: `github:quartz-community/${name}`, enabled: true, ...extra }
+  return {
+    source:
+      name === "folder-page" ? "@quartz-community/folder-page" : `github:quartz-community/${name}`,
+    enabled: true,
+    ...extra,
+  }
 }
 
 function writeConfig(rootSource) {

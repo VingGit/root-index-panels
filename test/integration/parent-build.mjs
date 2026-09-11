@@ -268,7 +268,8 @@ const theme = {
 
 function communityPlugin(name, extra = {}) {
   return {
-    source: `github:quartz-community/${name}`,
+    source:
+      name === "folder-page" ? "@quartz-community/folder-page" : `github:quartz-community/${name}`,
     enabled: true,
     ...extra,
   }
