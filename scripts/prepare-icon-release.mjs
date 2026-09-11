@@ -19,15 +19,21 @@ function replaceOnce(relative, before, after) {
   fs.writeFileSync(target, current.slice(0, first) + after + current.slice(first + before.length))
 }
 
-replaceOnce(
+function replaceExactCount(relative, before, after, expectedCount) {
+  const target = file(relative)
+  const current = fs.readFileSync(target, "utf8")
+  const count = current.split(before).length - 1
+  if (count !== expectedCount) {
+    throw new Error(`${relative}: expected ${expectedCount} matches, found ${count}`)
+  }
+  fs.writeFileSync(target, current.split(before).join(after))
+}
+
+replaceExactCount(
   "package-lock.json",
   '"version": "0.1.1",',
   '"version": "0.2.0",',
-)
-replaceOnce(
-  "package-lock.json",
-  '"version": "0.1.1",',
-  '"version": "0.2.0",',
+  2,
 )
 
 replaceOnce(
