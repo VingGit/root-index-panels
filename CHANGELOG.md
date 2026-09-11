@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-11
+
+### Added
+
+- Add `file-question-mark` to the bundled Lucide icon aliases.
+
+### Fixed
+
+- Make `npm run icon:add -- <name>` invoke npm through npm's JavaScript CLI so the helper works on Windows instead of failing with `spawnSync npm.cmd EINVAL`.
+- Make packed-package verification extract its tarball using paths relative to the temporary working directory so GNU tar under Git Bash does not interpret a Windows drive letter as a remote host.
+
 ## [0.2.1] - 2026-09-11
 
 ### Changed
@@ -77,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/VingGit/root-index-panels/releases/tag/v0.2.0
 [0.1.1]: https://github.com/VingGit/root-index-panels/releases/tag/v0.1.1
