@@ -6,7 +6,7 @@ applyTo: "{src,test,scripts,types,dist}/**,package.json,package-lock.json,tsup.c
 
 # Plugin architecture
 
-This is the single technical contract for `@quartz-community/root-index-panels`. Do not restate it
+This is the single technical contract for `@vinggit/root-index-panels`. Do not restate it
 in task prompts; link here and update this file when the contract changes.
 
 ## Package topology
@@ -28,7 +28,7 @@ use.
 
 The manifest retains `pageType` and `component` categories but declares exactly one component:
 `RootIndexSidebar`, with `defaultPosition: "left"` and `defaultPriority: 40`. It declares exactly
-`github:quartz-community/folder-page` in `quartz.dependencies`. A fresh CLI add must create one
+`@quartz-community/folder-page` in `quartz.dependencies`. A fresh CLI add must create one
 left-layout declaration. `RootIndexPanels` remains exported but absent from component discovery so the
 installer cannot create a second body.
 
@@ -206,7 +206,7 @@ origin-relative route or duplicate a base path.
 FolderPage is a required Quartz-plugin prerequisite. Quartz ContentPage excludes every slug ending
 in `/index`; FolderPage emits book and nested-folder routes whether their source is a physical
 `index.md` or a generated virtual page. The manifest dependency source is exactly
-`github:quartz-community/folder-page`. Missing configuration must fail Quartz dependency validation;
+`@quartz-community/folder-page`. Missing configuration must fail Quartz dependency validation;
 a disabled entry is unsupported even if the current host reports only a warning.
 
 The generated public base path must match the final deployment URL. A custom domain served at `/`

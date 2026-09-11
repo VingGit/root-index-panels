@@ -1,6 +1,6 @@
 {
-  "name": "@quartz-community/root-index-panels",
-  "version": "0.2.0",
+  "name": "@vinggit/root-index-panels",
+  "version": "0.2.1",
   "description": "Quartz 5 multi-book landing page and route-aware sidebar for first-level content directories.",
   "type": "module",
   "license": "MIT",
@@ -8,7 +8,7 @@
   "homepage": "https://github.com/VingGit/root-index-panels",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VingGit/root-index-panels"
+    "url": "git+https://github.com/VingGit/root-index-panels.git"
   },
   "keywords": [
     "quartz",
@@ -73,8 +73,8 @@
     }
   },
   "dependencies": {
-    "@quartz-community/types": "github:quartz-community/types",
-    "@quartz-community/utils": "github:quartz-community/utils",
+    "@quartz-community/types": "^0.2.1",
+    "@quartz-community/utils": "^0.1.0",
     "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "lucide-preact": "1.25.0"
@@ -117,10 +117,10 @@
       "pageType",
       "component"
     ],
-    "version": "0.2.0",
+    "version": "0.2.1",
     "quartzVersion": ">=5.0.0",
     "dependencies": [
-      "github:quartz-community/folder-page"
+      "@quartz-community/folder-page"
     ],
     "defaultOrder": 50,
     "defaultEnabled": false,
@@ -187,7 +187,7 @@
         "name": "RootIndexSidebar",
         "displayName": "Root Index Sidebar",
         "description": "Book switcher and route-scoped left navigation.",
-        "version": "0.2.0",
+        "version": "0.2.1",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
         "homepage": "https://github.com/VingGit/root-index-panels",
@@ -199,5 +199,8 @@
   "engines": {
     "node": ">=22",
     "npm": ">=10.9.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

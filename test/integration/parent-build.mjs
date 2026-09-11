@@ -132,10 +132,7 @@ function copyQuartzSource() {
 }
 
 function stageHost() {
-  assert.equal(
-    readJson(path.join(pluginRoot, "package.json")).name,
-    "@quartz-community/root-index-panels",
-  )
+  assert.equal(readJson(path.join(pluginRoot, "package.json")).name, "@vinggit/root-index-panels")
   assert.ok(
     fs.existsSync(path.join(pluginRoot, "dist", "index.js")),
     "build plugin dist/ before integration",
@@ -271,7 +268,8 @@ const theme = {
 
 function communityPlugin(name, extra = {}) {
   return {
-    source: `github:quartz-community/${name}`,
+    source:
+      name === "folder-page" ? "@quartz-community/folder-page" : `github:quartz-community/${name}`,
     enabled: true,
     ...extra,
   }
@@ -370,7 +368,7 @@ function pluginEntries(rootSource, rootOptions, includeFolderPage = true) {
 
   return includeFolderPage
     ? entries
-    : entries.filter((entry) => entry.source !== "github:quartz-community/folder-page")
+    : entries.filter((entry) => entry.source !== "@quartz-community/folder-page")
 }
 
 function configuration({ locale, enableSPA }) {
@@ -577,8 +575,8 @@ function assertFolderPageDependencyFailure() {
     ],
     "missing FolderPage dependency rejected",
     [
-      /requires "folder-page"/,
-      /npx quartz plugin add github:quartz-community\/folder-page/,
+      /requires "@quartz-community\/folder-page"/,
+      /npx quartz plugin add @quartz-community\/folder-page/,
       /Plugin dependency validation failed/,
     ],
   )

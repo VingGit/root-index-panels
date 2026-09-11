@@ -19,7 +19,7 @@
 ## FolderPage prerequisite
 
 `RootIndexPanelsPage` matches only the physical site-root `index` page. Quartz ContentPage excludes
-all other `/index` slugs, so `github:quartz-community/folder-page` is required to emit every book and
+all other `/index` slugs, so `@quartz-community/folder-page` is required to emit every book and
 nested-folder landing page. This remains true when a physical `index.md` provides the page content and
 metadata. The plugin manifest declares that exact dependency source; sites must configure and enable
 it before root-index-panels.
