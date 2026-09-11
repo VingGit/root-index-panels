@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 
-const REQUIRED_PLUGIN_DEPENDENCIES = ["github:quartz-community/folder-page"] as const
+const REQUIRED_PLUGIN_DEPENDENCIES = ["@quartz-community/folder-page"] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
