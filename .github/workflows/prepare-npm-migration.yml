@@ -47,6 +47,7 @@ jobs:
             ".github/instructions/verification.instructions.md",
             ".github/reference/sidebar-root-library-rework.md",
             ".github/siderbar-rework.md",
+            ".github/workflows/ci.yml",
           ]
 
           for (const file of files) {
@@ -74,6 +75,23 @@ jobs:
               text = text.replace(
                 "`dist/` is committed because GitHub installations consume the prebuilt package.",
                 "`dist/` is committed so Git-source installs can consume the prebuilt package; npm releases ship the same built output.",
+              )
+            }
+
+            if (
+              file === "test/integration/parent-build.mjs" ||
+              file === "test/integration/watch-build.mjs"
+            ) {
+              text = text.replace(
+                'source: `github:quartz-community/${name}`',
+                'source: name === "folder-page" ? "@quartz-community/folder-page" : `github:quartz-community/${name}`',
+              )
+            }
+
+            if (file === ".github/workflows/ci.yml" && !text.includes("@quartz-community/folder-page@0.1.0")) {
+              text = text.replace(
+                '          npm ci --prefix "$host"\n',
+                '          npm ci --prefix "$host"\n          npm install --prefix "$host" --no-save @quartz-community/folder-page@0.1.0\n',
               )
             }
 
@@ -108,7 +126,7 @@ jobs:
 
       - name: Format changed files
         run: |
-          npx prettier --write package.json package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts test/locales-page-type-manifest.test.tsx test/integration/parent-build.mjs test/integration/watch-build.mjs .github/instructions/repository.instructions.md .github/instructions/architecture.instructions.md .github/instructions/verification.instructions.md .github/reference/sidebar-root-library-rework.md .github/siderbar-rework.md
+          npx prettier --write package.json package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts test/locales-page-type-manifest.test.tsx test/integration/parent-build.mjs test/integration/watch-build.mjs .github/instructions/repository.instructions.md .github/instructions/architecture.instructions.md .github/instructions/verification.instructions.md .github/reference/sidebar-root-library-rework.md .github/siderbar-rework.md .github/workflows/ci.yml
 
       - name: Run checks
         run: npm run check
@@ -132,6 +150,6 @@ jobs:
           fi
           git config user.name VingGit
           git config user.email 61470249+VingGit@users.noreply.github.com
-          git add package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts src/built-in-icons.generated.ts dist test .github/instructions .github/reference .github/siderbar-rework.md
+          git add package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts src/built-in-icons.generated.ts dist test .github/instructions .github/reference .github/siderbar-rework.md .github/workflows/ci.yml
           git commit -m "prepare npm migration artifacts"
           git push origin HEAD:feature/npm-publishing
