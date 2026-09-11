@@ -100,6 +100,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify stale Lucide diagnostics on Windows
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $installedVersion = $package.dependencies.'lucide-preact'
+          $package.dependencies.'lucide-preact' = '0.0.0'
+          $package | ConvertTo-Json -Depth 20 | Set-Content package.json
+
+          $output = & npm run icon:add -- file-question-mark 2>&1
+          $status = $LASTEXITCODE
+          $text = $output | Out-String
+          $text | Write-Host
+          git restore package.json
+
+          if ($status -eq 0) {
+            throw 'icon:add unexpectedly accepted a stale dependency tree'
+          }
+          if (-not $text.Contains('Dependency mismatch:')) {
+            throw 'icon:add did not report the dependency mismatch clearly'
+          }
+          if (-not $text.Contains('package.json requires lucide-preact 0.0.0')) {
+            throw 'icon:add did not report the required Lucide version'
+          }
+          if (-not $text.Contains("node_modules contains lucide-preact $installedVersion")) {
+            throw 'icon:add did not report the actually installed Lucide version'
+          }
+          if (-not $text.Contains('npm ci')) {
+            throw 'icon:add did not print the npm ci recovery command'
+          }
+          git diff --exit-code -- src/built-in-icons.json src/built-in-icons.generated.ts README.md
+
       - name: Verify icon helper and packed-package check on Windows
         run: npm run icon:add -- file-question-mark
 

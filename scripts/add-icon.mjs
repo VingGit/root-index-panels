@@ -3,6 +3,8 @@ import path from "node:path"
 import { spawnSync } from "node:child_process"
 import { fileURLToPath } from "node:url"
 
+import { getInstalledPackageVersion } from "./installed-package-version.mjs"
+
 const root = fileURLToPath(new URL("../", import.meta.url))
 const manifestPath = path.join(root, "src", "built-in-icons.json")
 const packagePath = path.join(root, "package.json")
@@ -64,22 +66,44 @@ if (!exportNamePattern.test(exportName)) {
   fail(`Invalid Lucide export name ${JSON.stringify(exportName)}`)
 }
 
+const retryCommand = `npm run icon:add -- ${alias}${explicitExportName ? ` ${explicitExportName}` : ""}`
 const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
 const lucideVersion = packageJson.dependencies?.["lucide-preact"]
+if (typeof lucideVersion !== "string") {
+  fail("package.json does not declare lucide-preact")
+}
+
+const installedLucideVersion = getInstalledPackageVersion("lucide-preact")
+if (installedLucideVersion === null) {
+  fail(
+    `Dependency mismatch:\n` +
+      `  package.json requires lucide-preact ${lucideVersion}\n` +
+      `  node_modules does not contain lucide-preact\n\n` +
+      `Run:\n  npm ci\n\nThen retry:\n  ${retryCommand}`,
+  )
+}
+if (installedLucideVersion !== lucideVersion) {
+  fail(
+    `Dependency mismatch:\n` +
+      `  package.json requires lucide-preact ${lucideVersion}\n` +
+      `  node_modules contains lucide-preact ${installedLucideVersion}\n\n` +
+      `Run:\n  npm ci\n\nThen retry:\n  ${retryCommand}`,
+  )
+}
+
 const lucide = await import("lucide-preact")
 if (!Object.hasOwn(lucide, exportName) || typeof lucide[exportName] !== "function") {
   const latestVersion = getLatestLucideVersion()
-  const installedVersion = lucideVersion ?? "(unknown version)"
   const updateHint =
-    latestVersion && latestVersion !== lucideVersion
-      ? `The project uses lucide-preact ${installedVersion}, while npm latest is ${latestVersion}.\n` +
-        "The icon may have been added after the installed release. Update Lucide (or pull the latest main) and retry:\n" +
+    latestVersion && latestVersion !== installedLucideVersion
+      ? `The installed lucide-preact version is ${installedLucideVersion}, while npm latest is ${latestVersion}.\n` +
+        "The icon may have been added after this checkout's pinned release. Pull the latest main (or update Lucide) and retry:\n" +
         "  npm install --save-exact lucide-preact@latest\n" +
-        `  npm run icon:add -- ${alias}${explicitExportName ? ` ${explicitExportName}` : ""}\n`
+        `  ${retryCommand}\n`
       : ""
 
   fail(
-    `lucide-preact ${installedVersion} does not export ${exportName}.\n` +
+    `lucide-preact ${installedLucideVersion} does not export ${exportName}.\n` +
       updateHint +
       `Browse https://lucide.dev/icons/${alias} and, if needed, pass the component export explicitly:\n` +
       `  npm run icon:add -- ${alias} <LucideComponentExport>`,
