@@ -153,8 +153,9 @@ Built-in icons:
 <!-- built-in-icons:start -->
 
 ```text
-book-open  code-2  coffee  container  cpu  database  file-code-2  file-question-mark
-git-branch  globe  layers  network  notebook-pen  shield  terminal  user-group
+book-open  calendar-1  code-2  coffee  container  cpu  database  file-code-2
+file-question-mark  git-branch  globe  layers  network  notebook-pen  shield  terminal
+user-group
 ```
 
 <!-- built-in-icons:end -->
