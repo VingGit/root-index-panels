@@ -14,6 +14,7 @@ import {
   Network,
   Shield,
   Terminal,
+  UserGroup,
 } from "lucide-preact"
 
 export const builtInLucideIcons = {
@@ -31,10 +32,11 @@ export const builtInLucideIcons = {
   network: Network,
   shield: Shield,
   terminal: Terminal,
+  "user-group": UserGroup,
 } as const
 
 export type BuiltInIconName = keyof typeof builtInLucideIcons
 
 export const builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons) as BuiltInIconName[])
 
-export const lucidePackageVersion = "1.25.0"
+export const lucidePackageVersion = "1.44.0"

@@ -12,5 +12,6 @@
   "layers": "Layers",
   "network": "Network",
   "shield": "Shield",
-  "terminal": "Terminal"
+  "terminal": "Terminal",
+  "user-group": "UserGroup"
 }

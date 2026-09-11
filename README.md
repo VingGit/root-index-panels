@@ -154,7 +154,7 @@ Built-in icons:
 
 ```text
 book-open  code-2  coffee  container  cpu  database  file-code-2  file-question-mark
-git-branch  globe  layers  network  shield  terminal
+git-branch  globe  layers  network  shield  terminal  user-group
 ```
 
 <!-- built-in-icons:end -->
