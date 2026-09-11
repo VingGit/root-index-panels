@@ -2809,6 +2809,19 @@ var FileCode = createLucideIcon("file-code", [
   ["path", { d: "m14 12.5 2 2.5-2 2.5", key: "yinavb" }]
 ]);
 
+// node_modules/lucide-preact/dist/esm/icons/file-question-mark.mjs
+var FileQuestionMark = createLucideIcon("file-question-mark", [
+  [
+    "path",
+    {
+      d: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z",
+      key: "1oefj6"
+    }
+  ],
+  ["path", { d: "M12 17h.01", key: "p32p05" }],
+  ["path", { d: "M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3", key: "mhlwft" }]
+]);
+
 // node_modules/lucide-preact/dist/esm/icons/file-text.mjs
 var FileText = createLucideIcon("file-text", [
   [
@@ -2936,6 +2949,7 @@ var builtInLucideIcons = {
   cpu: Cpu,
   database: Database,
   "file-code-2": FileCode,
+  "file-question-mark": FileQuestionMark,
   "git-branch": GitBranch,
   globe: Globe,
   layers: Layers,
@@ -4106,6 +4120,7 @@ lucide-preact/dist/esm/icons/container.mjs:
 lucide-preact/dist/esm/icons/cpu.mjs:
 lucide-preact/dist/esm/icons/database.mjs:
 lucide-preact/dist/esm/icons/file-code.mjs:
+lucide-preact/dist/esm/icons/file-question-mark.mjs:
 lucide-preact/dist/esm/icons/file-text.mjs:
 lucide-preact/dist/esm/icons/folder.mjs:
 lucide-preact/dist/esm/icons/git-branch.mjs:
