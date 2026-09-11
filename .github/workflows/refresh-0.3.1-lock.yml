@@ -1,0 +1,42 @@
+name: Refresh 0.3.1 lockfile
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.head_ref == 'fix/lucide-install-sync'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Refresh package lock metadata
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Commit refreshed lockfile if needed
+        shell: bash
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json is already synchronized"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: sync 0.3.1 lockfile"
+          git push origin HEAD:${{ github.head_ref }}
