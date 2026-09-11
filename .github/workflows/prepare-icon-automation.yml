@@ -1,0 +1,85 @@
+name: Prepare icon automation branch
+
+on:
+  push:
+    branches: ["feature/icon-automation"]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: feature/icon-automation
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Prepare release metadata and documentation
+        run: node scripts/prepare-icon-release.mjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate icon registry and README list
+        run: npm run icons:generate
+
+      - name: Format changed files
+        run: |
+          npx prettier --write \
+            package.json \
+            package-lock.json \
+            README.md \
+            CHANGELOG.md \
+            src/options.ts \
+            src/icons.ts \
+            src/built-in-icons.json \
+            src/built-in-icons.generated.ts \
+            scripts/generate-icons.mjs \
+            scripts/add-icon.mjs \
+            scripts/prepare-icon-release.mjs \
+            test/icon-registry.test.ts \
+            .github/instructions/architecture.instructions.md \
+            .github/instructions/verification.instructions.md \
+            .github/workflows/prepare-icon-automation.yml
+
+      - name: Check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify distribution
+        run: npm run verify:dist
+
+      - name: Verify packed package
+        run: npm run verify:package
+
+      - name: Check whitespace
+        run: git diff --check
+
+      - name: Commit generated artifacts
+        run: |
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add \
+            package-lock.json \
+            README.md \
+            CHANGELOG.md \
+            src \
+            scripts \
+            test/icon-registry.test.ts \
+            .github/instructions \
+            .github/workflows/prepare-icon-automation.yml \
+            dist
+          if ! git diff --cached --quiet; then
+            git commit -m "prepare icon automation release"
+            git push origin HEAD:feature/icon-automation
+          fi
