@@ -1,0 +1,117 @@
+name: Prepare npm migration
+
+on:
+  push:
+    branches: ["feature/npm-publishing"]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.event.head_commit.message != 'prepare npm migration artifacts'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: feature/npm-publishing
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Update npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Migrate npm package references
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs")
+
+          const replacements = [
+            ["@quartz-community/root-index-panels", "@vinggit/root-index-panels"],
+            ["github:quartz-community/folder-page", "@quartz-community/folder-page"],
+          ]
+
+          const files = [
+            "README.md",
+            "test/locales-page-type-manifest.test.tsx",
+            "test/integration/parent-build.mjs",
+            "test/integration/watch-build.mjs",
+            ".github/instructions/repository.instructions.md",
+            ".github/instructions/architecture.instructions.md",
+            ".github/instructions/verification.instructions.md",
+            ".github/reference/sidebar-root-library-rework.md",
+            ".github/siderbar-rework.md",
+          ]
+
+          for (const file of files) {
+            if (!fs.existsSync(file)) continue
+            let text = fs.readFileSync(file, "utf8")
+            for (const [from, to] of replacements) text = text.split(from).join(to)
+
+            if (file === "README.md") {
+              text = text.replace(
+                "To update an existing installation to the latest revision:\n\n```bash\nnpx quartz plugin install --latest root-index-panels\n```",
+                "To update an npm installation to the latest published release:\n\n```bash\nnpm install @vinggit/root-index-panels@latest\n```\n\nGit-source installs remain supported for development and testing, but npm is the canonical release channel.",
+              )
+              text = text.replace(
+                "`dist/` is committed because GitHub installations consume the prebuilt package.",
+                "`dist/` is committed so Git-source installs can consume the prebuilt package; npm releases ship the same built output.",
+              )
+            }
+
+            fs.writeFileSync(file, text)
+          }
+
+          const changelog = "CHANGELOG.md"
+          let text = fs.readFileSync(changelog, "utf8")
+          const marker = "## [Unreleased]\n"
+          if (!text.includes("@vinggit/root-index-panels")) {
+            text = text.replace(
+              marker,
+              `${marker}\n### Changed\n\n- Publish future releases from the personal npm scope \`@vinggit/root-index-panels\` and use the npm-published \`@quartz-community/folder-page\` dependency source.\n- Make built-in icon generation insensitive to LF versus CRLF working-tree line endings so checks behave consistently on Windows.\n`,
+            )
+          }
+          fs.writeFileSync(changelog, text)
+          NODE
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate icon artifacts
+        run: npm run icons:generate
+
+      - name: Format changed files
+        run: |
+          npx prettier --write package.json package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts test/locales-page-type-manifest.test.tsx test/integration/parent-build.mjs test/integration/watch-build.mjs .github/instructions/repository.instructions.md .github/instructions/architecture.instructions.md .github/instructions/verification.instructions.md .github/reference/sidebar-root-library-rework.md .github/siderbar-rework.md
+
+      - name: Run checks
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify package
+        run: |
+          npm run verify:dist
+          npm run verify:package
+          npm pack --dry-run
+          git diff --check
+
+      - name: Commit generated migration artifacts
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes to commit"
+            exit 0
+          fi
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts src/built-in-icons.generated.ts dist test .github/instructions .github/reference .github/siderbar-rework.md
+          git commit -m "prepare npm migration artifacts"
+          git push origin HEAD:feature/npm-publishing
