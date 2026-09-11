@@ -2770,18 +2770,18 @@ var Icon = ({
 
 // node_modules/lucide-preact/dist/esm/createLucideIcon.mjs
 function createLucideIcon(iconDataOrName, iconNode, aliases = []) {
-  const iconData24 = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
+  const iconData25 = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
   const Component = ({ class: classes = "", className = "", children, ...props }) => h(
     Icon,
     {
       ...props,
-      icon: iconData24,
+      icon: iconData25,
       class: mergeClasses(classes, className)
     },
     children
   );
-  if (iconData24.name) {
-    Component.displayName = toPascalCase(iconData24.name);
+  if (iconData25.name) {
+    Component.displayName = toPascalCase(iconData25.name);
   }
   return Component;
 }
@@ -3078,8 +3078,32 @@ var iconData18 = {
 };
 var Network = createLucideIcon(iconData18);
 
-// node_modules/lucide-preact/dist/esm/icons/shield.mjs
+// node_modules/lucide-preact/dist/esm/icons/notebook-pen.mjs
 var iconData19 = {
+  name: "notebook-pen",
+  size: 24,
+  node: [
+    [
+      "path",
+      { d: "M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4", key: "re6nr2" }
+    ],
+    ["path", { d: "M2 6h4", key: "aawbzj" }],
+    ["path", { d: "M2 10h4", key: "l0bgd4" }],
+    ["path", { d: "M2 14h4", key: "1gsvsf" }],
+    ["path", { d: "M2 18h4", key: "1bu2t1" }],
+    [
+      "path",
+      {
+        d: "M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z",
+        key: "pqwjuv"
+      }
+    ]
+  ]
+};
+var NotebookPen = createLucideIcon(iconData19);
+
+// node_modules/lucide-preact/dist/esm/icons/shield.mjs
+var iconData20 = {
   name: "shield",
   size: 24,
   node: [
@@ -3092,10 +3116,10 @@ var iconData19 = {
     ]
   ]
 };
-var Shield = createLucideIcon(iconData19);
+var Shield = createLucideIcon(iconData20);
 
 // node_modules/lucide-preact/dist/esm/icons/table-properties.mjs
-var iconData20 = {
+var iconData21 = {
   name: "table-properties",
   size: 24,
   node: [
@@ -3105,10 +3129,10 @@ var iconData20 = {
     ["path", { d: "M21 15H3", key: "9uk58r" }]
   ]
 };
-var TableProperties = createLucideIcon(iconData20);
+var TableProperties = createLucideIcon(iconData21);
 
 // node_modules/lucide-preact/dist/esm/icons/terminal.mjs
-var iconData21 = {
+var iconData22 = {
   name: "terminal",
   size: 24,
   node: [
@@ -3116,10 +3140,10 @@ var iconData21 = {
     ["path", { d: "m4 17 6-6-6-6", key: "1yngyt" }]
   ]
 };
-var Terminal = createLucideIcon(iconData21);
+var Terminal = createLucideIcon(iconData22);
 
 // node_modules/lucide-preact/dist/esm/icons/user-group.mjs
-var iconData22 = {
+var iconData23 = {
   name: "user-group",
   size: 24,
   node: [
@@ -3131,10 +3155,10 @@ var iconData22 = {
     ["circle", { cx: "6", cy: "4", r: "2", key: "lisof6" }]
   ]
 };
-var UserGroup = createLucideIcon(iconData22);
+var UserGroup = createLucideIcon(iconData23);
 
 // node_modules/lucide-preact/dist/esm/icons/workflow.mjs
-var iconData23 = {
+var iconData24 = {
   name: "workflow",
   size: 24,
   node: [
@@ -3143,7 +3167,7 @@ var iconData23 = {
     ["rect", { width: "8", height: "8", x: "13", y: "13", rx: "2", key: "1cgmvn" }]
   ]
 };
-var Workflow = createLucideIcon(iconData23);
+var Workflow = createLucideIcon(iconData24);
 
 // src/built-in-icons.generated.ts
 var builtInLucideIcons = {
@@ -3159,6 +3183,7 @@ var builtInLucideIcons = {
   globe: Globe,
   layers: Layers,
   network: Network,
+  "notebook-pen": NotebookPen,
   shield: Shield,
   terminal: Terminal,
   "user-group": UserGroup
@@ -3169,9 +3194,9 @@ var lucidePackageVersion = "1.44.0";
 // src/icons.ts
 function readLucideIconNode(icon) {
   const wrapper = icon({});
-  const iconData24 = wrapper.props.icon;
-  if (typeof iconData24 === "object" && iconData24 !== null && !Array.isArray(iconData24) && Array.isArray(iconData24.node)) {
-    return iconData24.node;
+  const iconData25 = wrapper.props.icon;
+  if (typeof iconData25 === "object" && iconData25 !== null && !Array.isArray(iconData25) && Array.isArray(iconData25.node)) {
+    return iconData25.node;
   }
   throw new TypeError("The current lucide-preact icon data contract changed");
 }
@@ -4337,6 +4362,7 @@ lucide-preact/dist/esm/icons/globe.mjs:
 lucide-preact/dist/esm/icons/house.mjs:
 lucide-preact/dist/esm/icons/layers.mjs:
 lucide-preact/dist/esm/icons/network.mjs:
+lucide-preact/dist/esm/icons/notebook-pen.mjs:
 lucide-preact/dist/esm/icons/shield.mjs:
 lucide-preact/dist/esm/icons/table-properties.mjs:
 lucide-preact/dist/esm/icons/terminal.mjs:
