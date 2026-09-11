@@ -54,7 +54,10 @@ jobs:
       - name: Verify packed package
         run: npm run verify:package
 
+      # The same commit already runs these expensive host-level checks when pushed to main.
+      # Release tags skip them and instead verify below that the tagged commit is contained in main.
       - name: Prepare configured Quartz integration host
+        if: github.ref_type != 'tag'
         run: |
           host="$RUNNER_TEMP/quartz-for-gitlab"
           git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
@@ -68,9 +71,11 @@ jobs:
           echo "Configured Quartz host revision: $(git -C "$host" rev-parse HEAD)"
 
       - name: Run configured Quartz integration
+        if: github.ref_type != 'tag'
         run: npm run test:integration
 
       - name: Run watch-mode integration
+        if: github.ref_type != 'tag'
         run: npm run test:watch-integration
 
       - name: Verify npm pack dry run
@@ -90,6 +95,18 @@ jobs:
     steps:
       - name: Checkout release
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Verify tagged commit is contained in main
+        shell: bash
+        run: |
+          release_commit="$(git rev-parse HEAD)"
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$release_commit" origin/main; then
+            echo "::error::Release tag $GITHUB_REF_NAME points to $release_commit, which is not contained in main"
+            exit 1
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v6
