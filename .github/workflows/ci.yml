@@ -79,6 +79,7 @@ jobs:
       - name: Check whitespace errors
         run: git diff --check
 
+  # npm authenticates this job through GitHub OIDC Trusted Publishing; no npm token is required.
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
