@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: update-lucide
@@ -21,6 +22,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -50,13 +52,66 @@ jobs:
             echo "Updating lucide-preact from $before to $after"
           fi
 
+      - name: Prepare minor plugin release metadata
+        if: steps.lucide.outputs.changed == 'true'
+        id: release
+        env:
+          LUCIDE_BEFORE: ${{ steps.lucide.outputs.before }}
+          LUCIDE_AFTER: ${{ steps.lucide.outputs.after }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs")
+
+          const packagePath = "package.json"
+          const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"))
+          const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(pkg.version)
+          if (!match) throw new Error(`Cannot automatically bump non-semver package version ${pkg.version}`)
+
+          const previousVersion = pkg.version
+          const nextVersion = `${match[1]}.${Number(match[2]) + 1}.0`
+          pkg.version = nextVersion
+          pkg.quartz.version = nextVersion
+          pkg.quartz.components.RootIndexSidebar.version = nextVersion
+          fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
+
+          const changelogPath = "CHANGELOG.md"
+          let changelog = fs.readFileSync(changelogPath, "utf8")
+          const marker = "## [Unreleased]\n"
+          if (!changelog.includes(marker)) throw new Error("CHANGELOG.md is missing the Unreleased section")
+
+          const date = new Date().toISOString().slice(0, 10)
+          const releaseEntry =
+            `${marker}\n## [${nextVersion}] - ${date}\n\n` +
+            `### Changed\n\n` +
+            `- Update \`lucide-preact\` from ${process.env.LUCIDE_BEFORE} to ${process.env.LUCIDE_AFTER} and advance the plugin minor release.\n`
+          changelog = changelog.replace(marker, releaseEntry)
+
+          const oldUnreleased = `[unreleased]: https://github.com/VingGit/root-index-panels/compare/v${previousVersion}...HEAD`
+          if (!changelog.includes(oldUnreleased)) {
+            throw new Error(`CHANGELOG.md is missing expected comparison link: ${oldUnreleased}`)
+          }
+          changelog = changelog.replace(
+            oldUnreleased,
+            `[unreleased]: https://github.com/VingGit/root-index-panels/compare/v${nextVersion}...HEAD\n` +
+              `[${nextVersion}]: https://github.com/VingGit/root-index-panels/compare/v${previousVersion}...v${nextVersion}`,
+          )
+          fs.writeFileSync(changelogPath, changelog)
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `previous_version=${previousVersion}\n`)
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${nextVersion}\n`)
+          NODE
+
+      - name: Refresh lockfile
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm install --package-lock-only --ignore-scripts
+
       - name: Regenerate icon artifacts
         if: steps.lucide.outputs.changed == 'true'
         run: npm run icons:generate
 
       - name: Format updated metadata
         if: steps.lucide.outputs.changed == 'true'
-        run: npm exec -- prettier --write package.json package-lock.json src/built-in-icons.generated.ts README.md
+        run: npm exec -- prettier --write package.json package-lock.json CHANGELOG.md src/built-in-icons.generated.ts README.md
 
       - name: Run package checks
         if: steps.lucide.outputs.changed == 'true'
@@ -104,15 +159,21 @@ jobs:
         if: steps.lucide.outputs.changed == 'true'
         run: git diff --check
 
-      - name: Commit verified Lucide update
+      - name: Commit and tag verified Lucide minor release
         if: steps.lucide.outputs.changed == 'true'
         shell: bash
         env:
           LUCIDE_VERSION: ${{ steps.lucide.outputs.after }}
+          PLUGIN_VERSION: ${{ steps.release.outputs.version }}
         run: |
-          git fetch origin main
+          git fetch origin main --tags
           if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
             echo "::error::main moved while the Lucide update was being verified; rerun the workflow"
+            exit 1
+          fi
+
+          if git rev-parse "refs/tags/v$PLUGIN_VERSION" >/dev/null 2>&1; then
+            echo "::error::Tag v$PLUGIN_VERSION already exists"
             exit 1
           fi
 
@@ -121,9 +182,18 @@ jobs:
           git add -A
 
           if git diff --cached --quiet; then
-            echo "No Lucide update remains to commit"
-            exit 0
+            echo "::error::No Lucide update remains to commit"
+            exit 1
           fi
 
-          git commit -m "chore: update lucide-preact to $LUCIDE_VERSION"
+          git commit -m "release: v$PLUGIN_VERSION with lucide-preact $LUCIDE_VERSION"
           git push origin HEAD:main
+          git tag "v$PLUGIN_VERSION"
+          git push origin "refs/tags/v$PLUGIN_VERSION"
+
+      - name: Dispatch npm and GitHub release pipeline
+        if: steps.lucide.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUGIN_VERSION: ${{ steps.release.outputs.version }}
+        run: gh workflow run ci.yml --ref "v$PLUGIN_VERSION"

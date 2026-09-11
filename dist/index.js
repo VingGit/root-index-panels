@@ -3169,14 +3169,11 @@ var lucidePackageVersion = "1.44.0";
 // src/icons.ts
 function readLucideIconNode(icon) {
   const wrapper = icon({});
-  if (Array.isArray(wrapper.props.iconNode)) {
-    return wrapper.props.iconNode;
-  }
   const iconData24 = wrapper.props.icon;
   if (typeof iconData24 === "object" && iconData24 !== null && !Array.isArray(iconData24) && Array.isArray(iconData24.node)) {
     return iconData24.node;
   }
-  throw new TypeError("The lucide-preact icon-node contract changed");
+  throw new TypeError("The current lucide-preact icon data contract changed");
 }
 function adaptLucideIcon(icon) {
   const iconNode = readLucideIconNode(icon);

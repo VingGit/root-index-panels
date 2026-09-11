@@ -176,8 +176,11 @@ No pull request or plugin registry change is required. Direct Lucide icons are l
 color-inheriting SVG masks from jsDelivr using the same exact Lucide version pinned by this plugin.
 They therefore require the reader's browser and Content Security Policy to allow image requests to
 `cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons remain self-contained and make no
-external icon request. An icon introduced after the plugin's pinned Lucide version will not render
-until the plugin updates Lucide.
+external icon request. The repository checks npm daily and advances the exact Lucide pin to the
+newest release only after the package checks and Quartz integration suites pass. Each successful
+Lucide update advances the plugin's minor version, tags that release, publishes it to npm, and creates
+the matching GitHub release. If a newly released icon is unavailable in your checkout, update the
+plugin before treating the icon as missing.
 
 You can also use the direct form as the plugin fallback:
 
@@ -190,7 +193,8 @@ options:
 
 Built-ins are still useful when an icon should work offline, under a restrictive CSP, or as a
 curated default. The bundled icons come from [Lucide](https://lucide.dev/icons/) through the exact
-`lucide-preact` version in `package.json`.
+`lucide-preact` version in `package.json`. The plugin intentionally follows the current Lucide
+Preact icon-data representation rather than retaining compatibility shims for older Lucide internals.
 
 From a repository checkout with dependencies installed, adding the normal case is one command:
 
@@ -202,7 +206,9 @@ The command infers `BookCopy`, verifies that export exists in the installed pinn
 `lucide-preact`, updates the single source of truth in `src/built-in-icons.json`, regenerates the
 static imports and this README list, formats them, then runs `check`, `build`, `verify:dist`, and
 `verify:package`. The generated TypeScript registry and exhaustive generated-registry test no
-longer require manual editing.
+longer require manual editing. If the export is missing locally, the helper compares the pinned
+Lucide version with npm's latest release; when the checkout is stale it reports both versions and
+prints the update command before suggesting that the icon name itself may be wrong.
 
 When the frontmatter alias and Lucide export do not map mechanically, pass the export explicitly:
 

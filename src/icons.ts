@@ -26,16 +26,11 @@ type LucideIconNode = ReadonlyArray<
 type LucideComponent = typeof Folder
 
 type LucideWrapperProps = {
-  iconNode?: unknown
   icon?: unknown
 }
 
 function readLucideIconNode(icon: LucideComponent): LucideIconNode {
   const wrapper = icon({}) as VNode<LucideWrapperProps>
-
-  if (Array.isArray(wrapper.props.iconNode)) {
-    return wrapper.props.iconNode as LucideIconNode
-  }
 
   const iconData = wrapper.props.icon
   if (
@@ -47,7 +42,7 @@ function readLucideIconNode(icon: LucideComponent): LucideIconNode {
     return (iconData as { node: LucideIconNode }).node
   }
 
-  throw new TypeError("The lucide-preact icon-node contract changed")
+  throw new TypeError("The current lucide-preact icon data contract changed")
 }
 
 function adaptLucideIcon(icon: LucideComponent): PanelIconComponent {
