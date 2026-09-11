@@ -1,0 +1,28 @@
+name: Publish v0.2.1 tag
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.head_commit.message == 'publish v0.2.1 tag'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Create v0.2.1 at validated commit
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --tags origin refs/tags/v0.2.1 >/dev/null 2>&1; then
+            echo "v0.2.1 already exists; leaving it unchanged"
+            exit 0
+          fi
+          git tag v0.2.1 1c053a415de6fe0006246d9c8d7718e831348bd1
+          git push origin refs/tags/v0.2.1
