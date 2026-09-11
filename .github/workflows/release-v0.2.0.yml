@@ -1,0 +1,38 @@
+name: Release v0.2.0
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tested revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Verify release version
+        run: test "$(node -p "require('./package.json').version")" = "0.2.0"
+
+      - name: Create GitHub release if absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if gh release view v0.2.0 >/dev/null 2>&1; then
+            echo "v0.2.0 already exists"
+          else
+            gh release create v0.2.0 \
+              --target "$RELEASE_SHA" \
+              --title "v0.2.0" \
+              --generate-notes
+          fi
