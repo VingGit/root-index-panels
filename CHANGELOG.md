@@ -7,18 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-11
+
 ### Added
 
 - Add `user-group` to the bundled Lucide icon aliases.
-- Add a daily GitHub Actions maintenance job that updates `lucide-preact` to the latest npm release, regenerates and verifies the package, runs the Quartz integration suites, and commits the verified dependency bump directly to `main`.
+- Add a daily GitHub Actions maintenance job that updates `lucide-preact` to the latest npm release, regenerates and verifies the package, runs the Quartz integration suites, and commits only a verified dependency bump to `main`.
 
 ### Changed
 
+- Update `lucide-preact` from 1.25.0 to 1.44.0 and treat Lucide dependency updates as a minor plugin release.
+- Follow only the current Lucide Preact `icon.node` representation instead of retaining a compatibility path for the older `iconNode` wrapper.
 - Improve `npm run icon:add -- <name>` diagnostics when the repository's installed Lucide release is older than the current npm release.
-
-### Fixed
-
-- Support both the legacy `iconNode` wrapper and the current Lucide Preact `icon.node` wrapper so newer Lucide releases keep working with the plugin's icon adapter.
 
 ## [0.2.2] - 2026-09-11
 
@@ -101,7 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.2...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/VingGit/root-index-panels/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/VingGit/root-index-panels/releases/tag/v0.2.0
