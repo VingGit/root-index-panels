@@ -58,6 +58,7 @@ jobs:
           host="$RUNNER_TEMP/quartz-for-gitlab"
           git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
           npm ci --prefix "$host"
+          npm install --prefix "$host" --no-save @quartz-community/folder-page@0.1.0
           (
             cd "$host"
             npx quartz plugin install --from-config
