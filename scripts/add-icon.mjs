@@ -8,7 +8,7 @@ const manifestPath = path.join(root, "src", "built-in-icons.json")
 const packagePath = path.join(root, "package.json")
 const registryNamePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const exportNamePattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/
-const npm = process.platform === "win32" ? "npm.cmd" : "npm"
+const npmCli = process.env.npm_execpath
 
 function fail(message) {
   console.error(message)
@@ -19,6 +19,11 @@ function run(command, args) {
   const result = spawnSync(command, args, { cwd: root, stdio: "inherit" })
   if (result.error) throw result.error
   if (result.status !== 0) process.exit(result.status ?? 1)
+}
+
+function runNpm(args) {
+  if (!npmCli) fail("npm_execpath is unavailable; run this script through npm")
+  run(process.execPath, [npmCli, ...args])
 }
 
 function inferExportName(alias) {
@@ -42,8 +47,9 @@ if (!registryNamePattern.test(alias)) {
 }
 
 const exportName = explicitExportName ?? inferExportName(alias)
-if (!exportNamePattern.test(exportName))
+if (!exportNamePattern.test(exportName)) {
   fail(`Invalid Lucide export name ${JSON.stringify(exportName)}`)
+}
 
 const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
 const lucideVersion = packageJson.dependencies?.["lucide-preact"]
@@ -70,7 +76,7 @@ const sortedManifest = Object.fromEntries(
 fs.writeFileSync(manifestPath, `${JSON.stringify(sortedManifest, null, 2)}\n`)
 
 run(process.execPath, [path.join(root, "scripts", "generate-icons.mjs")])
-run(npm, [
+runNpm([
   "exec",
   "--",
   "prettier",
@@ -79,9 +85,9 @@ run(npm, [
   "src/built-in-icons.generated.ts",
   "README.md",
 ])
-run(npm, ["run", "check"])
-run(npm, ["run", "build"])
-run(npm, ["run", "verify:dist"])
-run(npm, ["run", "verify:package"])
+runNpm(["run", "check"])
+runNpm(["run", "build"])
+runNpm(["run", "verify:dist"])
+runNpm(["run", "verify:package"])
 
 console.log(`Added built-in icon ${alias} -> ${exportName}`)
