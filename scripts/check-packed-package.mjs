@@ -48,14 +48,17 @@ try {
   execFileSync("tar", ["-xf", path.join(temporaryRoot, packResult.filename), "-C", extractionRoot])
 
   const modulesRoot = path.join(temporaryRoot, "node_modules")
-  const installedPackage = path.join(modulesRoot, "@quartz-community", "root-index-panels")
+  const installedPackage = path.join(modulesRoot, "@vinggit", "root-index-panels")
   fs.mkdirSync(path.dirname(installedPackage), { recursive: true })
   fs.renameSync(path.join(extractionRoot, "package"), installedPackage)
 
   const packedPackageJson = JSON.parse(
     fs.readFileSync(path.join(installedPackage, "package.json"), "utf8"),
   )
-  const expectedPluginDependencies = ["github:quartz-community/folder-page"]
+  if (packedPackageJson.name !== "@vinggit/root-index-panels") {
+    throw new Error("packed package name must equal @vinggit/root-index-panels")
+  }
+  const expectedPluginDependencies = ["@quartz-community/folder-page"]
   if (
     JSON.stringify(packedPackageJson.quartz?.dependencies) !==
     JSON.stringify(expectedPluginDependencies)
@@ -75,9 +78,9 @@ try {
   fs.writeFileSync(
     runtimeConsumer,
     `
-      const root = await import("@quartz-community/root-index-panels")
-      const components = await import("@quartz-community/root-index-panels/components")
-      await import("@quartz-community/root-index-panels/types")
+      const root = await import("@vinggit/root-index-panels")
+      const components = await import("@vinggit/root-index-panels/components")
+      await import("@vinggit/root-index-panels/types")
       if (typeof root.RootIndexPanels !== "function") throw new Error("missing root component")
       if (typeof root.RootIndexPanelsPage !== "function") throw new Error("missing Page Type")
       if (typeof root.RootIndexSidebar !== "function") throw new Error("missing root sidebar")
@@ -108,17 +111,17 @@ try {
         RootIndexPanelsOptions,
         RootIndexPanelsPageOptions,
         RootIndexSidebarOptions,
-      } from "@quartz-community/root-index-panels"
+      } from "@vinggit/root-index-panels"
       import type {
         PanelIconComponent as ComponentIcon,
         RootIndexPanelsOptions as ComponentOptions,
         RootIndexSidebarOptions as ComponentSidebarOptions,
-      } from "@quartz-community/root-index-panels/components"
+      } from "@vinggit/root-index-panels/components"
       import type {
         PanelIconComponent as TypesIcon,
         RootIndexPanelsOptions as TypesOptions,
         RootIndexSidebarOptions as TypesSidebarOptions,
-      } from "@quartz-community/root-index-panels/types"
+      } from "@vinggit/root-index-panels/types"
 
       declare const icon: PanelIconComponent
       const options = {
