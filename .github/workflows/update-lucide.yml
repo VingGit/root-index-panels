@@ -74,6 +74,28 @@ jobs:
         if: steps.lucide.outputs.changed == 'true'
         run: npm run verify:package
 
+      - name: Prepare configured Quartz integration host
+        if: steps.lucide.outputs.changed == 'true'
+        run: |
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          npm install --prefix "$host" --no-save @quartz-community/folder-page@0.1.0
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          echo "Configured Quartz host revision: $(git -C "$host" rev-parse HEAD)"
+
+      - name: Run configured Quartz integration
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run test:integration
+
+      - name: Run watch-mode integration
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run test:watch-integration
+
       - name: Verify npm pack dry run
         if: steps.lucide.outputs.changed == 'true'
         run: npm pack --dry-run
