@@ -153,8 +153,8 @@ Built-in icons:
 <!-- built-in-icons:start -->
 
 ```text
-book-open  code-2  coffee  container  cpu  database  file-code-2  git-branch  globe
-layers  network  shield  terminal
+book-open  code-2  coffee  container  cpu  database  file-code-2  file-question-mark
+git-branch  globe  layers  network  shield  terminal
 ```
 
 <!-- built-in-icons:end -->

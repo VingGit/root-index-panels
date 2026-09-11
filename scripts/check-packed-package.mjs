@@ -45,7 +45,10 @@ try {
 
   const extractionRoot = path.join(temporaryRoot, "extract")
   fs.mkdirSync(extractionRoot)
-  execFileSync("tar", ["-xf", path.join(temporaryRoot, packResult.filename), "-C", extractionRoot])
+  execFileSync("tar", ["-xf", packResult.filename, "-C", "extract"], {
+    cwd: temporaryRoot,
+    stdio: "inherit",
+  })
 
   const modulesRoot = path.join(temporaryRoot, "node_modules")
   const installedPackage = path.join(modulesRoot, "@vinggit", "root-index-panels")
