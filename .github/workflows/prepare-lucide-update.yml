@@ -1,0 +1,49 @@
+name: Prepare Lucide update
+
+on:
+  push:
+    branches: ["chore/lucide-auto-update"]
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install current dependencies
+        run: npm ci
+
+      - name: Update Lucide to npm latest
+        run: npm install --save-exact lucide-preact@latest
+
+      - name: Add user-group built-in icon and verify package
+        run: npm run icon:add -- user-group
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Commit generated update
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').dependencies['lucide-preact']")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json README.md src/built-in-icons.json src/built-in-icons.generated.ts dist/
+
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update Lucide to $version and add user-group"
+          git push origin HEAD:chore/lucide-auto-update
