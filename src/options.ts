@@ -1,6 +1,7 @@
 import type { PanelIconComponent } from "./types"
 
 const registryIdentifierPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const lucideIconSpecifierPattern = /^lucide:([a-z0-9]+(?:-[a-z0-9]+)*)$/
 const hexAccentPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
 const customPropertyAccentPattern = /^var\(--[A-Za-z_][A-Za-z0-9_-]*\)$/
 
@@ -62,6 +63,18 @@ export function normalizeRegistryIdentifier(value: unknown): string | undefined 
   if (typeof value !== "string") return undefined
   const normalized = value.trim()
   return isRegistryIdentifier(normalized) ? normalized : undefined
+}
+
+export function normalizePanelIconIdentifier(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined
+  const normalized = value.trim()
+  return isRegistryIdentifier(normalized) || lucideIconSpecifierPattern.test(normalized)
+    ? normalized
+    : undefined
+}
+
+export function lucideIconNameFromIdentifier(value: string): string | undefined {
+  return lucideIconSpecifierPattern.exec(value)?.[1]
 }
 
 export function isDirectAccent(value: string): boolean {
@@ -150,7 +163,7 @@ export function normalizeRootIndexPanelsOptions(
   const showDocCount = ownDataValue(options, "showDocCount")
   const showTags = ownDataValue(options, "showTags")
   const defaultIcon =
-    normalizeRegistryIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open"
+    normalizePanelIconIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open"
   const icons = normalizeIconRegistry(ownDataValue(options, "icons"))
   const accents = normalizeAccentRegistry(ownDataValue(options, "accents"))
   const replaceExplorer = ownDataValue(options, "replaceExplorer")

@@ -2195,6 +2195,7 @@ function _containsForbiddenCharacters(s) {
 
 // src/options.ts
 var registryIdentifierPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+var lucideIconSpecifierPattern = /^lucide:([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 var hexAccentPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 var customPropertyAccentPattern = /^var\(--[A-Za-z_][A-Za-z0-9_-]*\)$/;
 function isObjectRecord(value) {
@@ -2233,6 +2234,14 @@ function normalizeRegistryIdentifier(value) {
   if (typeof value !== "string") return void 0;
   const normalized = value.trim();
   return isRegistryIdentifier(normalized) ? normalized : void 0;
+}
+function normalizePanelIconIdentifier(value) {
+  if (typeof value !== "string") return void 0;
+  const normalized = value.trim();
+  return isRegistryIdentifier(normalized) || lucideIconSpecifierPattern.test(normalized) ? normalized : void 0;
+}
+function lucideIconNameFromIdentifier(value) {
+  return lucideIconSpecifierPattern.exec(value)?.[1];
 }
 function isDirectAccent(value) {
   return hexAccentPattern.test(value) || customPropertyAccentPattern.test(value);
@@ -2300,7 +2309,7 @@ function normalizeRootIndexPanelsOptions(options = void 0) {
   const showDescription = ownDataValue(options, "showDescription");
   const showDocCount = ownDataValue(options, "showDocCount");
   const showTags = ownDataValue(options, "showTags");
-  const defaultIcon = normalizeRegistryIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open";
+  const defaultIcon = normalizePanelIconIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open";
   const icons = normalizeIconRegistry(ownDataValue(options, "icons"));
   const accents = normalizeAccentRegistry(ownDataValue(options, "accents"));
   const replaceExplorer = ownDataValue(options, "replaceExplorer");
@@ -2920,6 +2929,27 @@ var Workflow = createLucideIcon("workflow", [
   ["path", { d: "M7 11v4a2 2 0 0 0 2 2h4", key: "xkn7yn" }],
   ["rect", { width: "8", height: "8", x: "13", y: "13", rx: "2", key: "1cgmvn" }]
 ]);
+
+// src/built-in-icons.generated.ts
+var builtInLucideIcons = {
+  "book-open": BookOpen,
+  "code-2": CodeXml,
+  coffee: Coffee,
+  container: Container,
+  cpu: Cpu,
+  database: Database,
+  "file-code-2": FileCode,
+  "git-branch": GitBranch,
+  globe: Globe,
+  layers: Layers,
+  network: Network,
+  shield: Shield,
+  terminal: Terminal
+};
+var builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons));
+var lucidePackageVersion = "1.25.0";
+
+// src/icons.ts
 function readLucideIconNode(icon) {
   const wrapper = icon({});
   if (!Array.isArray(wrapper.props.iconNode)) {
@@ -2957,21 +2987,41 @@ var sidebarIcons = Object.freeze({
   home: adaptLucideIcon(House),
   note: adaptLucideIcon(FileText)
 });
-var builtInIcons = {
-  "book-open": adaptLucideIcon(BookOpen),
-  coffee: adaptLucideIcon(Coffee),
-  terminal: adaptLucideIcon(Terminal),
-  container: adaptLucideIcon(Container),
-  layers: adaptLucideIcon(Layers),
-  "code-2": adaptLucideIcon(CodeXml),
-  network: adaptLucideIcon(Network),
-  "git-branch": adaptLucideIcon(GitBranch),
-  database: adaptLucideIcon(Database),
-  shield: adaptLucideIcon(Shield),
-  cpu: adaptLucideIcon(Cpu),
-  globe: adaptLucideIcon(Globe),
-  "file-code-2": adaptLucideIcon(FileCode)
-};
+var builtInIcons = Object.freeze(
+  Object.fromEntries(
+    builtInIconNames.map((name2) => [name2, adaptLucideIcon(builtInLucideIcons[name2])])
+  )
+);
+var lucideStaticBaseUrl = `https://cdn.jsdelivr.net/npm/lucide-static@${lucidePackageVersion}/icons`;
+var remoteLucideIcons = /* @__PURE__ */ new Map();
+function safeIconDimension(value) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.min(512, value) : 24;
+}
+function remoteLucideIcon(iconName) {
+  const cached = remoteLucideIcons.get(iconName);
+  if (cached) return cached;
+  const url = `${lucideStaticBaseUrl}/${iconName}.svg`;
+  const component = (props) => {
+    const width = safeIconDimension(props.width);
+    const height = safeIconDimension(props.height);
+    const mask = `url(${url})`;
+    return createElement("span", {
+      "aria-hidden": "true",
+      "data-rip-lucide-icon": iconName,
+      style: [
+        "display:block",
+        `width:${width}px`,
+        `height:${height}px`,
+        "background:currentColor",
+        `-webkit-mask:${mask} center/contain no-repeat`,
+        `mask:${mask} center/contain no-repeat`,
+        "pointer-events:none"
+      ].join(";")
+    });
+  };
+  remoteLucideIcons.set(iconName, component);
+  return component;
+}
 function ownDataValue3(value, key) {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return void 0;
   try {
@@ -2990,8 +3040,10 @@ function resolveBuiltInIcon(name2) {
   return builtInIcons[name2];
 }
 function resolveIconName(value, icons) {
-  const name2 = normalizeRegistryIdentifier(value);
+  const name2 = normalizePanelIconIdentifier(value);
   if (!name2) return void 0;
+  const lucideName = lucideIconNameFromIdentifier(name2);
+  if (lucideName) return { name: name2, component: remoteLucideIcon(lucideName) };
   const component = resolveCustomIcon(icons, name2) ?? resolveBuiltInIcon(name2);
   return component ? { name: name2, component } : void 0;
 }

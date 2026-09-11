@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-11
+
 ### Added
+
+- Allow any icon from the plugin's pinned Lucide release to be selected directly with
+  `panel.icon: "lucide:<name>"`, without a plugin pull request.
+- Add a manifest-driven built-in icon registry and `npm run icon:add -- <name>` helper that verifies
+  Lucide exports, regenerates code and documentation, formats changes, and runs package checks.
 
 - Add a latest-edited three-book preview, localized edit dates, and deterministic reader-controlled
   library sorting.
@@ -63,5 +70,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/VingGit/root-index-panels/releases/tag/v0.2.0
 [0.1.1]: https://github.com/VingGit/root-index-panels/releases/tag/v0.1.1

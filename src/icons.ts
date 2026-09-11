@@ -1,51 +1,31 @@
 import {
-  BookOpen,
   Check,
   ChevronRight,
   ChevronsUpDown,
-  CodeXml,
-  Coffee,
-  Container,
-  Cpu,
-  Database,
-  FileCode,
   FileText,
   Folder,
-  GitBranch,
-  Globe,
   House,
-  Layers,
-  Network,
-  Shield,
   TableProperties,
-  Terminal,
   Workflow,
 } from "lucide-preact"
 import { createElement, type JSX, type VNode } from "preact"
 
-import { normalizeRegistryIdentifier } from "./options"
+import {
+  builtInIconNames,
+  builtInLucideIcons,
+  lucidePackageVersion,
+  type BuiltInIconName,
+} from "./built-in-icons.generated"
+import { lucideIconNameFromIdentifier, normalizePanelIconIdentifier } from "./options"
 import type { PanelIconComponent, RootIndexPanelsOptions } from "./types"
-
-type BuiltInIconName =
-  | "book-open"
-  | "coffee"
-  | "terminal"
-  | "container"
-  | "layers"
-  | "code-2"
-  | "network"
-  | "git-branch"
-  | "database"
-  | "shield"
-  | "cpu"
-  | "globe"
-  | "file-code-2"
 
 type LucideIconNode = ReadonlyArray<
   readonly [tag: keyof JSX.IntrinsicElements, attributes: JSX.SVGAttributes<SVGElement>]
 >
 
-function readLucideIconNode(icon: typeof BookOpen): LucideIconNode {
+type LucideComponent = typeof Folder
+
+function readLucideIconNode(icon: LucideComponent): LucideIconNode {
   const wrapper = icon({}) as VNode<{ iconNode?: unknown }>
   if (!Array.isArray(wrapper.props.iconNode)) {
     throw new TypeError("The pinned lucide-preact icon-node contract changed")
@@ -53,7 +33,7 @@ function readLucideIconNode(icon: typeof BookOpen): LucideIconNode {
   return wrapper.props.iconNode as LucideIconNode
 }
 
-function adaptLucideIcon(icon: typeof BookOpen): PanelIconComponent {
+function adaptLucideIcon(icon: LucideComponent): PanelIconComponent {
   const iconNode = readLucideIconNode(icon)
 
   return ({ children, ...props }) =>
@@ -88,21 +68,48 @@ export const sidebarIcons = Object.freeze({
   note: adaptLucideIcon(FileText),
 })
 
-const builtInIcons = {
-  "book-open": adaptLucideIcon(BookOpen),
-  coffee: adaptLucideIcon(Coffee),
-  terminal: adaptLucideIcon(Terminal),
-  container: adaptLucideIcon(Container),
-  layers: adaptLucideIcon(Layers),
-  "code-2": adaptLucideIcon(CodeXml),
-  network: adaptLucideIcon(Network),
-  "git-branch": adaptLucideIcon(GitBranch),
-  database: adaptLucideIcon(Database),
-  shield: adaptLucideIcon(Shield),
-  cpu: adaptLucideIcon(Cpu),
-  globe: adaptLucideIcon(Globe),
-  "file-code-2": adaptLucideIcon(FileCode),
-} satisfies Record<BuiltInIconName, PanelIconComponent>
+const builtInIcons = Object.freeze(
+  Object.fromEntries(
+    builtInIconNames.map((name) => [name, adaptLucideIcon(builtInLucideIcons[name])]),
+  ) as Record<BuiltInIconName, PanelIconComponent>,
+)
+
+const lucideStaticBaseUrl = `https://cdn.jsdelivr.net/npm/lucide-static@${lucidePackageVersion}/icons`
+const remoteLucideIcons = new Map<string, PanelIconComponent>()
+
+function safeIconDimension(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? Math.min(512, value)
+    : 24
+}
+
+function remoteLucideIcon(iconName: string): PanelIconComponent {
+  const cached = remoteLucideIcons.get(iconName)
+  if (cached) return cached
+
+  const url = `${lucideStaticBaseUrl}/${iconName}.svg`
+  const component: PanelIconComponent = (props) => {
+    const width = safeIconDimension(props.width)
+    const height = safeIconDimension(props.height)
+    const mask = `url(${url})`
+    return createElement("span", {
+      "aria-hidden": "true",
+      "data-rip-lucide-icon": iconName,
+      style: [
+        "display:block",
+        `width:${width}px`,
+        `height:${height}px`,
+        "background:currentColor",
+        `-webkit-mask:${mask} center/contain no-repeat`,
+        `mask:${mask} center/contain no-repeat`,
+        "pointer-events:none",
+      ].join(";"),
+    })
+  }
+
+  remoteLucideIcons.set(iconName, component)
+  return component
+}
 
 type IconResolutionOptions = Pick<RootIndexPanelsOptions, "defaultIcon" | "icons">
 
@@ -133,13 +140,17 @@ function resolveBuiltInIcon(name: string): PanelIconComponent | undefined {
 }
 
 function resolveIconName(value: unknown, icons: unknown): ResolvedPanelIcon | undefined {
-  const name = normalizeRegistryIdentifier(value)
+  const name = normalizePanelIconIdentifier(value)
   if (!name) return undefined
+
+  const lucideName = lucideIconNameFromIdentifier(name)
+  if (lucideName) return { name, component: remoteLucideIcon(lucideName) }
+
   const component = resolveCustomIcon(icons, name) ?? resolveBuiltInIcon(name)
   return component ? { name, component } : undefined
 }
 
-/** Resolves a safe custom or built-in decorative icon for one panel. */
+/** Resolves a safe custom, built-in, or direct Lucide decorative icon for one panel. */
 export function resolvePanelIcon(
   panelIcon: unknown,
   options?: IconResolutionOptions | null,
