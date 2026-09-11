@@ -1,0 +1,129 @@
+name: Update Lucide
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-lucide
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install current dependencies
+        run: npm ci
+
+      - name: Update lucide-preact to npm latest
+        id: lucide
+        shell: bash
+        run: |
+          before="$(node -p "require('./package.json').dependencies['lucide-preact']")"
+          npm install --save-exact lucide-preact@latest
+          after="$(node -p "require('./package.json').dependencies['lucide-preact']")"
+
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+          echo "after=$after" >> "$GITHUB_OUTPUT"
+
+          if [ "$before" = "$after" ] && git diff --quiet -- package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "lucide-preact is already current at $after"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Updating lucide-preact from $before to $after"
+          fi
+
+      - name: Regenerate icon artifacts
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run icons:generate
+
+      - name: Format updated metadata
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm exec -- prettier --write package.json package-lock.json src/built-in-icons.generated.ts README.md
+
+      - name: Run package checks
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run check
+
+      - name: Build
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run build
+
+      - name: Verify dist externals
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run verify:dist
+
+      - name: Verify packed package
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run verify:package
+
+      - name: Prepare configured Quartz integration host
+        if: steps.lucide.outputs.changed == 'true'
+        run: |
+          host="$RUNNER_TEMP/quartz-for-gitlab"
+          git clone --depth 1 https://gitlab.utu.fi/obsidian/quartz-for-gitlab.git "$host"
+          npm ci --prefix "$host"
+          npm install --prefix "$host" --no-save @quartz-community/folder-page@0.1.0
+          (
+            cd "$host"
+            npx quartz plugin install --from-config
+          )
+          echo "RIP_QUARTZ_ROOT=$host" >> "$GITHUB_ENV"
+          echo "Configured Quartz host revision: $(git -C "$host" rev-parse HEAD)"
+
+      - name: Run configured Quartz integration
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run test:integration
+
+      - name: Run watch-mode integration
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm run test:watch-integration
+
+      - name: Verify npm pack dry run
+        if: steps.lucide.outputs.changed == 'true'
+        run: npm pack --dry-run
+
+      - name: Check generated diff
+        if: steps.lucide.outputs.changed == 'true'
+        run: git diff --check
+
+      - name: Commit verified Lucide update
+        if: steps.lucide.outputs.changed == 'true'
+        shell: bash
+        env:
+          LUCIDE_VERSION: ${{ steps.lucide.outputs.after }}
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            echo "::error::main moved while the Lucide update was being verified; rerun the workflow"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No Lucide update remains to commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update lucide-preact to $LUCIDE_VERSION"
+          git push origin HEAD:main

@@ -26,6 +26,19 @@ function runNpm(args) {
   run(process.execPath, [npmCli, ...args])
 }
 
+function getLatestLucideVersion() {
+  if (!npmCli) return null
+
+  const result = spawnSync(process.execPath, [npmCli, "view", "lucide-preact", "version"], {
+    cwd: root,
+    encoding: "utf8",
+  })
+  if (result.error || result.status !== 0) return null
+
+  const version = result.stdout.trim()
+  return version.length > 0 ? version : null
+}
+
 function inferExportName(alias) {
   return alias
     .split("-")
@@ -55,8 +68,19 @@ const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
 const lucideVersion = packageJson.dependencies?.["lucide-preact"]
 const lucide = await import("lucide-preact")
 if (!Object.hasOwn(lucide, exportName) || typeof lucide[exportName] !== "function") {
+  const latestVersion = getLatestLucideVersion()
+  const installedVersion = lucideVersion ?? "(unknown version)"
+  const updateHint =
+    latestVersion && latestVersion !== lucideVersion
+      ? `The project uses lucide-preact ${installedVersion}, while npm latest is ${latestVersion}.\n` +
+        "The icon may have been added after the installed release. Update Lucide (or pull the latest main) and retry:\n" +
+        "  npm install --save-exact lucide-preact@latest\n" +
+        `  npm run icon:add -- ${alias}${explicitExportName ? ` ${explicitExportName}` : ""}\n`
+      : ""
+
   fail(
-    `lucide-preact ${lucideVersion ?? "(unknown version)"} does not export ${exportName}.\n` +
+    `lucide-preact ${installedVersion} does not export ${exportName}.\n` +
+      updateHint +
       `Browse https://lucide.dev/icons/${alias} and, if needed, pass the component export explicitly:\n` +
       `  npm run icon:add -- ${alias} <LucideComponentExport>`,
   )

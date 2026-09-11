@@ -25,12 +25,29 @@ type LucideIconNode = ReadonlyArray<
 
 type LucideComponent = typeof Folder
 
+type LucideWrapperProps = {
+  iconNode?: unknown
+  icon?: unknown
+}
+
 function readLucideIconNode(icon: LucideComponent): LucideIconNode {
-  const wrapper = icon({}) as VNode<{ iconNode?: unknown }>
-  if (!Array.isArray(wrapper.props.iconNode)) {
-    throw new TypeError("The pinned lucide-preact icon-node contract changed")
+  const wrapper = icon({}) as VNode<LucideWrapperProps>
+
+  if (Array.isArray(wrapper.props.iconNode)) {
+    return wrapper.props.iconNode as LucideIconNode
   }
-  return wrapper.props.iconNode as LucideIconNode
+
+  const iconData = wrapper.props.icon
+  if (
+    typeof iconData === "object" &&
+    iconData !== null &&
+    !Array.isArray(iconData) &&
+    Array.isArray((iconData as { node?: unknown }).node)
+  ) {
+    return (iconData as { node: LucideIconNode }).node
+  }
+
+  throw new TypeError("The lucide-preact icon-node contract changed")
 }
 
 function adaptLucideIcon(icon: LucideComponent): PanelIconComponent {

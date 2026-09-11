@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `user-group` to the bundled Lucide icon aliases.
+- Add a daily GitHub Actions maintenance job that updates `lucide-preact` to the latest npm release, regenerates and verifies the package, runs the Quartz integration suites, and commits the verified dependency bump directly to `main`.
+
+### Changed
+
+- Improve `npm run icon:add -- <name>` diagnostics when the repository's installed Lucide release is older than the current npm release.
+
+### Fixed
+
+- Support both the legacy `iconNode` wrapper and the current Lucide Preact `icon.node` wrapper so newer Lucide releases keep working with the plugin's icon adapter.
+
 ## [0.2.2] - 2026-09-11
 
 ### Added
