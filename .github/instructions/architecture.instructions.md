@@ -227,19 +227,25 @@ Normalize public options defensively because direct TypeScript calls bypass mani
 - registry maps: own data properties only; ignore accessors, inherited entries, invalid keys/values,
   and normalized duplicates.
 
-Registry names match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. `theme` is reserved for accent behavior. Custom
-own aliases win built-in collisions. The normalized `defaultIcon` is `book-open`, including when a
-configuration omits it or supplies an empty string. Unknown authored icons fall back once to that
-default; an explicitly configured unresolved default still renders no icon.
+Registry names match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. `theme` is reserved for accent behavior. Direct
+Lucide icon specifiers match `lucide:<lowercase-kebab-name>` and are intentionally outside the custom
+alias registry. Construct their remote SVG URL only from that validated name and the exact
+`lucide-preact` version generated from `package.json`; never accept an authored URL or arbitrary CSS
+value. Custom own aliases win built-in collisions. The normalized `defaultIcon` is `book-open`,
+including when a configuration omits it or supplies an empty string, and may explicitly be a valid
+direct Lucide specifier. Unknown or malformed authored icons fall back once to that default; an
+explicitly configured unresolved plain registry default still renders no icon.
 
 Accept accents only as `theme`, a valid own registry name whose value passes the direct grammar,
 `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, or exact `var(--name)`. Reject keywords, arbitrary
 functions, fallbacks, URLs, gradients, declarations, braces, controls, and extra tokens. Raw colors
 never enter selectors, classes, IDs, or data attributes.
 
-Icons are inert, `aria-hidden`, non-interactive content with non-focusable SVG. Custom components
-must not introduce links, controls, focusable descendants, or accessible-name noise. Each card/list
-row has one whole-panel anchor.
+Icons are inert, `aria-hidden`, non-interactive content with non-focusable SVG. Direct Lucide icons
+render as fixed-origin CSS masks backed by a version-pinned `lucide-static` SVG on jsDelivr so they
+inherit the surrounding accent without inserting remote markup into the DOM. Custom components must
+not introduce links, controls, focusable descendants, or accessible-name noise. Each card/list row
+has one whole-panel anchor.
 
 ## Localization and accessibility
 
@@ -264,6 +270,12 @@ Public exports are:
 
 Do not export internal inventory, navigation-model, normalization, comparator, or resolver types only
 for tests.
+
+`src/built-in-icons.json` is the single source of truth for bundled book icons.
+`scripts/generate-icons.mjs` deterministically generates static Lucide imports plus the README list,
+and `npm run icons:check` must fail on drift. `npm run icon:add -- <name> [ExportName]` verifies the
+installed pinned Lucide export and runs generation, formatting, package checks, build, and package
+verification.
 
 `tsup` produces ESM, declarations, and source maps for the root, `./types`, and `./components`. SCSS
 and `.inline.ts` files become component resource strings. Normalize source-map embedded text to LF

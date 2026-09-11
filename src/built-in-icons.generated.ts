@@ -33,8 +33,6 @@ export const builtInLucideIcons = {
 
 export type BuiltInIconName = keyof typeof builtInLucideIcons
 
-export const builtInIconNames = Object.freeze(
-  Object.keys(builtInLucideIcons) as BuiltInIconName[],
-)
+export const builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons) as BuiltInIconName[])
 
 export const lucidePackageVersion = "1.25.0"

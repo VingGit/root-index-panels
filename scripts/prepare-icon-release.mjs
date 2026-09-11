@@ -29,12 +29,7 @@ function replaceExactCount(relative, before, after, expectedCount) {
   fs.writeFileSync(target, current.split(before).join(after))
 }
 
-replaceExactCount(
-  "package-lock.json",
-  '"version": "0.1.1",',
-  '"version": "0.2.0",',
-  2,
-)
+replaceExactCount("package-lock.json", '"version": "0.1.1",', '"version": "0.2.0",', 2)
 
 replaceOnce(
   "README.md",

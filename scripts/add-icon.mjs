@@ -42,7 +42,8 @@ if (!registryNamePattern.test(alias)) {
 }
 
 const exportName = explicitExportName ?? inferExportName(alias)
-if (!exportNamePattern.test(exportName)) fail(`Invalid Lucide export name ${JSON.stringify(exportName)}`)
+if (!exportNamePattern.test(exportName))
+  fail(`Invalid Lucide export name ${JSON.stringify(exportName)}`)
 
 const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"))
 const lucideVersion = packageJson.dependencies?.["lucide-preact"]

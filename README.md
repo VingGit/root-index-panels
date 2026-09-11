@@ -111,7 +111,7 @@ plugins:
 | `tagCount`            | `3`            | Maximum number of displayed tags.                                      |
 | `excludeDirs`         | `[]`           | First-level directories to omit; matching is case-sensitive.           |
 | `descriptionFallback` | `""`           | Text used when a book index has no description.                        |
-| `defaultIcon`         | `book-open`    | Built-in or TypeScript-registered icon used as a fallback.             |
+| `defaultIcon`         | `book-open`    | Built-in, direct Lucide, or TypeScript-registered fallback icon.       |
 | `defaultAccent`       | `theme`        | `theme`, a named accent, or an allowed direct color.                   |
 | `accents`             | `{}`           | Named accent values available to book frontmatter.                     |
 | `replaceExplorer`     | `true`         | Replace stock Explorer beside this sidebar. Set `false` to show both.  |
@@ -120,7 +120,7 @@ The reader can reorder the complete library by newest edit, oldest edit, ascendi
 descending title. This does not change the separate latest-three preview.
 
 Books without authored icon metadata use a theme-colored open-book mark in the root library and
-book switcher. Set `defaultIcon` to another built-in or TypeScript-registered alias to override it.
+book switcher. Set `defaultIcon` to another built-in, a direct `lucide:<name>` icon, or a TypeScript-registered alias to override it.
 
 `accents` works in YAML, although Quartz's current schema-driven editor cannot represent arbitrary
 maps. Later configuration surfaces replace the entire `accents` or `icons` map rather than merging
@@ -148,28 +148,67 @@ directory name.
 
 Built-in icons:
 
+<!-- built-in-icons:start -->
+
 ```text
-book-open  coffee  terminal  container  layers  code-2  network
-git-branch  database  shield  cpu  globe  file-code-2
+book-open  code-2  coffee  container  cpu  database  file-code-2  git-branch  globe
+layers  network  shield  terminal
+```
+
+<!-- built-in-icons:end -->
+
+### Use any Lucide icon without changing the plugin
+
+Browse the [Lucide icon gallery](https://lucide.dev/icons/). The kebab-case name at the end of an
+icon page URL is the name to use. For example, `https://lucide.dev/icons/book-copy` corresponds to
+`book-copy`.
+
+Prefix that name with `lucide:` in book frontmatter:
+
+```yaml
+panel:
+  icon: "lucide:book-copy"
+```
+
+No pull request or plugin registry change is required. Direct Lucide icons are loaded as decorative,
+color-inheriting SVG masks from jsDelivr using the same exact Lucide version pinned by this plugin.
+They therefore require the reader's browser and Content Security Policy to allow image requests to
+`cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons remain self-contained and make no
+external icon request. An icon introduced after the plugin's pinned Lucide version will not render
+until the plugin updates Lucide.
+
+You can also use the direct form as the plugin fallback:
+
+```yaml
+options:
+  defaultIcon: "lucide:library-big"
 ```
 
 ### Adding another built-in icon
 
-The bundled book icons come from the [Lucide icon library](https://lucide.dev/icons/) and are
-imported through the pinned `lucide-preact` dependency. A Lucide icon name cannot be used directly in
-frontmatter until that icon has been registered by this plugin.
+Built-ins are still useful when an icon should work offline, under a restrictive CSP, or as a
+curated default. The bundled icons come from [Lucide](https://lucide.dev/icons/) through the exact
+`lucide-preact` version in `package.json`.
 
-To add another built-in choice:
+From a repository checkout with dependencies installed, adding the normal case is one command:
 
-1. Find the icon on Lucide and note its exported component name, such as `BookCopy`.
-2. Choose a lowercase kebab-case frontmatter alias, such as `book-copy`.
-3. In `src/icons.ts`, import the component from `lucide-preact`, add the alias to `BuiltInIconName`,
-   and add `"book-copy": adaptLucideIcon(BookCopy)` to `builtInIcons`.
-4. Add the alias to the built-in list above and update the icon-resolution tests.
-5. Run `npm run check`, `npm run build`, `npm run verify:dist`, and `npm run verify:package`, then
-   update the plugin installation in Quartz.
+```bash
+npm run icon:add -- book-copy
+```
 
-The new icon can then be selected on a book index:
+The command infers `BookCopy`, verifies that export exists in the installed pinned
+`lucide-preact`, updates the single source of truth in `src/built-in-icons.json`, regenerates the
+static imports and this README list, formats them, then runs `check`, `build`, `verify:dist`, and
+`verify:package`. The generated TypeScript registry and exhaustive generated-registry test no
+longer require manual editing.
+
+When the frontmatter alias and Lucide export do not map mechanically, pass the export explicitly:
+
+```bash
+npm run icon:add -- code-2 CodeXml
+```
+
+The icon can then be used without the `lucide:` prefix because it is a bundled built-in:
 
 ```yaml
 panel:
