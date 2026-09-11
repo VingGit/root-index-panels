@@ -88,7 +88,10 @@ jobs:
               )
             }
 
-            if (file === ".github/workflows/ci.yml" && !text.includes("@quartz-community/folder-page@0.1.0")) {
+            if (
+              file === ".github/workflows/ci.yml" &&
+              !text.includes("@quartz-community/folder-page@0.1.0")
+            ) {
               text = text.replace(
                 '          npm ci --prefix "$host"\n',
                 '          npm ci --prefix "$host"\n          npm install --prefix "$host" --no-save @quartz-community/folder-page@0.1.0\n',
@@ -150,6 +153,6 @@ jobs:
           fi
           git config user.name VingGit
           git config user.email 61470249+VingGit@users.noreply.github.com
-          git add package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts src/built-in-icons.generated.ts dist test .github/instructions .github/reference .github/siderbar-rework.md .github/workflows/ci.yml
+          git add package-lock.json README.md CHANGELOG.md scripts/generate-icons.mjs scripts/check-packed-package.mjs src/build/validate-manifest.ts src/built-in-icons.generated.ts dist test .github/instructions .github/reference .github/siderbar-rework.md
           git commit -m "prepare npm migration artifacts"
           git push origin HEAD:feature/npm-publishing
