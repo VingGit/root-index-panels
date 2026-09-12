@@ -162,26 +162,31 @@ user-group
 
 ### Use any Lucide icon without changing the plugin
 
-Browse the [Lucide icon gallery](https://lucide.dev/icons/). The kebab-case name at the end of an
-icon page URL is the name to use. For example, `https://lucide.dev/icons/book-copy` corresponds to
-`book-copy`.
+Use this form when the icon is not in the built-in list and you do not need an offline, bundled icon.
+No merge request, registry change, or plugin release is required.
 
-Prefix that name with `lucide:` in book frontmatter:
+Browse the [Lucide icon gallery](https://lucide.dev/icons/), copy the kebab-case name from the end of
+the icon page URL, and prefix it with `lucide:` in book frontmatter. For example,
+`https://lucide.dev/icons/refresh-cw` becomes `lucide:refresh-cw`:
 
 ```yaml
 panel:
-  icon: "lucide:book-copy"
+  icon: "lucide:refresh-cw"
 ```
 
-No pull request or plugin registry change is required. Direct Lucide icons are loaded as decorative,
-color-inheriting SVG masks from jsDelivr using the same exact Lucide version pinned by this plugin.
-They therefore require the reader's browser and Content Security Policy to allow image requests to
-`cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons remain self-contained and make no
-external icon request. The repository checks npm daily and advances the exact Lucide pin to the
-newest release only after the package checks and Quartz integration suites pass. Each successful
-Lucide update advances the plugin's minor version, tags that release, publishes it to npm, and creates
-the matching GitHub release. If a newly released icon is unavailable in your checkout, update the
-plugin before treating the icon as missing.
+The `lucide:` prefix is required. An unprefixed value such as `refresh-cw` is interpreted only as a
+built-in icon or a TypeScript-registered alias; if neither exists, the plugin falls back to the
+configured default icon.
+
+At build time, the plugin emits a decorative, color-inheriting CSS mask that references the selected
+SVG from jsDelivr at the exact Lucide version pinned by the plugin. The reader's browser fetches that
+SVG when it renders the page, so the site's Content Security Policy must allow image requests to
+`cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons are self-contained and make no
+external request. The repository checks npm daily and advances the exact Lucide pin to the newest
+release only after the package checks and Quartz integration suites pass. Each successful Lucide
+update advances the plugin's minor version, tags that release, publishes it to npm, and creates the
+matching GitHub release. If a newly released icon is unavailable in your checkout, update the plugin
+before treating the icon as missing.
 
 You can also use the direct form as the plugin fallback:
 
