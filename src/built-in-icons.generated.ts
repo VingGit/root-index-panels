@@ -43,4 +43,4 @@ export type BuiltInIconName = keyof typeof builtInLucideIcons
 
 export const builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons) as BuiltInIconName[])
 
-export const lucidePackageVersion = "1.44.0"
+export const lucidePackageVersion = "1.45.0"
