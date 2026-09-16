@@ -3699,7 +3699,7 @@ function parseFilenameSortValue(name2) {
   const kind = date ? time ? "date-time" : "date" : time ? "time" : "plain";
   return {
     raw: name2,
-    residual: residualName(name2, date, time),
+    residual: date || time ? residualName(name2, date, time) : name2,
     kind,
     ...date ? { date: date.value } : {},
     ...time ? { time: time.value } : {}
