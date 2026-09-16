@@ -28,24 +28,32 @@ describe("sidebar filename-list sorting metadata", () => {
     ),
   ]
 
-  it("publishes the exact current-folder policy and source-filename href index", () => {
-    const html = renderSidebar("book/topic", files)
+  it("publishes source-folder policies and source filenames independently of the viewed page", () => {
+    const html = renderSidebar("somewhere/else", files)
 
-    expect(html).toContain('data-rip-list-sort-direction="ascending"')
+    expect(html).not.toContain("data-rip-list-sort-direction")
     expect(html).toContain("data-rip-filename-sort-index=")
     expect(html).toContain("16.09.2026_at_13-36_Untitled")
     expect(html).toContain("permalink-like-slug")
+    expect(html).toContain("ascending")
+    expect(html).toContain("descending")
   })
 
-  it("uses the root index policy for generated tag routes", () => {
+  it("publishes the same per-source policy metadata on generated tag routes", () => {
     const html = renderSidebar("tags/example", files)
 
-    expect(html).toContain('data-rip-list-sort-direction="descending"')
+    expect(html).not.toContain("data-rip-list-sort-direction")
     expect(html).toContain("data-rip-filename-sort-index=")
+    expect(html).toContain("ascending")
+    expect(html).toContain("descending")
   })
 
-  it("omits list-sorting metadata when the exact folder has no policy", () => {
-    const html = renderSidebar("book/child/topic", files)
+  it("omits list-sorting metadata only when no physical source folder opts in", () => {
+    const html = renderSidebar("book/topic", [
+      physicalFile("index"),
+      physicalFile("book/index"),
+      physicalFile("book/topic"),
+    ])
 
     expect(html).not.toContain("data-rip-list-sort-direction")
     expect(html).not.toContain("data-rip-filename-sort-index")
