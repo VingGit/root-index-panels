@@ -8,64 +8,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  materialize-feature:
-    if: github.event_name == 'pull_request' && github.head_ref == 'feature/folder-filename-sorting'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout feature branch
-        uses: actions/checkout@v6
-        with:
-          ref: feature/folder-filename-sorting
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Update feature documentation
-        run: python .github/materialize-folder-filename-sorting.py
-
-      - name: Format feature files
-        run: >-
-          npx prettier --write
-          src/filenameSorting.ts
-          src/navigation.ts
-          test/filename-sorting.test.ts
-          README.md
-          CHANGELOG.md
-          .github/instructions/architecture.instructions.md
-          .github/instructions/verification.instructions.md
-
-      - name: Build distribution
-        run: npm run build
-
-      - name: Commit generated feature state
-        shell: bash
-        run: |
-          git config user.name VingGit
-          git config user.email 61470249+VingGit@users.noreply.github.com
-          git add \
-            src/filenameSorting.ts \
-            src/navigation.ts \
-            test/filename-sorting.test.ts \
-            README.md \
-            CHANGELOG.md \
-            .github/instructions/architecture.instructions.md \
-            .github/instructions/verification.instructions.md \
-            dist/
-          if git diff --cached --quiet; then
-            echo "Feature state is already materialized"
-            exit 0
-          fi
-          git commit -m "build: materialize folder filename sorting"
-          git push origin HEAD:feature/folder-filename-sorting
-
   test:
     runs-on: ubuntu-latest
     steps:
@@ -81,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Format feature files for artifact generation
-        run: npx prettier --write src/filenameSorting.ts src/navigation.ts test/filename-sorting.test.ts
-
       - name: Typecheck
         run: npm run typecheck
 
@@ -98,16 +37,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Upload generated feature files
-        uses: actions/upload-artifact@v4
-        with:
-          name: folder-filename-sorting-generated
-          path: |
-            src/filenameSorting.ts
-            src/navigation.ts
-            test/filename-sorting.test.ts
-            dist/
 
       - name: Verify dist is up to date
         run: |
