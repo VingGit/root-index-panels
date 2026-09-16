@@ -114,7 +114,7 @@ function parseFilenameSortValue(name: string): FilenameSortValue {
   const kind: TemporalKind = date ? (time ? "date-time" : "date") : time ? "time" : "plain"
   return {
     raw: name,
-    residual: residualName(name, date, time),
+    residual: date || time ? residualName(name, date, time) : name,
     kind,
     ...(date ? { date: date.value } : {}),
     ...(time ? { time: time.value } : {}),
