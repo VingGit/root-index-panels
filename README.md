@@ -187,6 +187,18 @@ do not move the date/time buckets ahead of ordinary filenames or move lowercase 
 uppercase names. Missing values, booleans such as `true`/`false`, and any string other than exactly
 `ascending` or `descending` preserve the sidebar's normal title-based ordering for that folder.
 
+The same filename policy also orders Quartz note collections rendered on the page. Backlinks and
+FolderPage's PageList use the exact current folder's physical `index.md` policy. Generated TagPage
+routes use the physical root `content/index.md` policy because tags are global rather than owned by a
+content folder. Sorting still uses source filenames even when the visible link text comes from
+frontmatter `title`. Entries without a listed physical source keep their original list slots.
+
+This enhancement runs after each Quartz SPA navigation and currently covers the standard Backlinks
+list plus the shared `section-ul` PageList used by FolderPage and TagPage. `RecentNotes` is
+intentionally left alone because recency is that component's explicit ordering semantics. On the
+root `tags` overview, Quartz chooses the capped preview subset before rendering; this plugin reorders
+that visible subset but does not change which pages Quartz selected for the cap.
+
 Built-in icons:
 
 <!-- built-in-icons:start -->

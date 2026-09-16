@@ -42,6 +42,10 @@ For sidebar inventory, parameterize input order and duplicates. Assert:
   scopes, non-inheritance, invalid-value fallback, filename-versus-title independence, strict
   `DD.MM.YYYY`/`HH-MM` validation, natural numeric/Unicode case classes, fixed temporal buckets,
   same-date time grouping, deterministic ties, and both directions;
+- shared note-list sorting metadata and SPA behavior: exact-folder policy on ordinary pages, root
+  policy on generated tag routes, source-filename rather than title lookup, Backlinks and
+  `section-ul` PageList reordering, stable ties, preserved unknown/generated slots and Backlinks
+  overflow sentinel, no-op without a valid policy, and explicit non-interference with RecentNotes;
 - book index excluded from visible children but retained as the dedicated home destination;
 - physical and generated nested folder-index destinations, titles, and hidden index notes;
 - selected versus exact-current state, active ancestry, and cache isolation;

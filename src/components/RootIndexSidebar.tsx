@@ -8,6 +8,7 @@ import { classNames } from "@quartz-community/utils/lang"
 import { resolveRelative } from "@quartz-community/utils/path"
 
 import { resolvePanelAccent } from "../appearance"
+import { collectFilenameListSortData } from "../filenameListSorting"
 import { i18n, type RootIndexPanelsTranslation } from "../i18n"
 import { resolvePanelIcon, sidebarIcons } from "../icons"
 import {
@@ -317,12 +318,27 @@ export default ((userOptions?: RootIndexSidebarOptions) => {
     const rootTitle = model.rootTitle ?? translation.home
     const rootSelected = selectedBook === undefined
     const rootState = getSidebarLinkState("index", current)
+    const filenameListData = collectFilenameListSortData(props.allFiles, current)
+    const noteListSortDirection =
+      current === "tags" || current.startsWith("tags/")
+        ? filenameListData.rootDirection
+        : filenameListData.pageDirection
+    const filenameSortIndex = noteListSortDirection
+      ? JSON.stringify(
+          filenameListData.sources.map((source) => [
+            resolveRelative(current, source.slug),
+            source.sortName,
+          ]),
+        )
+      : undefined
 
     return (
       <nav
         class={classNames(props.displayClass, "rip-sidebar")}
         aria-label={translation.sidebarNavigation}
         data-rip-replace-explorer={options.replaceExplorer ? "true" : undefined}
+        data-rip-list-sort-direction={noteListSortDirection}
+        data-rip-filename-sort-index={filenameSortIndex}
         data-rip-scope={scope.kind}
         {...(selectedBook ? panelAttributes(selectedBook.panel, options) : {})}
       >

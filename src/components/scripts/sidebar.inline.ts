@@ -1,6 +1,109 @@
+import {
+  compareFilenameSortNames,
+  normalizeFilenameSortDirection,
+  type FilenameSortDirection,
+} from "../../filenameSorting"
+
 // RootIndexSidebar keeps all navigation as ordinary SSR links. JavaScript only
-// enhances book switcher dismissal, compact Explorer dismissal, and independent
-// folder disclosures.
+// enhances book switcher dismissal, compact Explorer dismissal, independent folder
+// disclosures, and filename ordering for compatible Quartz note-list components.
+
+interface FilenameListSortContext {
+  direction: FilenameSortDirection
+  index: Map<string, string>
+}
+
+function normalizedListHref(href: string): string | undefined {
+  try {
+    const path = new URL(href, document.baseURI).pathname.replace(/\/+$/, "")
+    return path.length > 0 ? path : "/"
+  } catch {
+    return undefined
+  }
+}
+
+function readFilenameListSortContext(): FilenameListSortContext | undefined {
+  const sidebar = document.querySelector<HTMLElement>(
+    ".rip-sidebar[data-rip-list-sort-direction][data-rip-filename-sort-index]",
+  )
+  if (!sidebar) return undefined
+
+  const direction = normalizeFilenameSortDirection(sidebar.dataset.ripListSortDirection)
+  const rawIndex = sidebar.dataset.ripFilenameSortIndex
+  if (!direction || !rawIndex) return undefined
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(rawIndex)
+  } catch {
+    return undefined
+  }
+  if (!Array.isArray(parsed)) return undefined
+
+  const index = new Map<string, string>()
+  for (const entry of parsed) {
+    if (!Array.isArray(entry) || entry.length !== 2) continue
+    const [href, sortName] = entry
+    if (typeof href !== "string" || typeof sortName !== "string") continue
+    index.set(href, sortName)
+    const normalized = normalizedListHref(href)
+    if (normalized) index.set(normalized, sortName)
+  }
+  if (index.size === 0) return undefined
+
+  return { direction, index }
+}
+
+function listItemSortName(item: Element, index: ReadonlyMap<string, string>): string | undefined {
+  const link = item.querySelector<HTMLAnchorElement>("a.internal[href]:not(.tag-link)")
+  const href = link?.getAttribute("href")
+  if (!href) return undefined
+
+  const direct = index.get(href)
+  if (direct !== undefined) return direct
+  const normalized = normalizedListHref(href)
+  return normalized ? index.get(normalized) : undefined
+}
+
+function sortFilenameList(
+  list: HTMLUListElement,
+  direction: FilenameSortDirection,
+  index: ReadonlyMap<string, string>,
+) {
+  const children = Array.from(list.children)
+  const sortable: Array<{
+    element: Element
+    position: number
+    sortName: string
+  }> = []
+
+  for (let position = 0; position < children.length; position += 1) {
+    const element = children[position]!
+    const sortName = listItemSortName(element, index)
+    if (sortName !== undefined) sortable.push({ element, position, sortName })
+  }
+  if (sortable.length < 2) return
+
+  const ordered = [...sortable].sort((left, right) => {
+    const compared = compareFilenameSortNames(left.sortName, right.sortName, direction)
+    return compared !== 0 ? compared : left.position - right.position
+  })
+  const nextChildren = [...children]
+  for (let index = 0; index < sortable.length; index += 1) {
+    nextChildren[sortable[index]!.position] = ordered[index]!.element
+  }
+  for (const child of nextChildren) list.append(child)
+}
+
+function initFilenameListSorting() {
+  const context = readFilenameListSortContext()
+  if (!context) return
+
+  const lists = document.querySelectorAll<HTMLUListElement>(".backlinks > ul, ul.section-ul")
+  for (const list of lists) {
+    sortFilenameList(list, context.direction, context.index)
+  }
+}
 
 function compactExplorerIsActive(): boolean {
   try {
@@ -137,6 +240,7 @@ function initExplorerNavigation(cleanups: Array<() => void>) {
 
 export function initRootIndexSidebar() {
   const cleanups: Array<() => void> = []
+  initFilenameListSorting()
   initSwitchers(cleanups)
   initExplorerNavigation(cleanups)
   initFolderDisclosures(cleanups)

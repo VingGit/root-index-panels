@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `quartz-sorting-direction: ascending|descending` on physical `index.md` files, with strict
   `DD.MM.YYYY`/`HH-MM` parsing, deterministic natural filename ordering, same-date time grouping,
   and non-inherited folder scope.
+- Apply the same active filename policy to standard Quartz Backlinks and FolderPage/TagPage
+  PageList collections, using source filenames while preserving generated entries and component
+  semantics such as RecentNotes recency.
 
 ## [0.5.0] - 2026-09-15
 

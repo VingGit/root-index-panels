@@ -130,6 +130,13 @@ only when listeners were installed.
   date-and-time values compare date then time so equal dates stay grouped. Parsed-value ties use the
   remaining name and then the raw name deterministically. Ordinary notes, Canvas, and Base use
   distinct icons.
+- `src/filenameListSorting.ts` independently resolves the first listed physical `index` policy for
+  the exact current folder and root while collecting a listed-physical slug/source-filename index in
+  one pass. `RootIndexSidebar` serializes only an active policy plus resolved href/name pairs. For
+  ordinary pages the exact current-folder policy applies; generated `tags` routes use the root
+  policy. The SPA enhancement reorders only sortable direct slots in standard Backlinks lists and
+  Quartz `ul.section-ul` PageLists, preserving unknown/generated slots and overflow sentinels. It
+  must not reorder `RecentNotes`, whose ordering is semantically recency-based.
 
 Cache the immutable model in a `WeakMap` by `allFiles` identity plus normalized `excludeDirs`,
 `descriptionFallback`, `sort`, and `tagCount`. A clean build/new `allFiles` identity is the
