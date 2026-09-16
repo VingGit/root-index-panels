@@ -12,11 +12,11 @@ type PluginFile = QuartzPluginData & Record<string, unknown>
 export interface FilenameSortSource {
   slug: FullSlug
   sortName: string
+  folderKey: string
+  direction?: FilenameSortDirection
 }
 
 export interface FilenameListSortData {
-  pageDirection?: FilenameSortDirection
-  rootDirection?: FilenameSortDirection
   sources: readonly FilenameSortSource[]
 }
 
@@ -72,20 +72,15 @@ function fileSortDirection(file: PluginFile): FilenameSortDirection | undefined 
 }
 
 /**
- * Build the physical filename index used by note-list components and resolve the exact
- * current-folder and root sorting policies in the same pass.
+ * Build the physical filename index used by note-list components. Every source note is
+ * associated with the policy from the physical index.md in its own containing folder.
+ * Policies never inherit into nested folders.
  */
-export function collectFilenameListSortData(
-  allFiles: unknown,
-  currentSlug: unknown,
-): FilenameListSortData {
-  const current = parseCanonicalSlug(currentSlug)
-  const currentFolderKey = current?.parts.slice(0, -1).join("/")
+export function collectFilenameListSortData(allFiles: unknown): FilenameListSortData {
   const seenFolders = new Set<string>()
+  const folderDirections = new Map<string, FilenameSortDirection>()
   const seenSources = new Set<string>()
-  const sources: FilenameSortSource[] = []
-  let pageDirection: FilenameSortDirection | undefined
-  let rootDirection: FilenameSortDirection | undefined
+  const sources: Array<Omit<FilenameSortSource, "direction">> = []
 
   for (const file of safeFiles(allFiles)) {
     const parsed = parseCanonicalSlug(ownDataValue(file, "slug"))
@@ -96,8 +91,7 @@ export function collectFilenameListSortData(
       if (!seenFolders.has(folderKey)) {
         seenFolders.add(folderKey)
         const direction = fileSortDirection(file)
-        if (folderKey === "") rootDirection = direction
-        if (folderKey === currentFolderKey) pageDirection = direction
+        if (direction) folderDirections.set(folderKey, direction)
       }
     }
 
@@ -106,17 +100,22 @@ export function collectFilenameListSortData(
     const filePath = ownDataValue(file, "filePath")
     const fallbackSegment = parsed.parts.at(-1)
     if (typeof filePath !== "string" || !fallbackSegment) continue
-    sources.push(
-      Object.freeze({
-        slug: parsed.slug,
-        sortName: filenameSortName(filePath, fallbackSegment),
-      }),
-    )
+    sources.push({
+      slug: parsed.slug,
+      sortName: filenameSortName(filePath, fallbackSegment),
+      folderKey: parsed.parts.slice(0, -1).join("/"),
+    })
   }
 
   return Object.freeze({
-    ...(pageDirection ? { pageDirection } : {}),
-    ...(rootDirection ? { rootDirection } : {}),
-    sources: Object.freeze(sources),
+    sources: Object.freeze(
+      sources.map((source) => {
+        const direction = folderDirections.get(source.folderKey)
+        return Object.freeze({
+          ...source,
+          ...(direction ? { direction } : {}),
+        })
+      }),
+    ),
   })
 }

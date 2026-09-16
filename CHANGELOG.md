@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   PageList collections, using source filenames while preserving generated entries and component
   semantics such as RecentNotes recency.
 
+- Fix Backlinks/list sorting to use each listed source note's own folder policy instead of the viewed page's folder.
+
 ## [0.5.0] - 2026-09-15
 
 ### Changed

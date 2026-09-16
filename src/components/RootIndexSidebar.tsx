@@ -318,26 +318,27 @@ export default ((userOptions?: RootIndexSidebarOptions) => {
     const rootTitle = model.rootTitle ?? translation.home
     const rootSelected = selectedBook === undefined
     const rootState = getSidebarLinkState("index", current)
-    const filenameListData = collectFilenameListSortData(props.allFiles, current)
-    const noteListSortDirection =
-      current === "tags" || current.startsWith("tags/")
-        ? filenameListData.rootDirection
-        : filenameListData.pageDirection
-    const filenameSortIndex = noteListSortDirection
-      ? JSON.stringify(
-          filenameListData.sources.map((source) => [
-            resolveRelative(current, source.slug),
-            source.sortName,
-          ]),
-        )
-      : undefined
+    const filenameListData = collectFilenameListSortData(props.allFiles)
+    const sortableFilenameSources = filenameListData.sources.filter(
+      (source) => source.direction !== undefined,
+    )
+    const filenameSortIndex =
+      sortableFilenameSources.length > 0
+        ? JSON.stringify(
+            sortableFilenameSources.map((source) => [
+              resolveRelative(current, source.slug),
+              source.sortName,
+              source.folderKey,
+              source.direction,
+            ]),
+          )
+        : undefined
 
     return (
       <nav
         class={classNames(props.displayClass, "rip-sidebar")}
         aria-label={translation.sidebarNavigation}
         data-rip-replace-explorer={options.replaceExplorer ? "true" : undefined}
-        data-rip-list-sort-direction={noteListSortDirection}
         data-rip-filename-sort-index={filenameSortIndex}
         data-rip-scope={scope.kind}
         {...(selectedBook ? panelAttributes(selectedBook.panel, options) : {})}

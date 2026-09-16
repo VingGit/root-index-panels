@@ -4,12 +4,16 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import { initRootIndexSidebar } from "../src/components/scripts/sidebar.inline"
 
-type SortEntry = [href: string, sortName: string]
+type SortEntry = [
+  href: string,
+  sortName: string,
+  folderKey: string,
+  direction: "ascending" | "descending",
+]
 
-function mountContext(direction: "ascending" | "descending", entries: SortEntry[]) {
+function mountContext(entries: SortEntry[]) {
   const sidebar = document.createElement("nav")
   sidebar.className = "rip-sidebar"
-  sidebar.dataset.ripListSortDirection = direction
   sidebar.dataset.ripFilenameSortIndex = JSON.stringify(entries)
   document.body.append(sidebar)
 }
@@ -39,19 +43,19 @@ function hrefs(list: HTMLUListElement): Array<string | null> {
 
 beforeEach(() => {
   document.body.replaceChildren()
-  window.history.replaceState({}, "", "/book/current")
+  window.history.replaceState({}, "", "/overview")
 })
 
 describe("shared Quartz filename list sorting", () => {
-  it("sorts Backlinks by source filename rather than displayed title", () => {
-    mountContext("ascending", [
-      ["./number", "2Thing"],
-      ["./letter", "Apple"],
-      ["./later", "17.09.2026_at_08-00_Foo"],
-      ["./dt13", "16.09.2026_at_13-36_Untitled"],
-      ["./dt12", "16.09.2026_at_12-00_Zulu"],
-      ["./date", "16.09.2026_Untitled"],
-      ["./time", "13-36_Untitled"],
+  it("sorts Backlinks by the backlink source folder policy, not the viewed page", () => {
+    mountContext([
+      ["./number", "2Thing", "diary", "ascending"],
+      ["./letter", "Apple", "diary", "ascending"],
+      ["./later", "17.09.2026_at_08-00_Foo", "diary", "ascending"],
+      ["./dt13", "16.09.2026_at_13-36_Untitled", "diary", "ascending"],
+      ["./dt12", "16.09.2026_at_12-00_Zulu", "diary", "ascending"],
+      ["./date", "16.09.2026_Untitled", "diary", "ascending"],
+      ["./time", "13-36_Untitled", "diary", "ascending"],
     ])
     const list = mountBacklinks([
       ["./time", "A title"],
@@ -77,33 +81,29 @@ describe("shared Quartz filename list sorting", () => {
     expect(list.lastElementChild?.classList.contains("overflow-end")).toBe(true)
   })
 
-  it("keeps bucket priority fixed while descending reverses values inside buckets", () => {
-    mountContext("descending", [
-      ["./2", "2Thing"],
-      ["./10", "10Thing"],
-      ["./apple", "Apple"],
-      ["./zebra", "Zebra"],
-      ["./early", "16.09.2026_at_12-00_First"],
-      ["./late", "16.09.2026_at_13-36_Second"],
+  it("uses each source folder direction independently in a mixed Backlinks list", () => {
+    mountContext([
+      ["./a-late", "17.09.2026_A", "folder-a", "ascending"],
+      ["./a-early", "16.09.2026_A", "folder-a", "ascending"],
+      ["./b-alpha", "Apple", "folder-b", "descending"],
+      ["./b-zulu", "Zulu", "folder-b", "descending"],
     ])
     const list = mountBacklinks([
-      ["./2", "2"],
-      ["./apple", "Apple"],
-      ["./early", "Early"],
-      ["./10", "10"],
-      ["./zebra", "Zebra"],
-      ["./late", "Late"],
+      ["./a-late", "A late"],
+      ["./b-alpha", "B alpha"],
+      ["./a-early", "A early"],
+      ["./b-zulu", "B zulu"],
     ])
 
     initRootIndexSidebar()
 
-    expect(hrefs(list)).toEqual(["./10", "./2", "./zebra", "./apple", "./late", "./early"])
+    expect(hrefs(list)).toEqual(["./a-early", "./b-zulu", "./a-late", "./b-alpha"])
   })
 
   it("sorts Quartz PageList note slots while preserving unknown generated entries", () => {
-    mountContext("ascending", [
-      ["./later", "17.09.2026_at_08-00_Later"],
-      ["./earlier", "16.09.2026_at_08-00_Earlier"],
+    mountContext([
+      ["./later", "17.09.2026_at_08-00_Later", "book", "ascending"],
+      ["./earlier", "16.09.2026_at_08-00_Earlier", "book", "ascending"],
     ])
     const list = document.createElement("ul")
     list.className = "section-ul"
@@ -124,7 +124,7 @@ describe("shared Quartz filename list sorting", () => {
     ).toEqual(["folder", "./earlier", "generated", "./later"])
   })
 
-  it("leaves Backlinks and PageList order untouched without an active policy", () => {
+  it("leaves Backlinks and PageList order untouched without a source-folder policy", () => {
     const list = mountBacklinks([
       ["./later", "Later"],
       ["./earlier", "Earlier"],

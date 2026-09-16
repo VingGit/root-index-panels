@@ -133,8 +133,9 @@ only when listeners were installed.
 - `src/filenameListSorting.ts` independently resolves the first listed physical `index` policy for
   the exact current folder and root while collecting a listed-physical slug/source-filename index in
   one pass. `RootIndexSidebar` serializes only an active policy plus resolved href/name pairs. For
-  ordinary pages the exact current-folder policy applies; generated `tags` routes use the root
-  policy. The SPA enhancement reorders only sortable direct slots in standard Backlinks lists and
+  each listed physical note carries the policy from its own exact containing folder. Aggregate
+  lists may therefore contain several independent folder groups. The SPA enhancement reorders only
+  each group's existing sortable slots in standard Backlinks lists and
   Quartz `ul.section-ul` PageLists, preserving unknown/generated slots and overflow sentinels. It
   must not reorder `RecentNotes`, whose ordering is semantically recency-based.
 

@@ -3828,14 +3828,11 @@ function fileSortDirection(file) {
   const frontmatter = ownDataValue5(file, "frontmatter");
   return normalizeFilenameSortDirection(ownDataValue5(frontmatter, "quartz-sorting-direction"));
 }
-function collectFilenameListSortData(allFiles, currentSlug2) {
-  const current = parseCanonicalSlug(currentSlug2);
-  const currentFolderKey = current?.parts.slice(0, -1).join("/");
+function collectFilenameListSortData(allFiles) {
   const seenFolders = /* @__PURE__ */ new Set();
+  const folderDirections = /* @__PURE__ */ new Map();
   const seenSources = /* @__PURE__ */ new Set();
   const sources = [];
-  let pageDirection;
-  let rootDirection;
   for (const file of safeFiles(allFiles)) {
     const parsed = parseCanonicalSlug(ownDataValue5(file, "slug"));
     if (!parsed || !isListedPhysical(file)) continue;
@@ -3844,8 +3841,7 @@ function collectFilenameListSortData(allFiles, currentSlug2) {
       if (!seenFolders.has(folderKey)) {
         seenFolders.add(folderKey);
         const direction = fileSortDirection(file);
-        if (folderKey === "") rootDirection = direction;
-        if (folderKey === currentFolderKey) pageDirection = direction;
+        if (direction) folderDirections.set(folderKey, direction);
       }
     }
     if (seenSources.has(parsed.slug)) continue;
@@ -3853,17 +3849,22 @@ function collectFilenameListSortData(allFiles, currentSlug2) {
     const filePath = ownDataValue5(file, "filePath");
     const fallbackSegment = parsed.parts.at(-1);
     if (typeof filePath !== "string" || !fallbackSegment) continue;
-    sources.push(
-      Object.freeze({
-        slug: parsed.slug,
-        sortName: filenameSortName(filePath, fallbackSegment)
-      })
-    );
+    sources.push({
+      slug: parsed.slug,
+      sortName: filenameSortName(filePath, fallbackSegment),
+      folderKey: parsed.parts.slice(0, -1).join("/")
+    });
   }
   return Object.freeze({
-    ...pageDirection ? { pageDirection } : {},
-    ...rootDirection ? { rootDirection } : {},
-    sources: Object.freeze(sources)
+    sources: Object.freeze(
+      sources.map((source) => {
+        const direction = folderDirections.get(source.folderKey);
+        return Object.freeze({
+          ...source,
+          ...direction ? { direction } : {}
+        });
+      })
+    )
   });
 }
 
@@ -4284,7 +4285,7 @@ function selectSidebarNavigationScope(model, currentSlug2) {
 }
 
 // src/components/scripts/sidebar.inline.ts
-var sidebar_inline_default = `var y={plain:0,"date-time":1,date:2,time:3},v=/^\\p{Lu}$/u,D=/^\\p{Ll}$/u;function x(e){return e==="ascending"||e==="descending"?e:void 0}function f(e){return e!==void 0&&e>="0"&&e<="9"}function M(e){let r=/\\d{2}\\.\\d{2}\\.\\d{4}/g;for(let t of e.matchAll(r)){let i=t[0],n=t.index,o=n+i.length;if(f(e[n-1])||f(e[o]))continue;let s=Number(i.slice(0,2)),c=Number(i.slice(3,5)),a=Number(i.slice(6,10));if(c<1||c>12||s<1)continue;let l=[31,a%4===0&&(a%100!==0||a%400===0)?29:28,31,30,31,30,31,31,30,31,30,31];if(!(s>l[c-1]))return{start:n,end:o,value:a*1e4+c*100+s}}}function F(e){let r=/\\d{2}-\\d{2}/g;for(let t of e.matchAll(r)){let i=t[0],n=t.index,o=n+i.length;if(f(e[n-1])||f(e[o]))continue;let s=Number(i.slice(0,2)),c=Number(i.slice(3,5));if(!(s>23||c>59))return{start:n,end:o,value:s*100+c}}}function N(e,r,t){let i=[];if(r&&i.push({start:r.start,end:r.end}),t&&i.push({start:t.start,end:t.end}),r&&t&&r.end<=t.start){let o=e.slice(r.end,t.start);/^[\\s_.-]*at[\\s_.-]*$/i.test(o)&&(i.length=0,i.push({start:r.start,end:t.end}))}i.sort((o,s)=>s.start-o.start);let n=e;for(let o of i)n=n.slice(0,o.start)+n.slice(o.end);return n.replace(/[_\\s]+/g," ").replace(/^[\\s_.-]+|[\\s_.-]+$/g,"").trim()}function L(e){let r=M(e),t=F(e),i=r?t?"date-time":"date":t?"time":"plain";return{raw:e,residual:r||t?N(e,r,t):e,kind:i,...r?{date:r.value}:{},...t?{time:t.value}:{}}}function m(e){return e>="0"&&e<="9"?0:v.test(e)?1:D.test(e)?2:3}function w(e,r){let t=r;for(;t<e.length&&m(e[t])===0;)t+=1;return{text:e.slice(r,t),end:t}}function T(e,r){let t=e.replace(/^0+/,"")||"0",i=r.replace(/^0+/,"")||"0";return t.length!==i.length?t.length<i.length?-1:1:t<i?-1:t>i?1:e.length!==r.length?e.length<r.length?-1:1:e<r?-1:e>r?1:0}function E(e,r,t){let i=0,n=0;for(;i<e.length&&n<r.length;){let o=e.codePointAt(i),s=r.codePointAt(n),c=String.fromCodePoint(o),a=String.fromCodePoint(s),d=m(c),l=m(a);if(d!==l)return d<l?-1:1;let p=t==="descending"?-1:1;if(d===0){let g=w(e,i),h=w(r,n),b=T(g.text,h.text);if(b!==0)return b*p;i=g.end,n=h.end;continue}if(o!==s)return(o<s?-1:1)*p;i+=c.length,n+=a.length}return e.length===r.length?0:(e.length<r.length?-1:1)*(t==="descending"?-1:1)}function u(e,r){return e===r?0:e===void 0?1:r===void 0||e<r?-1:1}function S(e,r,t){let i=L(e),n=L(r),o=y[i.kind]-y[n.kind];if(o!==0)return o;let s=t==="descending"?-1:1;if(i.kind==="date-time"){let a=u(i.date,n.date);if(a!==0)return a*s;let d=u(i.time,n.time);if(d!==0)return d*s}else if(i.kind==="date"){let a=u(i.date,n.date);if(a!==0)return a*s}else if(i.kind==="time"){let a=u(i.time,n.time);if(a!==0)return a*s}let c=E(i.residual,n.residual,t);return c!==0?c:E(i.raw,n.raw,t)}function A(e){try{let r=new URL(e,document.baseURI).pathname.replace(/\\/+$/,"");return r.length>0?r:"/"}catch{return}}function C(){let e=document.querySelector(".rip-sidebar[data-rip-list-sort-direction][data-rip-filename-sort-index]");if(!e)return;let r=x(e.dataset.ripListSortDirection),t=e.dataset.ripFilenameSortIndex;if(!r||!t)return;let i;try{i=JSON.parse(t)}catch{return}if(!Array.isArray(i))return;let n=new Map;for(let o of i){if(!Array.isArray(o)||o.length!==2)continue;let[s,c]=o;if(typeof s!="string"||typeof c!="string")continue;n.set(s,c);let a=A(s);a&&n.set(a,c)}if(n.size!==0)return{direction:r,index:n}}function H(e,r){let i=e.querySelector("a.internal[href]:not(.tag-link)")?.getAttribute("href");if(!i)return;let n=r.get(i);if(n!==void 0)return n;let o=A(i);return o?r.get(o):void 0}function K(e,r,t){let i=Array.from(e.children),n=[];for(let c=0;c<i.length;c+=1){let a=i[c],d=H(a,t);d!==void 0&&n.push({element:a,position:c,sortName:d})}if(n.length<2)return;let o=[...n].sort((c,a)=>{let d=S(c.sortName,a.sortName,r);return d!==0?d:c.position-a.position}),s=[...i];for(let c=0;c<n.length;c+=1)s[n[c].position]=o[c].element;for(let c of s)e.append(c)}function I(){let e=C();if(!e)return;let r=document.querySelectorAll(".backlinks > ul, ul.section-ul");for(let t of r)K(t,e.direction,e.index)}function k(){try{return window.matchMedia?.("(max-width: 800px)").matches??window.innerWidth<=800}catch{return window.innerWidth<=800}}function P(e){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));for(let n of r){let o=()=>{if(n.open)for(let c of r)c!==n&&(c.open=!1)},s=c=>{c.target?.closest?.("a")&&(n.open=!1)};n.addEventListener("toggle",o),n.addEventListener("click",s),e.push(()=>{n.removeEventListener("toggle",o),n.removeEventListener("click",s)})}if(r.length===0)return;let t=n=>{let o=n.target;if(o)for(let s of r)s.open&&!s.contains(o)&&(s.open=!1)},i=n=>{if(n.key!=="Escape")return;let o=r.find(c=>c.open);if(!o)return;n.preventDefault(),o.open=!1,o.firstElementChild?.focus?.()};document.addEventListener("pointerdown",t),document.addEventListener("keydown",i),e.push(()=>{document.removeEventListener("pointerdown",t),document.removeEventListener("keydown",i)})}function R(e){let r=Array.from(document.querySelectorAll(".rip-sidebar [data-rip-disclosure]"));for(let t of r){let i=()=>{let n=t.getAttribute("aria-controls");if(!n)return;let o=document.getElementById(n),s=t.closest(".rip-sidebar-folder");if(!o||!s)return;let a=!(t.getAttribute("aria-expanded")==="true");t.setAttribute("aria-expanded",String(a)),o.hidden=!a,s.dataset.ripOpen=String(a)};t.addEventListener("click",i),e.push(()=>t.removeEventListener("click",i))}}function z(e){let r=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-explorer"));if(k())for(let t of r){let i=t.closest(".rip-sidebar"),n=t.closest('.page[data-frame="canvas"]'),o=i?.querySelector('.rip-sidebar-home-mark[aria-current="page"]');!n&&!o&&(t.open=!1)}for(let t of r){let i=n=>{if(n.defaultPrevented||!k()||n.button!==0||n.altKey||n.ctrlKey||n.metaKey||n.shiftKey)return;let s=n.target?.closest?.("a");!s||!t.contains(s)||s.getAttribute("aria-current")==="page"||s.dataset.ripNodeKind==="canvas"||(t.open=!1)};t.addEventListener("click",i),e.push(()=>t.removeEventListener("click",i))}}function q(){let e=[];I(),P(e),z(e),R(e),e.length>0&&typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>e.forEach(r=>r()))}typeof document<"u"&&document.addEventListener("nav",()=>q());
+var sidebar_inline_default = `var b={plain:0,"date-time":1,date:2,time:3},A=/^\\p{Lu}$/u,D=/^\\p{Ll}$/u;function w(e){return e==="ascending"||e==="descending"?e:void 0}function m(e){return e!==void 0&&e>="0"&&e<="9"}function F(e){let t=/\\d{2}\\.\\d{2}\\.\\d{4}/g;for(let n of e.matchAll(t)){let r=n[0],i=n.index,o=i+r.length;if(m(e[i-1])||m(e[o]))continue;let s=Number(r.slice(0,2)),c=Number(r.slice(3,5)),a=Number(r.slice(6,10));if(c<1||c>12||s<1)continue;let l=[31,a%4===0&&(a%100!==0||a%400===0)?29:28,31,30,31,30,31,31,30,31,30,31];if(!(s>l[c-1]))return{start:i,end:o,value:a*1e4+c*100+s}}}function M(e){let t=/\\d{2}-\\d{2}/g;for(let n of e.matchAll(t)){let r=n[0],i=n.index,o=i+r.length;if(m(e[i-1])||m(e[o]))continue;let s=Number(r.slice(0,2)),c=Number(r.slice(3,5));if(!(s>23||c>59))return{start:i,end:o,value:s*100+c}}}function N(e,t,n){let r=[];if(t&&r.push({start:t.start,end:t.end}),n&&r.push({start:n.start,end:n.end}),t&&n&&t.end<=n.start){let o=e.slice(t.end,n.start);/^[\\s_.-]*at[\\s_.-]*$/i.test(o)&&(r.length=0,r.push({start:t.start,end:n.end}))}r.sort((o,s)=>s.start-o.start);let i=e;for(let o of r)i=i.slice(0,o.start)+i.slice(o.end);return i.replace(/[_\\s]+/g," ").replace(/^[\\s_.-]+|[\\s_.-]+$/g,"").trim()}function E(e){let t=F(e),n=M(e),r=t?n?"date-time":"date":n?"time":"plain";return{raw:e,residual:t||n?N(e,t,n):e,kind:r,...t?{date:t.value}:{},...n?{time:n.value}:{}}}function p(e){return e>="0"&&e<="9"?0:A.test(e)?1:D.test(e)?2:3}function L(e,t){let n=t;for(;n<e.length&&p(e[n])===0;)n+=1;return{text:e.slice(t,n),end:n}}function T(e,t){let n=e.replace(/^0+/,"")||"0",r=t.replace(/^0+/,"")||"0";return n.length!==r.length?n.length<r.length?-1:1:n<r?-1:n>r?1:e.length!==t.length?e.length<t.length?-1:1:e<t?-1:e>t?1:0}function S(e,t,n){let r=0,i=0;for(;r<e.length&&i<t.length;){let o=e.codePointAt(r),s=t.codePointAt(i),c=String.fromCodePoint(o),a=String.fromCodePoint(s),d=p(c),l=p(a);if(d!==l)return d<l?-1:1;let u=n==="descending"?-1:1;if(d===0){let g=L(e,r),h=L(t,i),y=T(g.text,h.text);if(y!==0)return y*u;r=g.end,i=h.end;continue}if(o!==s)return(o<s?-1:1)*u;r+=c.length,i+=a.length}return e.length===t.length?0:(e.length<t.length?-1:1)*(n==="descending"?-1:1)}function f(e,t){return e===t?0:e===void 0?1:t===void 0||e<t?-1:1}function x(e,t,n){let r=E(e),i=E(t),o=b[r.kind]-b[i.kind];if(o!==0)return o;let s=n==="descending"?-1:1;if(r.kind==="date-time"){let a=f(r.date,i.date);if(a!==0)return a*s;let d=f(r.time,i.time);if(d!==0)return d*s}else if(r.kind==="date"){let a=f(r.date,i.date);if(a!==0)return a*s}else if(r.kind==="time"){let a=f(r.time,i.time);if(a!==0)return a*s}let c=S(r.residual,i.residual,n);return c!==0?c:S(r.raw,i.raw,n)}function v(e){try{let t=new URL(e,document.baseURI).pathname.replace(/\\/+$/,"");return t.length>0?t:"/"}catch{return}}function C(){let e=document.querySelector(".rip-sidebar[data-rip-filename-sort-index]");if(!e)return;let t=e.dataset.ripFilenameSortIndex;if(!t)return;let n;try{n=JSON.parse(t)}catch{return}if(!Array.isArray(n))return;let r=new Map;for(let i of n){if(!Array.isArray(i)||i.length!==4)continue;let[o,s,c,a]=i,d=w(a);if(typeof o!="string"||typeof s!="string"||typeof c!="string"||!d)continue;let l={sortName:s,folderKey:c,direction:d};r.set(o,l);let u=v(o);u&&r.set(u,l)}if(r.size!==0)return{index:r}}function K(e,t){let r=e.querySelector("a.internal[href]:not(.tag-link)")?.getAttribute("href");if(!r)return;let i=t.get(r);if(i!==void 0)return i;let o=v(r);return o?t.get(o):void 0}function H(e,t){let n=Array.from(e.children),r=new Map;for(let o=0;o<n.length;o+=1){let s=n[o],c=K(s,t);if(!c)continue;let a=r.get(c.folderKey)??{direction:c.direction,sortable:[]};a.sortable.push({element:s,position:o,sortName:c.sortName}),r.set(c.folderKey,a)}let i=[...n];for(let o of r.values()){if(o.sortable.length<2)continue;let s=[...o.sortable].sort((c,a)=>{let d=x(c.sortName,a.sortName,o.direction);return d!==0?d:c.position-a.position});for(let c=0;c<o.sortable.length;c+=1)i[o.sortable[c].position]=s[c].element}for(let o of i)e.append(o)}function I(){let e=C();if(!e)return;let t=document.querySelectorAll(".backlinks > ul, ul.section-ul");for(let n of t)H(n,e.index)}function k(){try{return window.matchMedia?.("(max-width: 800px)").matches??window.innerWidth<=800}catch{return window.innerWidth<=800}}function P(e){let t=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-switcher"));for(let i of t){let o=()=>{if(i.open)for(let c of t)c!==i&&(c.open=!1)},s=c=>{c.target?.closest?.("a")&&(i.open=!1)};i.addEventListener("toggle",o),i.addEventListener("click",s),e.push(()=>{i.removeEventListener("toggle",o),i.removeEventListener("click",s)})}if(t.length===0)return;let n=i=>{let o=i.target;if(o)for(let s of t)s.open&&!s.contains(o)&&(s.open=!1)},r=i=>{if(i.key!=="Escape")return;let o=t.find(c=>c.open);if(!o)return;i.preventDefault(),o.open=!1,o.firstElementChild?.focus?.()};document.addEventListener("pointerdown",n),document.addEventListener("keydown",r),e.push(()=>{document.removeEventListener("pointerdown",n),document.removeEventListener("keydown",r)})}function R(e){let t=Array.from(document.querySelectorAll(".rip-sidebar [data-rip-disclosure]"));for(let n of t){let r=()=>{let i=n.getAttribute("aria-controls");if(!i)return;let o=document.getElementById(i),s=n.closest(".rip-sidebar-folder");if(!o||!s)return;let a=!(n.getAttribute("aria-expanded")==="true");n.setAttribute("aria-expanded",String(a)),o.hidden=!a,s.dataset.ripOpen=String(a)};n.addEventListener("click",r),e.push(()=>n.removeEventListener("click",r))}}function z(e){let t=Array.from(document.querySelectorAll(".rip-sidebar .rip-sidebar-explorer"));if(k())for(let n of t){let r=n.closest(".rip-sidebar"),i=n.closest('.page[data-frame="canvas"]'),o=r?.querySelector('.rip-sidebar-home-mark[aria-current="page"]');!i&&!o&&(n.open=!1)}for(let n of t){let r=i=>{if(i.defaultPrevented||!k()||i.button!==0||i.altKey||i.ctrlKey||i.metaKey||i.shiftKey)return;let s=i.target?.closest?.("a");!s||!n.contains(s)||s.getAttribute("aria-current")==="page"||s.dataset.ripNodeKind==="canvas"||(n.open=!1)};n.addEventListener("click",r),e.push(()=>n.removeEventListener("click",r))}}function q(){let e=[];I(),P(e),z(e),R(e),e.length>0&&typeof window<"u"&&window.addCleanup&&window.addCleanup(()=>e.forEach(t=>t()))}typeof document<"u"&&document.addEventListener("nav",()=>q());
 `;
 
 // src/components/styles/sidebar-rework.scss
@@ -4527,12 +4528,16 @@ var RootIndexSidebar_default = ((userOptions) => {
     const rootTitle = model.rootTitle ?? translation.home;
     const rootSelected = selectedBook === void 0;
     const rootState = getSidebarLinkState("index", current);
-    const filenameListData = collectFilenameListSortData(props.allFiles, current);
-    const noteListSortDirection = current === "tags" || current.startsWith("tags/") ? filenameListData.rootDirection : filenameListData.pageDirection;
-    const filenameSortIndex = noteListSortDirection ? JSON.stringify(
-      filenameListData.sources.map((source) => [
+    const filenameListData = collectFilenameListSortData(props.allFiles);
+    const sortableFilenameSources = filenameListData.sources.filter(
+      (source) => source.direction !== void 0
+    );
+    const filenameSortIndex = sortableFilenameSources.length > 0 ? JSON.stringify(
+      sortableFilenameSources.map((source) => [
         resolveRelative(current, source.slug),
-        source.sortName
+        source.sortName,
+        source.folderKey,
+        source.direction
       ])
     ) : void 0;
     return /* @__PURE__ */ jsx(
@@ -4541,7 +4546,6 @@ var RootIndexSidebar_default = ((userOptions) => {
         class: classNames(props.displayClass, "rip-sidebar"),
         "aria-label": translation.sidebarNavigation,
         "data-rip-replace-explorer": options.replaceExplorer ? "true" : void 0,
-        "data-rip-list-sort-direction": noteListSortDirection,
         "data-rip-filename-sort-index": filenameSortIndex,
         "data-rip-scope": scope.kind,
         ...selectedBook ? panelAttributes2(selectedBook.panel, options) : {},

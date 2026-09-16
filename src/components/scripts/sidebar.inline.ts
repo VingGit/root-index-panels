@@ -8,9 +8,14 @@ import {
 // enhances book switcher dismissal, compact Explorer dismissal, independent folder
 // disclosures, and filename ordering for compatible Quartz note-list components.
 
-interface FilenameListSortContext {
+interface FilenameListSortEntry {
+  sortName: string
+  folderKey: string
   direction: FilenameSortDirection
-  index: Map<string, string>
+}
+
+interface FilenameListSortContext {
+  index: Map<string, FilenameListSortEntry>
 }
 
 function normalizedListHref(href: string): string | undefined {
@@ -23,14 +28,11 @@ function normalizedListHref(href: string): string | undefined {
 }
 
 function readFilenameListSortContext(): FilenameListSortContext | undefined {
-  const sidebar = document.querySelector<HTMLElement>(
-    ".rip-sidebar[data-rip-list-sort-direction][data-rip-filename-sort-index]",
-  )
+  const sidebar = document.querySelector<HTMLElement>(".rip-sidebar[data-rip-filename-sort-index]")
   if (!sidebar) return undefined
 
-  const direction = normalizeFilenameSortDirection(sidebar.dataset.ripListSortDirection)
   const rawIndex = sidebar.dataset.ripFilenameSortIndex
-  if (!direction || !rawIndex) return undefined
+  if (!rawIndex) return undefined
 
   let parsed: unknown
   try {
@@ -40,21 +42,33 @@ function readFilenameListSortContext(): FilenameListSortContext | undefined {
   }
   if (!Array.isArray(parsed)) return undefined
 
-  const index = new Map<string, string>()
+  const index = new Map<string, FilenameListSortEntry>()
   for (const entry of parsed) {
-    if (!Array.isArray(entry) || entry.length !== 2) continue
-    const [href, sortName] = entry
-    if (typeof href !== "string" || typeof sortName !== "string") continue
-    index.set(href, sortName)
+    if (!Array.isArray(entry) || entry.length !== 4) continue
+    const [href, sortName, folderKey, rawDirection] = entry
+    const direction = normalizeFilenameSortDirection(rawDirection)
+    if (
+      typeof href !== "string" ||
+      typeof sortName !== "string" ||
+      typeof folderKey !== "string" ||
+      !direction
+    ) {
+      continue
+    }
+    const value = { sortName, folderKey, direction }
+    index.set(href, value)
     const normalized = normalizedListHref(href)
-    if (normalized) index.set(normalized, sortName)
+    if (normalized) index.set(normalized, value)
   }
   if (index.size === 0) return undefined
 
-  return { direction, index }
+  return { index }
 }
 
-function listItemSortName(item: Element, index: ReadonlyMap<string, string>): string | undefined {
+function listItemSortEntry(
+  item: Element,
+  index: ReadonlyMap<string, FilenameListSortEntry>,
+): FilenameListSortEntry | undefined {
   const link = item.querySelector<HTMLAnchorElement>("a.internal[href]:not(.tag-link)")
   const href = link?.getAttribute("href")
   if (!href) return undefined
@@ -67,30 +81,39 @@ function listItemSortName(item: Element, index: ReadonlyMap<string, string>): st
 
 function sortFilenameList(
   list: HTMLUListElement,
-  direction: FilenameSortDirection,
-  index: ReadonlyMap<string, string>,
+  index: ReadonlyMap<string, FilenameListSortEntry>,
 ) {
   const children = Array.from(list.children)
-  const sortable: Array<{
-    element: Element
-    position: number
-    sortName: string
-  }> = []
+  const groups = new Map<
+    string,
+    {
+      direction: FilenameSortDirection
+      sortable: Array<{ element: Element; position: number; sortName: string }>
+    }
+  >()
 
   for (let position = 0; position < children.length; position += 1) {
     const element = children[position]!
-    const sortName = listItemSortName(element, index)
-    if (sortName !== undefined) sortable.push({ element, position, sortName })
+    const entry = listItemSortEntry(element, index)
+    if (!entry) continue
+    const group = groups.get(entry.folderKey) ?? {
+      direction: entry.direction,
+      sortable: [],
+    }
+    group.sortable.push({ element, position, sortName: entry.sortName })
+    groups.set(entry.folderKey, group)
   }
-  if (sortable.length < 2) return
 
-  const ordered = [...sortable].sort((left, right) => {
-    const compared = compareFilenameSortNames(left.sortName, right.sortName, direction)
-    return compared !== 0 ? compared : left.position - right.position
-  })
   const nextChildren = [...children]
-  for (let index = 0; index < sortable.length; index += 1) {
-    nextChildren[sortable[index]!.position] = ordered[index]!.element
+  for (const group of groups.values()) {
+    if (group.sortable.length < 2) continue
+    const ordered = [...group.sortable].sort((left, right) => {
+      const compared = compareFilenameSortNames(left.sortName, right.sortName, group.direction)
+      return compared !== 0 ? compared : left.position - right.position
+    })
+    for (let slot = 0; slot < group.sortable.length; slot += 1) {
+      nextChildren[group.sortable[slot]!.position] = ordered[slot]!.element
+    }
   }
   for (const child of nextChildren) list.append(child)
 }
@@ -101,7 +124,7 @@ function initFilenameListSorting() {
 
   const lists = document.querySelectorAll<HTMLUListElement>(".backlinks > ul, ul.section-ul")
   for (const list of lists) {
-    sortFilenameList(list, context.direction, context.index)
+    sortFilenameList(list, context.index)
   }
 }
 

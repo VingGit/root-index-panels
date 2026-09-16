@@ -164,6 +164,12 @@ controls root-level notes. A nested folder does not inherit its parent's setting
 own physical `index.md` the key when it should use the same behavior. Folder rows themselves remain
 first and keep their normal alphabetical ordering.
 
+The same folder-local policy is applied to physical notes when Quartz lists them in Backlinks and
+standard FolderPage/TagPage page lists. For Backlinks this is based on the folder containing each
+backlink source note, not the folder containing the page being viewed. If one aggregate list contains
+notes from several folders, each folder's notes are sorted only within that folder's existing list
+slots, using that folder's own direction; notes from folders without the key keep their existing slots.
+
 The sorter reads the source filename, not frontmatter `title`. It recognizes the first valid
 `DD.MM.YYYY` date and the first valid `HH-MM` time anywhere in the filename. Dates must be real
 Gregorian calendar dates and times must be between `00-00` and `23-59`; invalid-looking tokens are
