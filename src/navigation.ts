@@ -2,6 +2,12 @@ import type { FullSlug, QuartzPluginData } from "@quartz-community/types"
 import { isFullSlug, simplifySlug } from "@quartz-community/utils/path"
 
 import { collectBooks } from "./books"
+import {
+  compareFilenameSortNames,
+  filenameSortName,
+  normalizeFilenameSortDirection,
+  type FilenameSortDirection,
+} from "./filenameSorting"
 import { normalizeRootIndexPanelsOptions } from "./options"
 import { parseCanonicalSlug } from "./slug"
 
@@ -60,6 +66,7 @@ interface MutableDocumentNode {
   key: string
   slug: FullSlug
   title: string
+  sortName: string
 }
 
 interface MutableFolderNode {
@@ -230,10 +237,36 @@ function authoredTitle(file: PluginFile): string | undefined {
   return typeof title === "string" && title.trim().length > 0 ? title : undefined
 }
 
-function compareNodes(a: SidebarNavigationNode, b: SidebarNavigationNode): number {
-  const leftIsFolder = a.kind === "folder"
-  const rightIsFolder = b.kind === "folder"
-  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1
+function folderSortDirection(file: PluginFile): FilenameSortDirection | undefined {
+  const frontmatter = ownDataValue(file, "frontmatter")
+  return normalizeFilenameSortDirection(ownDataValue(frontmatter, "quartz-sorting-direction"))
+}
+
+function collectFolderSortDirections(
+  files: readonly PluginFile[],
+): ReadonlyMap<string, FilenameSortDirection> {
+  const directions = new Map<string, FilenameSortDirection>()
+  const seenFolders = new Set<string>()
+
+  for (const file of files) {
+    const parsed = parseSlug(file)
+    if (!parsed || parsed.parts.at(-1) !== "index" || !isListedPhysical(file)) continue
+
+    const folderKey = parsed.parts.slice(0, -1).join("/")
+    if (seenFolders.has(folderKey)) continue
+    seenFolders.add(folderKey)
+
+    const direction = folderSortDirection(file)
+    if (direction) directions.set(folderKey, direction)
+  }
+
+  return directions
+}
+
+function compareTitleAndKey(
+  a: Pick<SidebarNavigationNode, "title" | "key">,
+  b: Pick<SidebarNavigationNode, "title" | "key">,
+): number {
   const left = a.title.toLowerCase()
   const right = b.title.toLowerCase()
   if (left < right) return -1
@@ -241,6 +274,21 @@ function compareNodes(a: SidebarNavigationNode, b: SidebarNavigationNode): numbe
   if (a.title < b.title) return -1
   if (a.title > b.title) return 1
   return a.key < b.key ? -1 : a.key > b.key ? 1 : 0
+}
+
+function compareMutableNodes(
+  a: MutableNavigationNode,
+  b: MutableNavigationNode,
+  direction?: FilenameSortDirection,
+): number {
+  const leftIsFolder = a.kind === "folder"
+  const rightIsFolder = b.kind === "folder"
+  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1
+  if (!leftIsFolder && !rightIsFolder && direction) {
+    const filenameDifference = compareFilenameSortNames(a.sortName, b.sortName, direction)
+    if (filenameDifference !== 0) return filenameDifference
+  }
+  return compareTitleAndKey(a, b)
 }
 
 function inventoryFile(file: PluginFile): PluginFile | undefined {
@@ -335,22 +383,37 @@ function insertBookFile(
     key,
     slug,
     title: fileTitle(file, leafSegment),
+    sortName: filenameSortName(ownDataValue(file, "filePath"), leafSegment),
   })
 }
 
-function freezeNodes(nodes: Map<string, MutableNavigationNode>): readonly SidebarNavigationNode[] {
-  const frozen = Array.from(nodes.values(), (node): SidebarNavigationNode => {
-    if (node.kind !== "folder") return Object.freeze({ ...node })
+function freezeNodes(
+  nodes: Map<string, MutableNavigationNode>,
+  folderKey: string,
+  sortDirections: ReadonlyMap<string, FilenameSortDirection>,
+): readonly SidebarNavigationNode[] {
+  const sorted = Array.from(nodes.values())
+  sorted.sort((left, right) => compareMutableNodes(left, right, sortDirections.get(folderKey)))
+
+  const frozen = sorted.map((node): SidebarNavigationNode => {
+    if (node.kind !== "folder") {
+      return Object.freeze({
+        kind: node.kind,
+        key: node.key,
+        slug: node.slug,
+        title: node.title,
+      })
+    }
+    const childFolderKey = folderKey.length > 0 ? `${folderKey}/${node.segment}` : node.segment
     return Object.freeze({
       kind: node.kind,
       key: node.key,
       segment: node.segment,
       title: node.title,
       ...(node.slug ? { slug: node.slug } : {}),
-      children: freezeNodes(node.children),
+      children: freezeNodes(node.children, childFolderKey, sortDirections),
     })
   })
-  frozen.sort(compareNodes)
   return Object.freeze(frozen)
 }
 
@@ -374,10 +437,11 @@ export function buildSidebarNavigationModel(
   const bookTrees = new Map(
     books.map((book) => [book.segment, new Map<string, MutableNavigationNode>()]),
   )
-  const rootNotes: SidebarDocumentNode[] = []
+  const rootNotes: MutableDocumentNode[] = []
   let rootTitle: string | undefined
   const seenSlugs = new Set<string>()
   const folderDestinations = new Map<FullSlug, PluginFile>()
+  const sortDirections = collectFolderSortDirections(validFiles)
 
   for (const file of validFiles) {
     const parsed = parseSlug(file)
@@ -425,14 +489,14 @@ export function buildSidebarNavigationModel(
         rootTitle ??= authoredTitle(file)
         continue
       }
-      rootNotes.push(
-        Object.freeze({
-          kind,
-          key: `document:${parsed.slug}`,
-          slug: parsed.slug,
-          title: fileTitle(file, parsed.parts[0]!),
-        }),
-      )
+      const segment = parsed.parts[0]!
+      rootNotes.push({
+        kind,
+        key: `document:${parsed.slug}`,
+        slug: parsed.slug,
+        title: fileTitle(file, segment),
+        sortName: filenameSortName(ownDataValue(file, "filePath"), segment),
+      })
       continue
     }
 
@@ -450,7 +514,17 @@ export function buildSidebarNavigationModel(
     )
   }
 
-  rootNotes.sort(compareNodes)
+  rootNotes.sort((left, right) => compareMutableNodes(left, right, sortDirections.get("")))
+  const frozenRootNotes = Object.freeze(
+    rootNotes.map((node) =>
+      Object.freeze({
+        kind: node.kind,
+        key: node.key,
+        slug: node.slug,
+        title: node.title,
+      }),
+    ),
+  )
   const frozenBooks: SidebarBook[] = []
   for (const book of books) {
     const slug = `${book.segment}/index`
@@ -461,7 +535,11 @@ export function buildSidebarNavigationModel(
         slug,
         title: book.title,
         panel: book.panel,
-        children: freezeNodes(bookTrees.get(book.segment) ?? new Map()),
+        children: freezeNodes(
+          bookTrees.get(book.segment) ?? new Map(),
+          book.segment,
+          sortDirections,
+        ),
       }),
     )
   }
@@ -469,7 +547,7 @@ export function buildSidebarNavigationModel(
   return Object.freeze({
     books: Object.freeze(frozenBooks),
     ...(rootTitle ? { rootTitle } : {}),
-    rootNotes: Object.freeze(rootNotes),
+    rootNotes: frozenRootNotes,
   })
 }
 

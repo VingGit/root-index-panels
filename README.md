@@ -148,6 +148,45 @@ panel:
 The plugin preserves an authored title exactly. If no title exists, it derives one from the
 directory name.
 
+### Folder-local filename sorting
+
+A physical `index.md` can opt the files directly in its own folder into filename-aware sidebar
+sorting:
+
+```yaml
+---
+quartz-sorting-direction: ascending
+---
+```
+
+Use `descending` to reverse values within each sort class. Putting the key on `content/index.md`
+controls root-level notes. A nested folder does not inherit its parent's setting; give that folder's
+own physical `index.md` the key when it should use the same behavior. Folder rows themselves remain
+first and keep their normal alphabetical ordering.
+
+The sorter reads the source filename, not frontmatter `title`. It recognizes the first valid
+`DD.MM.YYYY` date and the first valid `HH-MM` time anywhere in the filename. Dates must be real
+Gregorian calendar dates and times must be between `00-00` and `23-59`; invalid-looking tokens are
+treated as ordinary filename text.
+
+The file buckets stay in this order for both directions:
+
+1. filenames without a valid date or time;
+2. filenames containing both a date and a time;
+3. filenames containing a date only; and
+4. filenames containing a time only.
+
+Ordinary filenames use natural ordering with numeric runs first, then Unicode uppercase letters,
+then Unicode lowercase letters, then other characters. Numeric runs compare by value, so `2` sorts
+before `10`. Date-and-time files compare by date and then time, so files sharing a date stay grouped
+and their times determine their order. Date-only and time-only files compare their parsed values.
+Remaining filename text provides deterministic ties after parsed values are equal.
+
+`ascending` and `descending` reverse values inside those fixed buckets and character classes; they
+do not move the date/time buckets ahead of ordinary filenames or move lowercase names ahead of
+uppercase names. Missing values, booleans such as `true`/`false`, and any string other than exactly
+`ascending` or `descending` preserve the sidebar's normal title-based ordering for that folder.
+
 Built-in icons:
 
 <!-- built-in-icons:start -->
