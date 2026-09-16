@@ -22,6 +22,8 @@ const temporalKindRank: Record<TemporalKind, number> = {
   date: 2,
   time: 3,
 }
+const uppercaseLetterPattern = /^\p{Lu}$/u
+const lowercaseLetterPattern = /^\p{Ll}$/u
 
 export function normalizeFilenameSortDirection(value: unknown): FilenameSortDirection | undefined {
   return value === "ascending" || value === "descending" ? value : undefined
@@ -117,8 +119,8 @@ function parseFilenameSortValue(name: string): FilenameSortValue {
 
 function characterClass(character: string): number {
   if (character >= "0" && character <= "9") return 0
-  if (character >= "A" && character <= "Z") return 1
-  if (character >= "a" && character <= "z") return 2
+  if (uppercaseLetterPattern.test(character)) return 1
+  if (lowercaseLetterPattern.test(character)) return 2
   return 3
 }
 
@@ -140,7 +142,7 @@ function compareDigitRuns(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0
 }
 
-function compareNaturalAscii(
+function compareNaturalName(
   left: string,
   right: string,
   direction: FilenameSortDirection,
@@ -149,8 +151,10 @@ function compareNaturalAscii(
   let rightIndex = 0
 
   while (leftIndex < left.length && rightIndex < right.length) {
-    const leftCharacter = left[leftIndex]!
-    const rightCharacter = right[rightIndex]!
+    const leftPoint = left.codePointAt(leftIndex)!
+    const rightPoint = right.codePointAt(rightIndex)!
+    const leftCharacter = String.fromCodePoint(leftPoint)
+    const rightCharacter = String.fromCodePoint(rightPoint)
     const leftClass = characterClass(leftCharacter)
     const rightClass = characterClass(rightCharacter)
 
@@ -167,8 +171,6 @@ function compareNaturalAscii(
       continue
     }
 
-    const leftPoint = leftCharacter.codePointAt(0)!
-    const rightPoint = rightCharacter.codePointAt(0)!
     if (leftPoint !== rightPoint) return (leftPoint < rightPoint ? -1 : 1) * multiplier
     leftIndex += leftCharacter.length
     rightIndex += rightCharacter.length
@@ -210,8 +212,8 @@ export function compareFilenameSortNames(
     if (timeDifference !== 0) return timeDifference * multiplier
   }
 
-  const residualDifference = compareNaturalAscii(left.residual, right.residual, direction)
+  const residualDifference = compareNaturalName(left.residual, right.residual, direction)
   if (residualDifference !== 0) return residualDifference
 
-  return compareNaturalAscii(left.raw, right.raw, direction)
+  return compareNaturalName(left.raw, right.raw, direction)
 }
