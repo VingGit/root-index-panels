@@ -38,6 +38,10 @@ Retain parameterized cards/list coverage for:
 For sidebar inventory, parameterize input order and duplicates. Assert:
 
 - root/book context selection and authored-root fallback;
+- folder-local filename sorting from physical `index.md` frontmatter, including root and nested
+  scopes, non-inheritance, invalid-value fallback, filename-versus-title independence, strict
+  `DD.MM.YYYY`/`HH-MM` validation, natural numeric/Unicode case classes, fixed temporal buckets,
+  same-date time grouping, deterministic ties, and both directions;
 - book index excluded from visible children but retained as the dedicated home destination;
 - physical and generated nested folder-index destinations, titles, and hidden index notes;
 - selected versus exact-current state, active ancestry, and cache isolation;

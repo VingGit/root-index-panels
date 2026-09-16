@@ -118,7 +118,10 @@ describe("folder filename sorting", () => {
     const child = book?.children[0]
     expect(child?.kind).toBe("folder")
     if (child?.kind !== "folder") throw new Error("Expected child folder")
-    expect(child.children.map((node) => node.slug)).toEqual(["book/child/z-file", "book/child/A-file"])
+    expect(child.children.map((node) => node.slug)).toEqual([
+      "book/child/z-file",
+      "book/child/A-file",
+    ])
   })
 
   it("lets a nested folder choose its own descending direction without changing folder ordering", () => {

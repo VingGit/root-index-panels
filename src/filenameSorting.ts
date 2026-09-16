@@ -79,7 +79,11 @@ function firstValidTime(name: string): TokenMatch | undefined {
   return undefined
 }
 
-function residualName(name: string, date: TokenMatch | undefined, time: TokenMatch | undefined): string {
+function residualName(
+  name: string,
+  date: TokenMatch | undefined,
+  time: TokenMatch | undefined,
+): string {
   const ranges: Array<{ start: number; end: number }> = []
   if (date) ranges.push({ start: date.start, end: date.end })
   if (time) ranges.push({ start: time.start, end: time.end })
@@ -142,11 +146,7 @@ function compareDigitRuns(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0
 }
 
-function compareNaturalName(
-  left: string,
-  right: string,
-  direction: FilenameSortDirection,
-): number {
+function compareNaturalName(left: string, right: string, direction: FilenameSortDirection): number {
   let leftIndex = 0
   let rightIndex = 0
 

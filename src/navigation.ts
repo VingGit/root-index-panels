@@ -535,7 +535,11 @@ export function buildSidebarNavigationModel(
         slug,
         title: book.title,
         panel: book.panel,
-        children: freezeNodes(bookTrees.get(book.segment) ?? new Map(), book.segment, sortDirections),
+        children: freezeNodes(
+          bookTrees.get(book.segment) ?? new Map(),
+          book.segment,
+          sortDirections,
+        ),
       }),
     )
   }

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add opt-in folder-local sidebar filename sorting through
+  `quartz-sorting-direction: ascending|descending` on physical `index.md` files, with strict
+  `DD.MM.YYYY`/`HH-MM` parsing, deterministic natural filename ordering, same-date time grouping,
+  and non-inherited folder scope.
+
 ## [0.5.0] - 2026-09-15
 
 ### Changed
