@@ -1,0 +1,781 @@
+name: Apply shared filename list sorting
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-filename-list-sorting.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply source, tests, and documentation
+        shell: bash
+        run: |
+          cat > src/filenameListSorting.ts <<'EOF'
+          import type { FullSlug, QuartzPluginData } from "@quartz-community/types"
+
+          import {
+            filenameSortName,
+            normalizeFilenameSortDirection,
+            type FilenameSortDirection,
+          } from "./filenameSorting"
+          import { parseCanonicalSlug } from "./slug"
+
+          type PluginFile = QuartzPluginData & Record<string, unknown>
+
+          export interface FilenameSortSource {
+            slug: FullSlug
+            sortName: string
+          }
+
+          export interface FilenameListSortData {
+            pageDirection?: FilenameSortDirection
+            rootDirection?: FilenameSortDirection
+            sources: readonly FilenameSortSource[]
+          }
+
+          function ownDataValue(value: unknown, key: string): unknown {
+            try {
+              if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
+              const descriptor = Object.getOwnPropertyDescriptor(value, key)
+              return descriptor && "value" in descriptor ? descriptor.value : undefined
+            } catch {
+              return undefined
+            }
+          }
+
+          function safeFiles(value: unknown): PluginFile[] {
+            try {
+              if (!Array.isArray(value)) return []
+            } catch {
+              return []
+            }
+
+            const files: PluginFile[] = []
+            let length = 0
+            try {
+              length = value.length
+            } catch {
+              return files
+            }
+
+            for (let index = 0; index < length; index += 1) {
+              let file: unknown
+              try {
+                file = value[index]
+              } catch {
+                continue
+              }
+              if (typeof file === "object" && file !== null && !Array.isArray(file)) {
+                files.push(file as PluginFile)
+              }
+            }
+            return files
+          }
+
+          function isListedPhysical(file: PluginFile): boolean {
+            const filePath = ownDataValue(file, "filePath")
+            return (
+              typeof filePath === "string" &&
+              filePath.length > 0 &&
+              ownDataValue(file, "unlisted") !== true
+            )
+          }
+
+          function fileSortDirection(file: PluginFile): FilenameSortDirection | undefined {
+            const frontmatter = ownDataValue(file, "frontmatter")
+            return normalizeFilenameSortDirection(
+              ownDataValue(frontmatter, "quartz-sorting-direction"),
+            )
+          }
+
+          /**
+           * Build the physical filename index used by note-list components and resolve the exact
+           * current-folder and root sorting policies in the same pass.
+           */
+          export function collectFilenameListSortData(
+            allFiles: unknown,
+            currentSlug: unknown,
+          ): FilenameListSortData {
+            const current = parseCanonicalSlug(currentSlug)
+            const currentFolderKey = current?.parts.slice(0, -1).join("/")
+            const seenFolders = new Set<string>()
+            const seenSources = new Set<string>()
+            const sources: FilenameSortSource[] = []
+            let pageDirection: FilenameSortDirection | undefined
+            let rootDirection: FilenameSortDirection | undefined
+
+            for (const file of safeFiles(allFiles)) {
+              const parsed = parseCanonicalSlug(ownDataValue(file, "slug"))
+              if (!parsed || !isListedPhysical(file)) continue
+
+              if (parsed.parts.at(-1) === "index") {
+                const folderKey = parsed.parts.slice(0, -1).join("/")
+                if (!seenFolders.has(folderKey)) {
+                  seenFolders.add(folderKey)
+                  const direction = fileSortDirection(file)
+                  if (folderKey === "") rootDirection = direction
+                  if (folderKey === currentFolderKey) pageDirection = direction
+                }
+              }
+
+              if (seenSources.has(parsed.slug)) continue
+              seenSources.add(parsed.slug)
+              const filePath = ownDataValue(file, "filePath")
+              const fallbackSegment = parsed.parts.at(-1)
+              if (typeof filePath !== "string" || !fallbackSegment) continue
+              sources.push(
+                Object.freeze({
+                  slug: parsed.slug,
+                  sortName: filenameSortName(filePath, fallbackSegment),
+                }),
+              )
+            }
+
+            return Object.freeze({
+              ...(pageDirection ? { pageDirection } : {}),
+              ...(rootDirection ? { rootDirection } : {}),
+              sources: Object.freeze(sources),
+            })
+          }
+          EOF
+
+          cat > src/components/scripts/sidebar.inline.ts <<'EOF'
+          import {
+            compareFilenameSortNames,
+            normalizeFilenameSortDirection,
+            type FilenameSortDirection,
+          } from "../../filenameSorting"
+
+          // RootIndexSidebar keeps all navigation as ordinary SSR links. JavaScript only
+          // enhances book switcher dismissal, compact Explorer dismissal, independent folder
+          // disclosures, and filename ordering for compatible Quartz note-list components.
+
+          interface FilenameListSortContext {
+            direction: FilenameSortDirection
+            index: Map<string, string>
+          }
+
+          function normalizedListHref(href: string): string | undefined {
+            try {
+              const path = new URL(href, document.baseURI).pathname.replace(/\/+$/, "")
+              return path.length > 0 ? path : "/"
+            } catch {
+              return undefined
+            }
+          }
+
+          function readFilenameListSortContext(): FilenameListSortContext | undefined {
+            const sidebar = document.querySelector<HTMLElement>(
+              ".rip-sidebar[data-rip-list-sort-direction][data-rip-filename-sort-index]",
+            )
+            if (!sidebar) return undefined
+
+            const direction = normalizeFilenameSortDirection(sidebar.dataset.ripListSortDirection)
+            const rawIndex = sidebar.dataset.ripFilenameSortIndex
+            if (!direction || !rawIndex) return undefined
+
+            let parsed: unknown
+            try {
+              parsed = JSON.parse(rawIndex)
+            } catch {
+              return undefined
+            }
+            if (!Array.isArray(parsed)) return undefined
+
+            const index = new Map<string, string>()
+            for (const entry of parsed) {
+              if (!Array.isArray(entry) || entry.length !== 2) continue
+              const [href, sortName] = entry
+              if (typeof href !== "string" || typeof sortName !== "string") continue
+              index.set(href, sortName)
+              const normalized = normalizedListHref(href)
+              if (normalized) index.set(normalized, sortName)
+            }
+            if (index.size === 0) return undefined
+
+            return { direction, index }
+          }
+
+          function listItemSortName(item: Element, index: ReadonlyMap<string, string>): string | undefined {
+            const link = item.querySelector<HTMLAnchorElement>('a.internal[href]:not(.tag-link)')
+            const href = link?.getAttribute("href")
+            if (!href) return undefined
+
+            const direct = index.get(href)
+            if (direct !== undefined) return direct
+            const normalized = normalizedListHref(href)
+            return normalized ? index.get(normalized) : undefined
+          }
+
+          function sortFilenameList(
+            list: HTMLUListElement,
+            direction: FilenameSortDirection,
+            index: ReadonlyMap<string, string>,
+          ) {
+            const children = Array.from(list.children)
+            const sortable: Array<{
+              element: Element
+              position: number
+              sortName: string
+            }> = []
+
+            for (let position = 0; position < children.length; position += 1) {
+              const element = children[position]!
+              const sortName = listItemSortName(element, index)
+              if (sortName !== undefined) sortable.push({ element, position, sortName })
+            }
+            if (sortable.length < 2) return
+
+            const ordered = [...sortable].sort((left, right) => {
+              const compared = compareFilenameSortNames(left.sortName, right.sortName, direction)
+              return compared !== 0 ? compared : left.position - right.position
+            })
+            const nextChildren = [...children]
+            for (let index = 0; index < sortable.length; index += 1) {
+              nextChildren[sortable[index]!.position] = ordered[index]!.element
+            }
+            for (const child of nextChildren) list.append(child)
+          }
+
+          function initFilenameListSorting() {
+            const context = readFilenameListSortContext()
+            if (!context) return
+
+            const lists = document.querySelectorAll<HTMLUListElement>(
+              ".backlinks > ul, ul.section-ul",
+            )
+            for (const list of lists) {
+              sortFilenameList(list, context.direction, context.index)
+            }
+          }
+
+          function compactExplorerIsActive(): boolean {
+            try {
+              return window.matchMedia?.("(max-width: 800px)").matches ?? window.innerWidth <= 800
+            } catch {
+              return window.innerWidth <= 800
+            }
+          }
+
+          function initSwitchers(cleanups: Array<() => void>) {
+            const switchers = Array.from(
+              document.querySelectorAll<HTMLDetailsElement>(".rip-sidebar .rip-sidebar-switcher"),
+            )
+
+            for (const switcher of switchers) {
+              const onToggle = () => {
+                if (!switcher.open) return
+                for (const peer of switchers) {
+                  if (peer !== switcher) peer.open = false
+                }
+              }
+              const onClick = (event: MouseEvent) => {
+                const target = event.target as { closest?: (selector: string) => Element | null } | null
+                if (target?.closest?.("a")) switcher.open = false
+              }
+
+              switcher.addEventListener("toggle", onToggle)
+              switcher.addEventListener("click", onClick)
+              cleanups.push(() => {
+                switcher.removeEventListener("toggle", onToggle)
+                switcher.removeEventListener("click", onClick)
+              })
+            }
+
+            if (switchers.length === 0) return
+
+            const onPointerDown = (event: PointerEvent) => {
+              const target = event.target as Node | null
+              if (!target) return
+              for (const switcher of switchers) {
+                if (switcher.open && !switcher.contains(target)) switcher.open = false
+              }
+            }
+            const onKeyDown = (event: KeyboardEvent) => {
+              if (event.key !== "Escape") return
+              const openSwitcher = switchers.find((switcher) => switcher.open)
+              if (!openSwitcher) return
+
+              event.preventDefault()
+              openSwitcher.open = false
+              const summary = openSwitcher.firstElementChild as { focus?: () => void } | null
+              summary?.focus?.()
+            }
+
+            document.addEventListener("pointerdown", onPointerDown)
+            document.addEventListener("keydown", onKeyDown)
+            cleanups.push(() => {
+              document.removeEventListener("pointerdown", onPointerDown)
+              document.removeEventListener("keydown", onKeyDown)
+            })
+          }
+
+          function initFolderDisclosures(cleanups: Array<() => void>) {
+            const buttons = Array.from(
+              document.querySelectorAll<HTMLButtonElement>(".rip-sidebar [data-rip-disclosure]"),
+            )
+
+            for (const button of buttons) {
+              const onClick = () => {
+                const controls = button.getAttribute("aria-controls")
+                if (!controls) return
+                const children = document.getElementById(controls)
+                const folder = button.closest<HTMLElement>(".rip-sidebar-folder")
+                if (!children || !folder) return
+
+                const open = button.getAttribute("aria-expanded") === "true"
+                const nextOpen = !open
+                button.setAttribute("aria-expanded", String(nextOpen))
+                children.hidden = !nextOpen
+                folder.dataset.ripOpen = String(nextOpen)
+              }
+
+              button.addEventListener("click", onClick)
+              cleanups.push(() => button.removeEventListener("click", onClick))
+            }
+          }
+
+          function initExplorerNavigation(cleanups: Array<() => void>) {
+            const explorers = Array.from(
+              document.querySelectorAll<HTMLDetailsElement>(".rip-sidebar .rip-sidebar-explorer"),
+            )
+
+            if (compactExplorerIsActive()) {
+              for (const explorer of explorers) {
+                const sidebar = explorer.closest<HTMLElement>(".rip-sidebar")
+                const canvasFrame = explorer.closest<HTMLElement>('.page[data-frame="canvas"]')
+                const landingPage = sidebar?.querySelector('.rip-sidebar-home-mark[aria-current="page"]')
+                if (!canvasFrame && !landingPage) explorer.open = false
+              }
+            }
+
+            for (const explorer of explorers) {
+              const onClick = (event: MouseEvent) => {
+                if (
+                  event.defaultPrevented ||
+                  !compactExplorerIsActive() ||
+                  event.button !== 0 ||
+                  event.altKey ||
+                  event.ctrlKey ||
+                  event.metaKey ||
+                  event.shiftKey
+                ) {
+                  return
+                }
+
+                const target = event.target as { closest?: (selector: string) => Element | null } | null
+                const link = target?.closest?.("a") as HTMLAnchorElement | null
+                if (
+                  !link ||
+                  !explorer.contains(link) ||
+                  link.getAttribute("aria-current") === "page" ||
+                  link.dataset.ripNodeKind === "canvas"
+                ) {
+                  return
+                }
+
+                explorer.open = false
+              }
+
+              explorer.addEventListener("click", onClick)
+              cleanups.push(() => explorer.removeEventListener("click", onClick))
+            }
+          }
+
+          export function initRootIndexSidebar() {
+            const cleanups: Array<() => void> = []
+            initFilenameListSorting()
+            initSwitchers(cleanups)
+            initExplorerNavigation(cleanups)
+            initFolderDisclosures(cleanups)
+
+            if (cleanups.length > 0 && typeof window !== "undefined" && window.addCleanup) {
+              window.addCleanup(() => cleanups.forEach((cleanup) => cleanup()))
+            }
+          }
+
+          if (typeof document !== "undefined") {
+            document.addEventListener("nav", () => initRootIndexSidebar())
+          }
+          EOF
+
+          cat > test/filename-list-sorting.test.ts <<'EOF'
+          import { describe, expect, it } from "vitest"
+
+          import { collectFilenameListSortData } from "../src/filenameListSorting"
+          import { physicalFile, virtualFile } from "./helpers"
+
+          describe("filename list sorting context", () => {
+            it("resolves exact folder and root policies without inheriting into nested folders", () => {
+              const files = [
+                physicalFile("index", { "quartz-sorting-direction": "descending" }),
+                physicalFile("root-note"),
+                physicalFile("book/index", { "quartz-sorting-direction": "ascending" }),
+                physicalFile("book/topic"),
+                physicalFile("book/child/index", { title: "Child" }),
+                physicalFile("book/child/topic"),
+              ]
+
+              expect(collectFilenameListSortData(files, "root-note")).toMatchObject({
+                pageDirection: "descending",
+                rootDirection: "descending",
+              })
+              expect(collectFilenameListSortData(files, "book/topic")).toMatchObject({
+                pageDirection: "ascending",
+                rootDirection: "descending",
+              })
+              expect(collectFilenameListSortData(files, "book/child/topic")).toEqual(
+                expect.objectContaining({ rootDirection: "descending" }),
+              )
+              expect(
+                collectFilenameListSortData(files, "book/child/topic").pageDirection,
+              ).toBeUndefined()
+            })
+
+            it("indexes listed physical source filenames and ignores virtual or unlisted records", () => {
+              const files = [
+                physicalFile("index", { "quartz-sorting-direction": "ascending" }),
+                physicalFile(
+                  "book/permalink-like-slug",
+                  {},
+                  { filePath: "book/16.09.2026_at_13-36_Untitled.md" },
+                ),
+                physicalFile("book/private", {}, { unlisted: true }),
+                virtualFile("book/generated.canvas", {}, { canvasData: true }),
+              ]
+
+              const data = collectFilenameListSortData(files, "book/permalink-like-slug")
+              expect(data.sources).toEqual([
+                { slug: "index", sortName: "index" },
+                {
+                  slug: "book/permalink-like-slug",
+                  sortName: "16.09.2026_at_13-36_Untitled",
+                },
+              ])
+              expect(Object.isFrozen(data)).toBe(true)
+              expect(Object.isFrozen(data.sources)).toBe(true)
+            })
+
+            it("uses only the first listed physical index policy for a folder", () => {
+              const files = [
+                physicalFile("book/index", { "quartz-sorting-direction": "ascending" }),
+                physicalFile("book/index", { "quartz-sorting-direction": "descending" }),
+                physicalFile("book/topic"),
+              ]
+
+              expect(collectFilenameListSortData(files, "book/topic").pageDirection).toBe(
+                "ascending",
+              )
+            })
+          })
+          EOF
+
+          cat > test/list-sorting-script.test.ts <<'EOF'
+          // @vitest-environment happy-dom
+
+          import { beforeEach, describe, expect, it } from "vitest"
+
+          import { initRootIndexSidebar } from "../src/components/scripts/sidebar.inline"
+
+          type SortEntry = [href: string, sortName: string]
+
+          function mountContext(direction: "ascending" | "descending", entries: SortEntry[]) {
+            const sidebar = document.createElement("nav")
+            sidebar.className = "rip-sidebar"
+            sidebar.dataset.ripListSortDirection = direction
+            sidebar.dataset.ripFilenameSortIndex = JSON.stringify(entries)
+            document.body.append(sidebar)
+          }
+
+          function mountBacklinks(items: Array<[href: string, label: string]>): HTMLUListElement {
+            const wrapper = document.createElement("div")
+            wrapper.className = "backlinks"
+            const list = document.createElement("ul")
+            for (const [href, label] of items) {
+              const item = document.createElement("li")
+              item.innerHTML = `<a class="internal" href="${href}">${label}</a>`
+              list.append(item)
+            }
+            const end = document.createElement("li")
+            end.className = "overflow-end"
+            list.append(end)
+            wrapper.append(list)
+            document.body.append(wrapper)
+            return list
+          }
+
+          function hrefs(list: HTMLUListElement): Array<string | null> {
+            return Array.from(list.children)
+              .filter((item) => !item.classList.contains("overflow-end"))
+              .map((item) => item.querySelector("a")?.getAttribute("href") ?? null)
+          }
+
+          beforeEach(() => {
+            document.body.replaceChildren()
+            window.history.replaceState({}, "", "/book/current")
+          })
+
+          describe("shared Quartz filename list sorting", () => {
+            it("sorts Backlinks by source filename rather than displayed title", () => {
+              mountContext("ascending", [
+                ["./number", "2Thing"],
+                ["./letter", "Apple"],
+                ["./later", "17.09.2026_at_08-00_Foo"],
+                ["./dt13", "16.09.2026_at_13-36_Untitled"],
+                ["./dt12", "16.09.2026_at_12-00_Zulu"],
+                ["./date", "16.09.2026_Untitled"],
+                ["./time", "13-36_Untitled"],
+              ])
+              const list = mountBacklinks([
+                ["./time", "A title"],
+                ["./later", "B title"],
+                ["./date", "C title"],
+                ["./dt13", "D title"],
+                ["./letter", "Z title"],
+                ["./dt12", "E title"],
+                ["./number", "Y title"],
+              ])
+
+              initRootIndexSidebar()
+
+              expect(hrefs(list)).toEqual([
+                "./number",
+                "./letter",
+                "./dt12",
+                "./dt13",
+                "./later",
+                "./date",
+                "./time",
+              ])
+              expect(list.lastElementChild?.classList.contains("overflow-end")).toBe(true)
+            })
+
+            it("keeps bucket priority fixed while descending reverses values inside buckets", () => {
+              mountContext("descending", [
+                ["./2", "2Thing"],
+                ["./10", "10Thing"],
+                ["./apple", "Apple"],
+                ["./zebra", "Zebra"],
+                ["./early", "16.09.2026_at_12-00_First"],
+                ["./late", "16.09.2026_at_13-36_Second"],
+              ])
+              const list = mountBacklinks([
+                ["./2", "2"],
+                ["./apple", "Apple"],
+                ["./early", "Early"],
+                ["./10", "10"],
+                ["./zebra", "Zebra"],
+                ["./late", "Late"],
+              ])
+
+              initRootIndexSidebar()
+
+              expect(hrefs(list)).toEqual([
+                "./10",
+                "./2",
+                "./zebra",
+                "./apple",
+                "./late",
+                "./early",
+              ])
+            })
+
+            it("sorts Quartz PageList note slots while preserving unknown generated entries", () => {
+              mountContext("ascending", [
+                ["./later", "17.09.2026_at_08-00_Later"],
+                ["./earlier", "16.09.2026_at_08-00_Earlier"],
+              ])
+              const list = document.createElement("ul")
+              list.className = "section-ul"
+              list.innerHTML = `
+                <li data-fixed="folder"><a class="internal" href="./folder/index">Folder</a></li>
+                <li><a class="internal" href="./later">Later</a></li>
+                <li data-fixed="generated"><span>Generated entry</span></li>
+                <li><a class="internal" href="./earlier">Earlier</a></li>
+              `
+              document.body.append(list)
+
+              initRootIndexSidebar()
+
+              expect(Array.from(list.children).map((item) => item.getAttribute("data-fixed") ?? item.querySelector("a")?.getAttribute("href"))).toEqual([
+                "folder",
+                "./earlier",
+                "generated",
+                "./later",
+              ])
+            })
+
+            it("leaves Backlinks and PageList order untouched without an active policy", () => {
+              const list = mountBacklinks([
+                ["./later", "Later"],
+                ["./earlier", "Earlier"],
+              ])
+
+              initRootIndexSidebar()
+
+              expect(hrefs(list)).toEqual(["./later", "./earlier"])
+            })
+          })
+          EOF
+
+          cat > test/sidebar-list-sorting-context.test.tsx <<'EOF'
+          import type { QuartzComponentProps } from "@quartz-community/types"
+          import render from "preact-render-to-string"
+          import { describe, expect, it, vi } from "vitest"
+
+          vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "sidebar-style" }))
+          vi.mock("../src/components/styles/sidebar-rework.scss", () => ({
+            default: "sidebar-rework-style",
+          }))
+          vi.mock("../src/components/scripts/sidebar.inline.ts", () => ({ default: "sidebar-script" }))
+
+          import RootIndexSidebar from "../src/components/RootIndexSidebar"
+          import { componentProps, physicalFile, type PluginFile } from "./helpers"
+
+          function renderSidebar(slug: string, allFiles: PluginFile[]): string {
+            const props = componentProps(slug, allFiles) as QuartzComponentProps
+            const Sidebar = RootIndexSidebar()
+            return render(Sidebar(props) as Parameters<typeof render>[0])
+          }
+
+          describe("sidebar filename-list sorting metadata", () => {
+            const files = [
+              physicalFile("index", { "quartz-sorting-direction": "descending" }),
+              physicalFile("book/index", { "quartz-sorting-direction": "ascending" }),
+              physicalFile(
+                "book/permalink-like-slug",
+                { title: "Displayed title" },
+                { filePath: "book/16.09.2026_at_13-36_Untitled.md" },
+              ),
+            ]
+
+            it("publishes the exact current-folder policy and source-filename href index", () => {
+              const html = renderSidebar("book/topic", files)
+
+              expect(html).toContain('data-rip-list-sort-direction="ascending"')
+              expect(html).toContain("data-rip-filename-sort-index=")
+              expect(html).toContain("16.09.2026_at_13-36_Untitled")
+              expect(html).toContain("permalink-like-slug")
+            })
+
+            it("uses the root index policy for generated tag routes", () => {
+              const html = renderSidebar("tags/example", files)
+
+              expect(html).toContain('data-rip-list-sort-direction="descending"')
+              expect(html).toContain("data-rip-filename-sort-index=")
+            })
+
+            it("omits list-sorting metadata when the exact folder has no policy", () => {
+              const html = renderSidebar("book/child/topic", files)
+
+              expect(html).not.toContain("data-rip-list-sort-direction")
+              expect(html).not.toContain("data-rip-filename-sort-index")
+            })
+          })
+          EOF
+
+          python <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              if new in text:
+                  return
+              if old not in text:
+                  raise SystemExit(f"expected patch anchor missing in {path}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "src/components/RootIndexSidebar.tsx",
+              'import { resolvePanelAccent } from "../appearance"\n',
+              'import { resolvePanelAccent } from "../appearance"\nimport { collectFilenameListSortData } from "../filenameListSorting"\n',
+          )
+
+          replace_once(
+              "src/components/RootIndexSidebar.tsx",
+              '    const rootState = getSidebarLinkState("index", current)\n\n    return (\n',
+              '''    const rootState = getSidebarLinkState("index", current)\n    const filenameListData = collectFilenameListSortData(props.allFiles, current)\n    const noteListSortDirection =\n      current === "tags" || current.startsWith("tags/")\n        ? filenameListData.rootDirection\n        : filenameListData.pageDirection\n    const filenameSortIndex = noteListSortDirection\n      ? JSON.stringify(\n          filenameListData.sources.map((source) => [\n            resolveRelative(current, source.slug),\n            source.sortName,\n          ]),\n        )\n      : undefined\n\n    return (\n''',
+          )
+
+          replace_once(
+              "src/components/RootIndexSidebar.tsx",
+              '        data-rip-replace-explorer={options.replaceExplorer ? "true" : undefined}\n        data-rip-scope={scope.kind}\n',
+              '        data-rip-replace-explorer={options.replaceExplorer ? "true" : undefined}\n        data-rip-list-sort-direction={noteListSortDirection}\n        data-rip-filename-sort-index={filenameSortIndex}\n        data-rip-scope={scope.kind}\n',
+          )
+
+          readme_anchor = '''`ascending` and `descending` reverse values inside those fixed buckets and character classes; they\ndo not move the date/time buckets ahead of ordinary filenames or move lowercase names ahead of\nuppercase names. Missing values, booleans such as `true`/`false`, and any string other than exactly\n`ascending` or `descending` preserve the sidebar's normal title-based ordering for that folder.\n'''
+          readme_replacement = readme_anchor + '''\nThe same filename policy also orders Quartz note collections rendered on the page. Backlinks and\nFolderPage's PageList use the exact current folder's physical `index.md` policy. Generated TagPage\nroutes use the physical root `content/index.md` policy because tags are global rather than owned by a\ncontent folder. Sorting still uses source filenames even when the visible link text comes from\nfrontmatter `title`. Entries without a listed physical source keep their original list slots.\n\nThis enhancement runs after each Quartz SPA navigation and currently covers the standard Backlinks\nlist plus the shared `section-ul` PageList used by FolderPage and TagPage. `RecentNotes` is\nintentionally left alone because recency is that component's explicit ordering semantics. On the\nroot `tags` overview, Quartz chooses the capped preview subset before rendering; this plugin reorders\nthat visible subset but does not change which pages Quartz selected for the cap.\n'''
+          replace_once("README.md", readme_anchor, readme_replacement)
+
+          architecture_anchor = '''- Filename ordering uses the physical `filePath` basename, with the slug leaf only as the generated\n  Canvas/Base fallback. Parse the first valid `DD.MM.YYYY` Gregorian date and `HH-MM` 24-hour time\n  anywhere in the name. Keep fixed buckets for plain, date-and-time, date-only, then time-only names.\n  Plain names use natural numeric runs plus Unicode uppercase, Unicode lowercase, then other-character\n  classes. Direction reverses values inside fixed buckets/classes without reversing their priority;\n  date-and-time values compare date then time so equal dates stay grouped. Parsed-value ties use the\n  remaining name and then the raw name deterministically. Ordinary notes, Canvas, and Base use\n  distinct icons.\n'''
+          architecture_replacement = architecture_anchor + '''- `src/filenameListSorting.ts` independently resolves the first listed physical `index` policy for\n  the exact current folder and root while collecting a listed-physical slug/source-filename index in\n  one pass. `RootIndexSidebar` serializes only an active policy plus resolved href/name pairs. For\n  ordinary pages the exact current-folder policy applies; generated `tags` routes use the root\n  policy. The SPA enhancement reorders only sortable direct slots in standard Backlinks lists and\n  Quartz `ul.section-ul` PageLists, preserving unknown/generated slots and overflow sentinels. It\n  must not reorder `RecentNotes`, whose ordering is semantically recency-based.\n'''
+          replace_once(
+              ".github/instructions/architecture.instructions.md",
+              architecture_anchor,
+              architecture_replacement,
+          )
+
+          verification_anchor = '''- folder-local filename sorting from physical `index.md` frontmatter, including root and nested\n  scopes, non-inheritance, invalid-value fallback, filename-versus-title independence, strict\n  `DD.MM.YYYY`/`HH-MM` validation, natural numeric/Unicode case classes, fixed temporal buckets,\n  same-date time grouping, deterministic ties, and both directions;\n'''
+          verification_replacement = verification_anchor + '''- shared note-list sorting metadata and SPA behavior: exact-folder policy on ordinary pages, root\n  policy on generated tag routes, source-filename rather than title lookup, Backlinks and\n  `section-ul` PageList reordering, stable ties, preserved unknown/generated slots and Backlinks\n  overflow sentinel, no-op without a valid policy, and explicit non-interference with RecentNotes;\n'''
+          replace_once(
+              ".github/instructions/verification.instructions.md",
+              verification_anchor,
+              verification_replacement,
+          )
+
+          changelog_anchor = '''- Add opt-in folder-local sidebar filename sorting through\n  `quartz-sorting-direction: ascending|descending` on physical `index.md` files, with strict\n  `DD.MM.YYYY`/`HH-MM` parsing, deterministic natural filename ordering, same-date time grouping,\n  and non-inherited folder scope.\n'''
+          changelog_replacement = changelog_anchor + '''- Apply the same active filename policy to standard Quartz Backlinks and FolderPage/TagPage\n  PageList collections, using source filenames while preserving generated entries and component\n  semantics such as RecentNotes recency.\n'''
+          replace_once("CHANGELOG.md", changelog_anchor, changelog_replacement)
+          PY
+
+      - name: Format changed source and tests
+        run: npx prettier --write src/filenameListSorting.ts src/components/RootIndexSidebar.tsx src/components/scripts/sidebar.inline.ts test/filename-list-sorting.test.ts test/list-sorting-script.test.ts test/sidebar-list-sorting-context.test.tsx README.md CHANGELOG.md .github/instructions/architecture.instructions.md .github/instructions/verification.instructions.md
+
+      - name: Verify source
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify package artifacts
+        run: |
+          npm run verify:dist
+          npm run verify:package
+          npm pack --dry-run
+          git diff --check
+
+      - name: Commit directly to main
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name VingGit
+          git config user.email 61470249+VingGit@users.noreply.github.com
+          git add src test dist README.md CHANGELOG.md .github/instructions
+          git commit -m "Apply filename ordering to Backlinks and page lists"
+          git pull --rebase origin main
+          git push origin HEAD:main
