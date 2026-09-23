@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `DD.MM.YYYY`/`HH-MM` parsing, deterministic natural filename ordering, same-date time grouping,
   and non-inherited folder scope.
 
+### Fixed
+
+- Update Vitest and override its shared esbuild toolchain to patched releases, removing known
+  development-dependency vulnerabilities.
+
 ## [0.5.0] - 2026-09-15
 
 ### Changed

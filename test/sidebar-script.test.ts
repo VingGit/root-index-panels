@@ -2,13 +2,13 @@
 
 import type { FullSlug } from "@quartz-community/types"
 import { Window as HappyDOMWindow } from "happy-dom"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest"
 
 import { RootIndexSidebar as BuiltRootIndexSidebar } from "../dist/index.js"
 import { initRootIndexSidebar } from "../src/components/scripts/sidebar.inline"
 
 let cleanupCallbacks: Array<() => void>
-let addCleanup: ReturnType<typeof vi.fn>
+let addCleanup: Mock<(cleanup: () => void) => void>
 
 function renderSwitcher(name: string): HTMLDetailsElement {
   const nav = document.createElement("nav")
@@ -80,7 +80,9 @@ function runCleanups() {
 beforeEach(() => {
   document.body.replaceChildren()
   cleanupCallbacks = []
-  addCleanup = vi.fn((cleanup: () => void) => cleanupCallbacks.push(cleanup))
+  addCleanup = vi.fn((cleanup: () => void) => {
+    cleanupCallbacks.push(cleanup)
+  })
   window.addCleanup = addCleanup
   setCompactExplorer(false)
   window.history.replaceState({}, "", "/")

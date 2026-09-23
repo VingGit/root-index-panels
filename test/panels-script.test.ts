@@ -2,7 +2,7 @@
 
 import type { FullSlug } from "@quartz-community/types"
 import { Window as HappyDOMWindow } from "happy-dom"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest"
 
 import { RootIndexPanels as BuiltRootIndexPanels } from "../dist/index.js"
 import { initRootIndexPanels } from "../src/components/scripts/panels.inline"
@@ -27,7 +27,7 @@ const layouts: LayoutFixture[] = [
 ]
 
 let cleanupCallbacks: Array<() => void>
-let addCleanup: ReturnType<typeof vi.fn>
+let addCleanup: Mock<(cleanup: () => void) => void>
 
 function renderLayout(layout: LayoutFixture, count = 3): HTMLAnchorElement[] {
   const container = document.createElement("section")
@@ -81,7 +81,9 @@ function runCleanups() {
 beforeEach(() => {
   document.body.replaceChildren()
   cleanupCallbacks = []
-  addCleanup = vi.fn((cleanup: () => void) => cleanupCallbacks.push(cleanup))
+  addCleanup = vi.fn((cleanup: () => void) => {
+    cleanupCallbacks.push(cleanup)
+  })
   window.addCleanup = addCleanup
 })
 
