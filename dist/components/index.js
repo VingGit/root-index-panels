@@ -3208,7 +3208,7 @@ var builtInLucideIcons = {
   "user-group": UserGroup
 };
 var builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons));
-var lucidePackageVersion = "1.46.0";
+var lucidePackageVersion = "1.47.0";
 
 // src/icons.ts
 function readLucideIconNode(icon) {
@@ -4581,7 +4581,7 @@ lucide-preact/dist/esm/icons/user-group.mjs:
 lucide-preact/dist/esm/icons/workflow.mjs:
 lucide-preact/dist/esm/lucide-preact.mjs:
   (**
-   * @license lucide-preact v1.46.0 - ISC
+   * @license lucide-preact v1.47.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
