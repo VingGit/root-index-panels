@@ -2774,24 +2774,24 @@ var Icon = ({
 
 // node_modules/lucide-preact/dist/esm/createLucideIcon.mjs
 function createLucideIcon(iconDataOrName, iconNode, aliases = []) {
-  const iconData26 = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
+  const iconData = typeof iconDataOrName === "string" ? toLucideIconData(iconDataOrName, iconNode, aliases) : iconDataOrName;
   const Component = ({ class: classes = "", className = "", children, ...props }) => h(
     Icon,
     {
       ...props,
-      icon: iconData26,
+      icon: iconData,
       class: mergeClasses(classes, className)
     },
     children
   );
-  if (iconData26.name) {
-    Component.displayName = toPascalCase(iconData26.name);
+  if (iconData.name) {
+    Component.displayName = toPascalCase(iconData.name);
   }
   return Component;
 }
 
 // node_modules/lucide-preact/dist/esm/icons/book-open.mjs
-var iconData = {
+var __iconData = {
   name: "book-open",
   size: 24,
   node: [
@@ -2805,10 +2805,11 @@ var iconData = {
     ]
   ]
 };
-var BookOpen = createLucideIcon(iconData);
+__iconData.node;
+var BookOpen = createLucideIcon(__iconData);
 
 // node_modules/lucide-preact/dist/esm/icons/calendar-1.mjs
-var iconData2 = {
+var __iconData2 = {
   name: "calendar-1",
   size: 24,
   node: [
@@ -2819,26 +2820,29 @@ var iconData2 = {
     ["rect", { x: "3", y: "3", width: "18", height: "18", rx: "2", key: "h1oib" }]
   ]
 };
-var Calendar1 = createLucideIcon(iconData2);
+__iconData2.node;
+var Calendar1 = createLucideIcon(__iconData2);
 
 // node_modules/lucide-preact/dist/esm/icons/check.mjs
-var iconData3 = {
+var __iconData3 = {
   name: "check",
   size: 24,
   node: [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]]
 };
-var Check = createLucideIcon(iconData3);
+__iconData3.node;
+var Check = createLucideIcon(__iconData3);
 
 // node_modules/lucide-preact/dist/esm/icons/chevron-right.mjs
-var iconData4 = {
+var __iconData4 = {
   name: "chevron-right",
   size: 24,
   node: [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]]
 };
-var ChevronRight = createLucideIcon(iconData4);
+__iconData4.node;
+var ChevronRight = createLucideIcon(__iconData4);
 
 // node_modules/lucide-preact/dist/esm/icons/chevrons-up-down.mjs
-var iconData5 = {
+var __iconData5 = {
   name: "chevrons-up-down",
   size: 24,
   node: [
@@ -2846,10 +2850,11 @@ var iconData5 = {
     ["path", { d: "m7 9 5-5 5 5", key: "sgt6xg" }]
   ]
 };
-var ChevronsUpDown = createLucideIcon(iconData5);
+__iconData5.node;
+var ChevronsUpDown = createLucideIcon(__iconData5);
 
 // node_modules/lucide-preact/dist/esm/icons/code-xml.mjs
-var iconData6 = {
+var __iconData6 = {
   name: "code-xml",
   size: 24,
   node: [
@@ -2859,10 +2864,11 @@ var iconData6 = {
   ],
   aliases: ["code-2"]
 };
-var CodeXml = createLucideIcon(iconData6);
+__iconData6.node;
+var CodeXml = createLucideIcon(__iconData6);
 
 // node_modules/lucide-preact/dist/esm/icons/coffee.mjs
-var iconData7 = {
+var __iconData7 = {
   name: "coffee",
   size: 24,
   node: [
@@ -2878,10 +2884,11 @@ var iconData7 = {
     ["path", { d: "M6 2v2", key: "colzsn" }]
   ]
 };
-var Coffee = createLucideIcon(iconData7);
+__iconData7.node;
+var Coffee = createLucideIcon(__iconData7);
 
 // node_modules/lucide-preact/dist/esm/icons/container.mjs
-var iconData8 = {
+var __iconData8 = {
   name: "container",
   size: 24,
   node: [
@@ -2898,10 +2905,11 @@ var iconData8 = {
     ["path", { d: "M18 17.5V9.4", key: "11uown" }]
   ]
 };
-var Container = createLucideIcon(iconData8);
+__iconData8.node;
+var Container = createLucideIcon(__iconData8);
 
 // node_modules/lucide-preact/dist/esm/icons/cpu.mjs
-var iconData9 = {
+var __iconData9 = {
   name: "cpu",
   size: 24,
   node: [
@@ -2921,10 +2929,11 @@ var iconData9 = {
     ["rect", { x: "8", y: "8", width: "8", height: "8", rx: "1", key: "z9xiuo" }]
   ]
 };
-var Cpu = createLucideIcon(iconData9);
+__iconData9.node;
+var Cpu = createLucideIcon(__iconData9);
 
 // node_modules/lucide-preact/dist/esm/icons/database.mjs
-var iconData10 = {
+var __iconData10 = {
   name: "database",
   size: 24,
   node: [
@@ -2933,10 +2942,11 @@ var iconData10 = {
     ["path", { d: "M3 12A9 3 0 0 0 21 12", key: "mv7ke4" }]
   ]
 };
-var Database = createLucideIcon(iconData10);
+__iconData10.node;
+var Database = createLucideIcon(__iconData10);
 
 // node_modules/lucide-preact/dist/esm/icons/file-code.mjs
-var iconData11 = {
+var __iconData11 = {
   name: "file-code",
   size: 24,
   node: [
@@ -2952,10 +2962,11 @@ var iconData11 = {
     ["path", { d: "m14 12.5 2 2.5-2 2.5", key: "yinavb" }]
   ]
 };
-var FileCode = createLucideIcon(iconData11);
+__iconData11.node;
+var FileCode = createLucideIcon(__iconData11);
 
 // node_modules/lucide-preact/dist/esm/icons/file-question-mark.mjs
-var iconData12 = {
+var __iconData12 = {
   name: "file-question-mark",
   size: 24,
   node: [
@@ -2971,10 +2982,11 @@ var iconData12 = {
   ],
   aliases: ["file-question"]
 };
-var FileQuestionMark = createLucideIcon(iconData12);
+__iconData12.node;
+var FileQuestionMark = createLucideIcon(__iconData12);
 
 // node_modules/lucide-preact/dist/esm/icons/file-text.mjs
-var iconData13 = {
+var __iconData13 = {
   name: "file-text",
   size: 24,
   node: [
@@ -2991,10 +3003,11 @@ var iconData13 = {
     ["path", { d: "M16 17H8", key: "z1uh3a" }]
   ]
 };
-var FileText = createLucideIcon(iconData13);
+__iconData13.node;
+var FileText = createLucideIcon(__iconData13);
 
 // node_modules/lucide-preact/dist/esm/icons/folder.mjs
-var iconData14 = {
+var __iconData14 = {
   name: "folder",
   size: 24,
   node: [
@@ -3007,10 +3020,11 @@ var iconData14 = {
     ]
   ]
 };
-var Folder = createLucideIcon(iconData14);
+__iconData14.node;
+var Folder = createLucideIcon(__iconData14);
 
 // node_modules/lucide-preact/dist/esm/icons/git-branch.mjs
-var iconData15 = {
+var __iconData15 = {
   name: "git-branch",
   size: 24,
   node: [
@@ -3019,10 +3033,11 @@ var iconData15 = {
     ["circle", { cx: "6", cy: "18", r: "3", key: "fqmcym" }]
   ]
 };
-var GitBranch = createLucideIcon(iconData15);
+__iconData15.node;
+var GitBranch = createLucideIcon(__iconData15);
 
 // node_modules/lucide-preact/dist/esm/icons/globe.mjs
-var iconData16 = {
+var __iconData16 = {
   name: "globe",
   size: 24,
   node: [
@@ -3031,10 +3046,11 @@ var iconData16 = {
     ["path", { d: "M2 12h20", key: "9i4pu4" }]
   ]
 };
-var Globe = createLucideIcon(iconData16);
+__iconData16.node;
+var Globe = createLucideIcon(__iconData16);
 
 // node_modules/lucide-preact/dist/esm/icons/house.mjs
-var iconData17 = {
+var __iconData17 = {
   name: "house",
   size: 24,
   node: [
@@ -3049,10 +3065,11 @@ var iconData17 = {
   ],
   aliases: ["home"]
 };
-var House = createLucideIcon(iconData17);
+__iconData17.node;
+var House = createLucideIcon(__iconData17);
 
 // node_modules/lucide-preact/dist/esm/icons/layers.mjs
-var iconData18 = {
+var __iconData18 = {
   name: "layers",
   size: 24,
   node: [
@@ -3080,10 +3097,11 @@ var iconData18 = {
   ],
   aliases: ["layers-3"]
 };
-var Layers = createLucideIcon(iconData18);
+__iconData18.node;
+var Layers = createLucideIcon(__iconData18);
 
 // node_modules/lucide-preact/dist/esm/icons/network.mjs
-var iconData19 = {
+var __iconData19 = {
   name: "network",
   size: 24,
   node: [
@@ -3094,10 +3112,11 @@ var iconData19 = {
     ["path", { d: "M12 12V8", key: "2874zd" }]
   ]
 };
-var Network = createLucideIcon(iconData19);
+__iconData19.node;
+var Network = createLucideIcon(__iconData19);
 
 // node_modules/lucide-preact/dist/esm/icons/notebook-pen.mjs
-var iconData20 = {
+var __iconData20 = {
   name: "notebook-pen",
   size: 24,
   node: [
@@ -3118,10 +3137,11 @@ var iconData20 = {
     ]
   ]
 };
-var NotebookPen = createLucideIcon(iconData20);
+__iconData20.node;
+var NotebookPen = createLucideIcon(__iconData20);
 
 // node_modules/lucide-preact/dist/esm/icons/shield.mjs
-var iconData21 = {
+var __iconData21 = {
   name: "shield",
   size: 24,
   node: [
@@ -3134,10 +3154,11 @@ var iconData21 = {
     ]
   ]
 };
-var Shield = createLucideIcon(iconData21);
+__iconData21.node;
+var Shield = createLucideIcon(__iconData21);
 
 // node_modules/lucide-preact/dist/esm/icons/table-properties.mjs
-var iconData22 = {
+var __iconData22 = {
   name: "table-properties",
   size: 24,
   node: [
@@ -3147,10 +3168,11 @@ var iconData22 = {
     ["path", { d: "M21 15H3", key: "9uk58r" }]
   ]
 };
-var TableProperties = createLucideIcon(iconData22);
+__iconData22.node;
+var TableProperties = createLucideIcon(__iconData22);
 
 // node_modules/lucide-preact/dist/esm/icons/terminal.mjs
-var iconData23 = {
+var __iconData23 = {
   name: "terminal",
   size: 24,
   node: [
@@ -3158,10 +3180,11 @@ var iconData23 = {
     ["path", { d: "m4 17 6-6-6-6", key: "1yngyt" }]
   ]
 };
-var Terminal = createLucideIcon(iconData23);
+__iconData23.node;
+var Terminal = createLucideIcon(__iconData23);
 
 // node_modules/lucide-preact/dist/esm/icons/user-group.mjs
-var iconData24 = {
+var __iconData24 = {
   name: "user-group",
   size: 24,
   node: [
@@ -3173,10 +3196,11 @@ var iconData24 = {
     ["circle", { cx: "6", cy: "4", r: "2", key: "lisof6" }]
   ]
 };
-var UserGroup = createLucideIcon(iconData24);
+__iconData24.node;
+var UserGroup = createLucideIcon(__iconData24);
 
 // node_modules/lucide-preact/dist/esm/icons/workflow.mjs
-var iconData25 = {
+var __iconData25 = {
   name: "workflow",
   size: 24,
   node: [
@@ -3185,7 +3209,8 @@ var iconData25 = {
     ["rect", { width: "8", height: "8", x: "13", y: "13", rx: "2", key: "1cgmvn" }]
   ]
 };
-var Workflow = createLucideIcon(iconData25);
+__iconData25.node;
+var Workflow = createLucideIcon(__iconData25);
 
 // src/built-in-icons.generated.ts
 var builtInLucideIcons = {
@@ -3208,14 +3233,14 @@ var builtInLucideIcons = {
   "user-group": UserGroup
 };
 var builtInIconNames = Object.freeze(Object.keys(builtInLucideIcons));
-var lucidePackageVersion = "1.47.0";
+var lucidePackageVersion = "1.48.0";
 
 // src/icons.ts
 function readLucideIconNode(icon) {
   const wrapper = icon({});
-  const iconData26 = wrapper.props.icon;
-  if (typeof iconData26 === "object" && iconData26 !== null && !Array.isArray(iconData26) && Array.isArray(iconData26.node)) {
-    return iconData26.node;
+  const iconData = wrapper.props.icon;
+  if (typeof iconData === "object" && iconData !== null && !Array.isArray(iconData) && Array.isArray(iconData.node)) {
+    return iconData.node;
   }
   throw new TypeError("The current lucide-preact icon data contract changed");
 }
@@ -4581,7 +4606,7 @@ lucide-preact/dist/esm/icons/user-group.mjs:
 lucide-preact/dist/esm/icons/workflow.mjs:
 lucide-preact/dist/esm/lucide-preact.mjs:
   (**
-   * @license lucide-preact v1.47.0 - ISC
+   * @license lucide-preact v1.48.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
