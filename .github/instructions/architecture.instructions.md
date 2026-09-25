@@ -117,19 +117,8 @@ only when listeners were installed.
   provenance marker, and has a canonical lower-case suffix. Physical collisions win.
 - Deduplicate full slugs. Exclude unlisted data, reserved/excluded books, other books, and unsupported
   virtual records.
-- Folders always sort before leaves and retain case-insensitive title, exact-title, and stable-key
-  ordering. A first listed physical folder `index` may opt only that folder's direct file children
-  into filename ordering with frontmatter `quartz-sorting-direction: ascending|descending`; the
-  physical root `index` controls root notes. The setting never inherits into nested folders, and
-  missing or invalid values preserve normal title ordering.
-- Filename ordering uses the physical `filePath` basename, with the slug leaf only as the generated
-  Canvas/Base fallback. Parse the first valid `DD.MM.YYYY` Gregorian date and `HH-MM` 24-hour time
-  anywhere in the name. Keep fixed buckets for plain, date-and-time, date-only, then time-only names.
-  Plain names use natural numeric runs plus Unicode uppercase, Unicode lowercase, then other-character
-  classes. Direction reverses values inside fixed buckets/classes without reversing their priority;
-  date-and-time values compare date then time so equal dates stay grouped. Parsed-value ties use the
-  remaining name and then the raw name deterministically. Ordinary notes, Canvas, and Base use
-  distinct icons.
+- Folders sort before leaves, followed by case-insensitive title, exact title, and stable key.
+  Ordinary notes, Canvas, and Base use distinct icons.
 
 Cache the immutable model in a `WeakMap` by `allFiles` identity plus normalized `excludeDirs`,
 `descriptionFallback`, `sort`, and `tagCount`. A clean build/new `allFiles` identity is the

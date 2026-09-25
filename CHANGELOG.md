@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove opt-in folder-local filename sorting and return sidebar files to the normal title-based
+  ordering. The `quartz-sorting-direction` frontmatter key is no longer read by this plugin.
+
 ## [0.7.0] - 2026-09-25
 
 ### Changed

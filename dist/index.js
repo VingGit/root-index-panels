@@ -3651,168 +3651,6 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-// src/filenameSorting.ts
-var temporalKindRank = {
-  plain: 0,
-  "date-time": 1,
-  date: 2,
-  time: 3
-};
-var uppercaseLetterPattern = /^\p{Lu}$/u;
-var lowercaseLetterPattern = /^\p{Ll}$/u;
-function normalizeFilenameSortDirection(value) {
-  return value === "ascending" || value === "descending" ? value : void 0;
-}
-function filenameSortName(filePath, fallbackSegment) {
-  const source = typeof filePath === "string" && filePath.length > 0 ? filePath : fallbackSegment;
-  const parts = source.split(/[\\/]/);
-  const basename = parts.at(-1) ?? fallbackSegment;
-  return basename.replace(/\.[^.]+$/, "");
-}
-function isDigit(value) {
-  return value !== void 0 && value >= "0" && value <= "9";
-}
-function firstValidDate(name2) {
-  const matcher = /\d{2}\.\d{2}\.\d{4}/g;
-  for (const match of name2.matchAll(matcher)) {
-    const text2 = match[0];
-    const start2 = match.index;
-    const end = start2 + text2.length;
-    if (isDigit(name2[start2 - 1]) || isDigit(name2[end])) continue;
-    const day = Number(text2.slice(0, 2));
-    const month = Number(text2.slice(3, 5));
-    const year = Number(text2.slice(6, 10));
-    if (month < 1 || month > 12 || day < 1) continue;
-    const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-    const daysInMonth = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    if (day > daysInMonth[month - 1]) continue;
-    return { start: start2, end, value: year * 1e4 + month * 100 + day };
-  }
-  return void 0;
-}
-function firstValidTime(name2) {
-  const matcher = /\d{2}-\d{2}/g;
-  for (const match of name2.matchAll(matcher)) {
-    const text2 = match[0];
-    const start2 = match.index;
-    const end = start2 + text2.length;
-    if (isDigit(name2[start2 - 1]) || isDigit(name2[end])) continue;
-    const hour = Number(text2.slice(0, 2));
-    const minute = Number(text2.slice(3, 5));
-    if (hour > 23 || minute > 59) continue;
-    return { start: start2, end, value: hour * 100 + minute };
-  }
-  return void 0;
-}
-function residualName(name2, date, time) {
-  const ranges = [];
-  if (date) ranges.push({ start: date.start, end: date.end });
-  if (time) ranges.push({ start: time.start, end: time.end });
-  if (date && time && date.end <= time.start) {
-    const connector = name2.slice(date.end, time.start);
-    if (/^[\s_.-]*at[\s_.-]*$/i.test(connector)) {
-      ranges.length = 0;
-      ranges.push({ start: date.start, end: time.end });
-    }
-  }
-  ranges.sort((left, right) => right.start - left.start);
-  let result = name2;
-  for (const range of ranges) {
-    result = result.slice(0, range.start) + result.slice(range.end);
-  }
-  return result.replace(/[_\s]+/g, " ").replace(/^[\s_.-]+|[\s_.-]+$/g, "").trim();
-}
-function parseFilenameSortValue(name2) {
-  const date = firstValidDate(name2);
-  const time = firstValidTime(name2);
-  const kind = date ? time ? "date-time" : "date" : time ? "time" : "plain";
-  return {
-    raw: name2,
-    residual: date || time ? residualName(name2, date, time) : name2,
-    kind,
-    ...date ? { date: date.value } : {},
-    ...time ? { time: time.value } : {}
-  };
-}
-function characterClass(character) {
-  if (character >= "0" && character <= "9") return 0;
-  if (uppercaseLetterPattern.test(character)) return 1;
-  if (lowercaseLetterPattern.test(character)) return 2;
-  return 3;
-}
-function readDigits(value, start2) {
-  let end = start2;
-  while (end < value.length && characterClass(value[end]) === 0) end += 1;
-  return { text: value.slice(start2, end), end };
-}
-function compareDigitRuns(left, right) {
-  const normalizedLeft = left.replace(/^0+/, "") || "0";
-  const normalizedRight = right.replace(/^0+/, "") || "0";
-  if (normalizedLeft.length !== normalizedRight.length) {
-    return normalizedLeft.length < normalizedRight.length ? -1 : 1;
-  }
-  if (normalizedLeft < normalizedRight) return -1;
-  if (normalizedLeft > normalizedRight) return 1;
-  if (left.length !== right.length) return left.length < right.length ? -1 : 1;
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-function compareNaturalName(left, right, direction) {
-  let leftIndex = 0;
-  let rightIndex = 0;
-  while (leftIndex < left.length && rightIndex < right.length) {
-    const leftPoint = left.codePointAt(leftIndex);
-    const rightPoint = right.codePointAt(rightIndex);
-    const leftCharacter = String.fromCodePoint(leftPoint);
-    const rightCharacter = String.fromCodePoint(rightPoint);
-    const leftClass = characterClass(leftCharacter);
-    const rightClass = characterClass(rightCharacter);
-    if (leftClass !== rightClass) return leftClass < rightClass ? -1 : 1;
-    const multiplier = direction === "descending" ? -1 : 1;
-    if (leftClass === 0) {
-      const leftDigits = readDigits(left, leftIndex);
-      const rightDigits = readDigits(right, rightIndex);
-      const compared = compareDigitRuns(leftDigits.text, rightDigits.text);
-      if (compared !== 0) return compared * multiplier;
-      leftIndex = leftDigits.end;
-      rightIndex = rightDigits.end;
-      continue;
-    }
-    if (leftPoint !== rightPoint) return (leftPoint < rightPoint ? -1 : 1) * multiplier;
-    leftIndex += leftCharacter.length;
-    rightIndex += rightCharacter.length;
-  }
-  if (left.length === right.length) return 0;
-  return (left.length < right.length ? -1 : 1) * (direction === "descending" ? -1 : 1);
-}
-function compareNumber(left, right) {
-  if (left === right) return 0;
-  if (left === void 0) return 1;
-  if (right === void 0) return -1;
-  return left < right ? -1 : 1;
-}
-function compareFilenameSortNames(leftName, rightName, direction) {
-  const left = parseFilenameSortValue(leftName);
-  const right = parseFilenameSortValue(rightName);
-  const kindDifference = temporalKindRank[left.kind] - temporalKindRank[right.kind];
-  if (kindDifference !== 0) return kindDifference;
-  const multiplier = direction === "descending" ? -1 : 1;
-  if (left.kind === "date-time") {
-    const dateDifference = compareNumber(left.date, right.date);
-    if (dateDifference !== 0) return dateDifference * multiplier;
-    const timeDifference = compareNumber(left.time, right.time);
-    if (timeDifference !== 0) return timeDifference * multiplier;
-  } else if (left.kind === "date") {
-    const dateDifference = compareNumber(left.date, right.date);
-    if (dateDifference !== 0) return dateDifference * multiplier;
-  } else if (left.kind === "time") {
-    const timeDifference = compareNumber(left.time, right.time);
-    if (timeDifference !== 0) return timeDifference * multiplier;
-  }
-  const residualDifference = compareNaturalName(left.residual, right.residual, direction);
-  if (residualDifference !== 0) return residualDifference;
-  return compareNaturalName(left.raw, right.raw, direction);
-}
-
 // src/navigation.ts
 var emptyChildren = Object.freeze([]);
 var emptyModel = Object.freeze({
@@ -3945,25 +3783,10 @@ function authoredTitle(file) {
   const title = ownDataValue5(frontmatter, "title");
   return typeof title === "string" && title.trim().length > 0 ? title : void 0;
 }
-function folderSortDirection(file) {
-  const frontmatter = ownDataValue5(file, "frontmatter");
-  return normalizeFilenameSortDirection(ownDataValue5(frontmatter, "quartz-sorting-direction"));
-}
-function collectFolderSortDirections(files) {
-  const directions = /* @__PURE__ */ new Map();
-  const seenFolders = /* @__PURE__ */ new Set();
-  for (const file of files) {
-    const parsed = parseSlug(file);
-    if (!parsed || parsed.parts.at(-1) !== "index" || !isListedPhysical(file)) continue;
-    const folderKey = parsed.parts.slice(0, -1).join("/");
-    if (seenFolders.has(folderKey)) continue;
-    seenFolders.add(folderKey);
-    const direction = folderSortDirection(file);
-    if (direction) directions.set(folderKey, direction);
-  }
-  return directions;
-}
-function compareTitleAndKey(a, b) {
+function compareNodes(a, b) {
+  const leftIsFolder = a.kind === "folder";
+  const rightIsFolder = b.kind === "folder";
+  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1;
   const left = a.title.toLowerCase();
   const right = b.title.toLowerCase();
   if (left < right) return -1;
@@ -3971,16 +3794,6 @@ function compareTitleAndKey(a, b) {
   if (a.title < b.title) return -1;
   if (a.title > b.title) return 1;
   return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
-}
-function compareMutableNodes(a, b, direction) {
-  const leftIsFolder = a.kind === "folder";
-  const rightIsFolder = b.kind === "folder";
-  if (leftIsFolder !== rightIsFolder) return leftIsFolder ? -1 : 1;
-  if (!leftIsFolder && !rightIsFolder && direction) {
-    const filenameDifference = compareFilenameSortNames(a.sortName, b.sortName, direction);
-    if (filenameDifference !== 0) return filenameDifference;
-  }
-  return compareTitleAndKey(a, b);
 }
 function inventoryFile(file) {
   const parsed = parseSlug(file);
@@ -4053,32 +3866,22 @@ function insertBookFile(root2, bookSegment, relativeParts, slug2, file, kind, fo
     kind,
     key,
     slug: slug2,
-    title: fileTitle(file, leafSegment),
-    sortName: filenameSortName(ownDataValue5(file, "filePath"), leafSegment)
+    title: fileTitle(file, leafSegment)
   });
 }
-function freezeNodes(nodes, folderKey, sortDirections) {
-  const sorted = Array.from(nodes.values());
-  sorted.sort((left, right) => compareMutableNodes(left, right, sortDirections.get(folderKey)));
-  const frozen = sorted.map((node) => {
-    if (node.kind !== "folder") {
-      return Object.freeze({
-        kind: node.kind,
-        key: node.key,
-        slug: node.slug,
-        title: node.title
-      });
-    }
-    const childFolderKey = folderKey.length > 0 ? `${folderKey}/${node.segment}` : node.segment;
+function freezeNodes(nodes) {
+  const frozen = Array.from(nodes.values(), (node) => {
+    if (node.kind !== "folder") return Object.freeze({ ...node });
     return Object.freeze({
       kind: node.kind,
       key: node.key,
       segment: node.segment,
       title: node.title,
       ...node.slug ? { slug: node.slug } : {},
-      children: freezeNodes(node.children, childFolderKey, sortDirections)
+      children: freezeNodes(node.children)
     });
   });
+  frozen.sort(compareNodes);
   return Object.freeze(frozen);
 }
 function buildSidebarNavigationModel(allFiles, options = void 0) {
@@ -4100,7 +3903,6 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
   let rootTitle;
   const seenSlugs = /* @__PURE__ */ new Set();
   const folderDestinations = /* @__PURE__ */ new Map();
-  const sortDirections = collectFolderSortDirections(validFiles);
   for (const file of validFiles) {
     const parsed = parseSlug(file);
     if (!parsed || parsed.parts.length < 3 || parsed.parts.at(-1) !== "index" || ownDataValue5(file, "unlisted") === true || isSyntheticVirtualIndex(file) || !bookTrees.has(parsed.parts[0]) || folderDestinations.has(parsed.slug)) {
@@ -4128,14 +3930,14 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
         rootTitle ??= authoredTitle(file);
         continue;
       }
-      const segment = parsed.parts[0];
-      rootNotes.push({
-        kind,
-        key: `document:${parsed.slug}`,
-        slug: parsed.slug,
-        title: fileTitle(file, segment),
-        sortName: filenameSortName(ownDataValue5(file, "filePath"), segment)
-      });
+      rootNotes.push(
+        Object.freeze({
+          kind,
+          key: `document:${parsed.slug}`,
+          slug: parsed.slug,
+          title: fileTitle(file, parsed.parts[0])
+        })
+      );
       continue;
     }
     const bookSegment = parsed.parts[0];
@@ -4151,17 +3953,7 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
       folderDestinations
     );
   }
-  rootNotes.sort((left, right) => compareMutableNodes(left, right, sortDirections.get("")));
-  const frozenRootNotes = Object.freeze(
-    rootNotes.map(
-      (node) => Object.freeze({
-        kind: node.kind,
-        key: node.key,
-        slug: node.slug,
-        title: node.title
-      })
-    )
-  );
+  rootNotes.sort(compareNodes);
   const frozenBooks = [];
   for (const book of books) {
     const slug2 = `${book.segment}/index`;
@@ -4172,18 +3964,14 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
         slug: slug2,
         title: book.title,
         panel: book.panel,
-        children: freezeNodes(
-          bookTrees.get(book.segment) ?? /* @__PURE__ */ new Map(),
-          book.segment,
-          sortDirections
-        )
+        children: freezeNodes(bookTrees.get(book.segment) ?? /* @__PURE__ */ new Map())
       })
     );
   }
   return Object.freeze({
     books: Object.freeze(frozenBooks),
     ...rootTitle ? { rootTitle } : {},
-    rootNotes: frozenRootNotes
+    rootNotes: Object.freeze(rootNotes)
   });
 }
 function getSidebarNavigationModel(allFiles, options = void 0) {
