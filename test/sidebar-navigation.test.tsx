@@ -105,6 +105,19 @@ describe("sidebar navigation model", () => {
     expect(Object.isFrozen(java?.children)).toBe(true)
   })
 
+  it("ignores legacy filename-sorting frontmatter and orders files by title", () => {
+    const model = buildSidebarNavigationModel([
+      physicalFile("book/index", {
+        title: "Book",
+        "quartz-sorting-direction": "ascending",
+      }),
+      physicalFile("book/17.01.2026_zulu", { title: "Zulu" }),
+      physicalFile("book/02.08.2026_alpha", { title: "Alpha" }),
+    ])
+
+    expect(model.books[0]?.children.map((node) => node.title)).toEqual(["Alpha", "Zulu"])
+  })
+
   it("uses the first listed physical root title and omits unsafe or missing titles", () => {
     const rootTitle = Object.defineProperty({}, "title", {
       enumerable: true,
