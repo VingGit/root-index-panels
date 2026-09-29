@@ -1,6 +1,12 @@
 export { default as RootIndexPanels } from "./components/RootIndexPanels"
 export { default as RootIndexSidebar } from "./components/RootIndexSidebar"
 export { RootIndexPanelsPage } from "./pageType"
+export {
+  NAVIGATION_SORTING_SERVICE_SYMBOL,
+  getNavigationSortingService,
+  sortWithNavigationService,
+} from "./sorting"
+export type { NavigationSortInput, NavigationSortingService } from "./sorting"
 export type {
   PanelIconComponent,
   RootIndexPanelsOptions,

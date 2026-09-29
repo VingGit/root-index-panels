@@ -118,6 +118,12 @@ plugins:
 | `accents`             | `{}`           | Named accent values available to book frontmatter.                     |
 | `replaceExplorer`     | `true`         | Replace stock Explorer beside this sidebar. Set `false` to show both.  |
 
+### Custom File Explorer Sorting compatibility
+
+When [Custom File Explorer Sorting Support for Quartz](https://github.com/VingGit/custom-file-explorer-sorting-support) is enabled, the book switcher follows the root `index.md` sorting specification and each scoped folder follows its own applicable specification. Hidden rules remove items from this navigation only; they do not unpublish pages.
+
+The integration is optional. Without the sorting plugin, Root Index Panels keeps the `sort` option and its normal folder-first, title-based sidebar order.
+
 The reader can reorder the complete library by newest edit, oldest edit, ascending title, or
 descending title. This does not change the separate latest-three preview.
 

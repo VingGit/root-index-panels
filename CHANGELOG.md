@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Honor the optional Custom File Explorer Sorting Support service in the book switcher, root notes,
+  and every nested sidebar folder without adding a package dependency.
+
 ### Removed
 
 - Remove opt-in folder-local filename sorting and return sidebar files to the normal title-based

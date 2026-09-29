@@ -118,11 +118,15 @@ only when listeners were installed.
 - Deduplicate full slugs. Exclude unlisted data, reserved/excluded books, other books, and unsupported
   virtual records.
 - Folders sort before leaves, followed by case-insensitive title, exact title, and stable key.
-  Ordinary notes, Canvas, and Base use distinct icons.
+  Ordinary notes, Canvas, and Base use distinct icons. If the version-1 Custom File Explorer Sorting
+  service is present, resolve it at model-build time and let a matched rule reorder or hide the root
+  books, root notes, and each nested folder. The service is optional and structural: never add a
+  package dependency, and retain the standalone order on absent, unmatched, invalid, or throwing
+  results.
 
-Cache the immutable model in a `WeakMap` by `allFiles` identity plus normalized `excludeDirs`,
-`descriptionFallback`, `sort`, and `tagCount`. A clean build/new `allFiles` identity is the
-invalidation boundary.
+Cache the immutable model in a `WeakMap` by `allFiles` identity, sorting-service identity, and
+normalized `excludeDirs`, `descriptionFallback`, `sort`, and `tagCount`. A clean build/new
+`allFiles` identity or a changed sorting-service instance is the invalidation boundary.
 
 ## Sidebar rendering and interaction
 

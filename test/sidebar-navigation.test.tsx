@@ -1,6 +1,6 @@
 import type { QuartzComponentProps } from "@quartz-community/types"
 import render from "preact-render-to-string"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("../src/components/styles/sidebar.scss", () => ({ default: "sidebar-style" }))
 vi.mock("../src/components/styles/sidebar-rework.scss", () => ({
@@ -15,6 +15,7 @@ import {
   getSidebarNavigationModel,
   selectSidebarNavigationScope,
 } from "../src/navigation"
+import { NAVIGATION_SORTING_SERVICE_SYMBOL } from "../src/sorting"
 import {
   componentProps,
   countOccurrences,
@@ -22,6 +23,12 @@ import {
   virtualFile,
   type PluginFile,
 } from "./helpers"
+
+const navigationSortingSymbol = Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)
+
+afterEach(() => {
+  delete (globalThis as unknown as Record<symbol, unknown>)[navigationSortingSymbol]
+})
 
 function sidebarScope(html: string): string {
   const start = html.indexOf('<section class="rip-sidebar-scope"')
@@ -335,6 +342,62 @@ describe("sidebar navigation model", () => {
     expect(
       buildSidebarNavigationModel(files, { sort: "date" }).books.map((book) => book.title),
     ).toEqual(["Beta", "Alpha"])
+  })
+
+  it("uses an optional sorting service for books and every nested folder", () => {
+    const files = fixture()
+    ;(globalThis as unknown as Record<symbol, unknown>)[navigationSortingSymbol] = {
+      apiVersion: 1,
+      sort<T>(
+        folderPath: string,
+        items: ReadonlyArray<{ value: T; path: string; isFolder: boolean }>,
+      ) {
+        if (folderPath === "/") {
+          return {
+            matched: true,
+            items: [...items]
+              .sort((left, right) => right.path.localeCompare(left.path))
+              .map((item) => item.value),
+          }
+        }
+        if (folderPath === "java") {
+          return {
+            matched: true,
+            items: [...items]
+              .sort((left, right) => right.path.localeCompare(left.path))
+              .map((item) => item.value),
+          }
+        }
+        return { matched: false, items: items.map((item) => item.value) }
+      },
+    }
+
+    const model = buildSidebarNavigationModel(files)
+    expect(model.books.map((book) => book.segment)).toEqual(["java", "git"])
+    expect(model.rootNotes.map((note) => note.slug)).toEqual(["loose", "java"])
+    expect(model.books[0]?.children.map((node) => node.title)).toEqual(["Java Topic", "Setup"])
+  })
+
+  it("lets a sorting service hide navigation items and invalidates cached standalone models", () => {
+    const files = fixture()
+    const standalone = getSidebarNavigationModel(files)
+    ;(globalThis as unknown as Record<symbol, unknown>)[navigationSortingSymbol] = {
+      apiVersion: 1,
+      sort<T>(
+        folderPath: string,
+        items: ReadonlyArray<{ value: T; path: string; isFolder: boolean }>,
+      ) {
+        return {
+          matched: folderPath === "java",
+          items: items.filter((item) => item.path !== "java/topic").map((item) => item.value),
+        }
+      },
+    }
+
+    const integrated = getSidebarNavigationModel(files)
+    expect(integrated).not.toBe(standalone)
+    expect(integrated.books.find((book) => book.segment === "java")?.children).toHaveLength(1)
+    expect(JSON.stringify(integrated)).not.toContain("Java Topic")
   })
 
   it("selects Home or one known book and distinguishes ancestors", () => {

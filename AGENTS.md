@@ -58,6 +58,9 @@ unrelated history solely to change old identity metadata.
 - Keep source, tests, generated `dist/`, public types, package metadata,
   `README.md`, `CHANGELOG.md`, and applicable `.github` instructions and prompts
   synchronized with the implemented behavior.
+- Keep the optional Custom File Explorer Sorting service dependency-free. Resolve its versioned
+  global symbol at render/model-build time, validate returned values, and preserve standalone
+  ordering whenever the service is absent, unmatched, invalid, or throws.
 - Inspect status, staged diff, generated artifacts, ignored files, secrets,
   branch name, and remote target immediately before committing and pushing.
 

@@ -4,6 +4,7 @@ import { isFullSlug, simplifySlug } from "@quartz-community/utils/path"
 import { collectBooks } from "./books"
 import { normalizeRootIndexPanelsOptions } from "./options"
 import { parseCanonicalSlug } from "./slug"
+import { getNavigationSortingService, sortWithNavigationService } from "./sorting"
 
 type PluginFile = QuartzPluginData & Record<string, unknown>
 
@@ -65,6 +66,7 @@ interface MutableDocumentNode {
 interface MutableFolderNode {
   kind: "folder"
   key: string
+  path: string
   segment: string
   title: string
   slug?: FullSlug
@@ -78,7 +80,8 @@ const emptyModel: SidebarNavigationModel = Object.freeze({
   books: Object.freeze([]),
   rootNotes: Object.freeze([]),
 })
-const modelCache = new WeakMap<object, Map<string, SidebarNavigationModel>>()
+const noSortingService = Object.freeze({})
+const modelCache = new WeakMap<object, Map<object, Map<string, SidebarNavigationModel>>>()
 
 function ownDataValue(value: unknown, key: string): unknown {
   try {
@@ -280,6 +283,7 @@ function ensureFolder(
   const folder: MutableFolderNode = {
     kind: "folder",
     key,
+    path: `${keyPrefix}/${segment}`,
     segment,
     title: humanizeSegment(segment),
     children: new Map(),
@@ -338,7 +342,11 @@ function insertBookFile(
   })
 }
 
-function freezeNodes(nodes: Map<string, MutableNavigationNode>): readonly SidebarNavigationNode[] {
+function freezeNodes(
+  nodes: Map<string, MutableNavigationNode>,
+  folderPath: string,
+  allFiles: unknown,
+): readonly SidebarNavigationNode[] {
   const frozen = Array.from(nodes.values(), (node): SidebarNavigationNode => {
     if (node.kind !== "folder") return Object.freeze({ ...node })
     return Object.freeze({
@@ -347,11 +355,20 @@ function freezeNodes(nodes: Map<string, MutableNavigationNode>): readonly Sideba
       segment: node.segment,
       title: node.title,
       ...(node.slug ? { slug: node.slug } : {}),
-      children: freezeNodes(node.children),
+      children: freezeNodes(node.children, node.path, allFiles),
     })
   })
   frozen.sort(compareNodes)
-  return Object.freeze(frozen)
+  const externallySorted = sortWithNavigationService(
+    folderPath,
+    frozen.map((node) => ({
+      value: node,
+      path: node.kind === "folder" ? node.key.slice("folder:".length) : node.slug,
+      isFolder: node.kind === "folder",
+    })),
+    allFiles,
+  )
+  return Object.freeze(externallySorted ?? frozen)
 }
 
 /** Build the SSR navigation inventory from physical notes and safe Page Type leaves. */
@@ -451,6 +468,12 @@ export function buildSidebarNavigationModel(
   }
 
   rootNotes.sort(compareNodes)
+  const sortedRootNotes =
+    sortWithNavigationService(
+      "/",
+      rootNotes.map((node) => ({ value: node, path: node.slug, isFolder: false })),
+      allFiles,
+    ) ?? rootNotes
   const frozenBooks: SidebarBook[] = []
   for (const book of books) {
     const slug = `${book.segment}/index`
@@ -461,15 +484,21 @@ export function buildSidebarNavigationModel(
         slug,
         title: book.title,
         panel: book.panel,
-        children: freezeNodes(bookTrees.get(book.segment) ?? new Map()),
+        children: freezeNodes(bookTrees.get(book.segment) ?? new Map(), book.segment, allFiles),
       }),
     )
   }
+  const sortedBooks =
+    sortWithNavigationService(
+      "/",
+      frozenBooks.map((book) => ({ value: book, path: book.segment, isFolder: true })),
+      allFiles,
+    ) ?? frozenBooks
 
   return Object.freeze({
-    books: Object.freeze(frozenBooks),
+    books: Object.freeze(sortedBooks),
     ...(rootTitle ? { rootTitle } : {}),
-    rootNotes: Object.freeze(rootNotes),
+    rootNotes: Object.freeze(sortedRootNotes),
   })
 }
 
@@ -486,10 +515,16 @@ export function getSidebarNavigationModel(
 
   const inventoryOptions = normalizeInventoryOptions(options)
   const key = JSON.stringify(inventoryOptions)
-  let variants = modelCache.get(allFiles)
+  const sortingIdentity = getNavigationSortingService() ?? noSortingService
+  let sortingVariants = modelCache.get(allFiles)
+  if (!sortingVariants) {
+    sortingVariants = new Map()
+    modelCache.set(allFiles, sortingVariants)
+  }
+  let variants = sortingVariants.get(sortingIdentity)
   if (!variants) {
     variants = new Map()
-    modelCache.set(allFiles, variants)
+    sortingVariants.set(sortingIdentity, variants)
   }
   const cached = variants.get(key)
   if (cached) return cached

@@ -3651,12 +3651,43 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+// src/sorting.ts
+var NAVIGATION_SORTING_SERVICE_SYMBOL = "@vinggit/custom-file-explorer-sorting-support/service/v1";
+function getNavigationSortingService() {
+  try {
+    const candidate = globalThis[Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)];
+    if (typeof candidate !== "object" || candidate === null) return void 0;
+    const service = candidate;
+    return service.apiVersion === 1 && typeof service.sort === "function" ? service : void 0;
+  } catch {
+    return void 0;
+  }
+}
+function sortWithNavigationService(folderPath, items, allFiles) {
+  const service = getNavigationSortingService();
+  if (!service) return void 0;
+  try {
+    const result = service.sort(folderPath, items, allFiles);
+    if (!result?.matched || !Array.isArray(result.items)) return void 0;
+    const available = new Set(items.map((item) => item.value));
+    const seen = /* @__PURE__ */ new Set();
+    for (const item of result.items) {
+      if (!available.has(item) || seen.has(item)) return void 0;
+      seen.add(item);
+    }
+    return result.items;
+  } catch {
+    return void 0;
+  }
+}
+
 // src/navigation.ts
 var emptyChildren = Object.freeze([]);
 var emptyModel = Object.freeze({
   books: Object.freeze([]),
   rootNotes: Object.freeze([])
 });
+var noSortingService = Object.freeze({});
 var modelCache = /* @__PURE__ */ new WeakMap();
 function ownDataValue5(value, key) {
   try {
@@ -3825,6 +3856,7 @@ function ensureFolder(parent, segment, keyPrefix) {
   const folder = {
     kind: "folder",
     key,
+    path: `${keyPrefix}/${segment}`,
     segment,
     title: humanizeSegment2(segment),
     children: /* @__PURE__ */ new Map()
@@ -3869,7 +3901,7 @@ function insertBookFile(root2, bookSegment, relativeParts, slug2, file, kind, fo
     title: fileTitle(file, leafSegment)
   });
 }
-function freezeNodes(nodes) {
+function freezeNodes(nodes, folderPath, allFiles) {
   const frozen = Array.from(nodes.values(), (node) => {
     if (node.kind !== "folder") return Object.freeze({ ...node });
     return Object.freeze({
@@ -3878,11 +3910,20 @@ function freezeNodes(nodes) {
       segment: node.segment,
       title: node.title,
       ...node.slug ? { slug: node.slug } : {},
-      children: freezeNodes(node.children)
+      children: freezeNodes(node.children, node.path, allFiles)
     });
   });
   frozen.sort(compareNodes);
-  return Object.freeze(frozen);
+  const externallySorted = sortWithNavigationService(
+    folderPath,
+    frozen.map((node) => ({
+      value: node,
+      path: node.kind === "folder" ? node.key.slice("folder:".length) : node.slug,
+      isFolder: node.kind === "folder"
+    })),
+    allFiles
+  );
+  return Object.freeze(externallySorted ?? frozen);
 }
 function buildSidebarNavigationModel(allFiles, options = void 0) {
   const files = safeFiles(allFiles);
@@ -3954,6 +3995,11 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
     );
   }
   rootNotes.sort(compareNodes);
+  const sortedRootNotes = sortWithNavigationService(
+    "/",
+    rootNotes.map((node) => ({ value: node, path: node.slug, isFolder: false })),
+    allFiles
+  ) ?? rootNotes;
   const frozenBooks = [];
   for (const book of books) {
     const slug2 = `${book.segment}/index`;
@@ -3964,14 +4010,19 @@ function buildSidebarNavigationModel(allFiles, options = void 0) {
         slug: slug2,
         title: book.title,
         panel: book.panel,
-        children: freezeNodes(bookTrees.get(book.segment) ?? /* @__PURE__ */ new Map())
+        children: freezeNodes(bookTrees.get(book.segment) ?? /* @__PURE__ */ new Map(), book.segment, allFiles)
       })
     );
   }
+  const sortedBooks = sortWithNavigationService(
+    "/",
+    frozenBooks.map((book) => ({ value: book, path: book.segment, isFolder: true })),
+    allFiles
+  ) ?? frozenBooks;
   return Object.freeze({
-    books: Object.freeze(frozenBooks),
+    books: Object.freeze(sortedBooks),
     ...rootTitle ? { rootTitle } : {},
-    rootNotes: Object.freeze(rootNotes)
+    rootNotes: Object.freeze(sortedRootNotes)
   });
 }
 function getSidebarNavigationModel(allFiles, options = void 0) {
@@ -3982,10 +4033,16 @@ function getSidebarNavigationModel(allFiles, options = void 0) {
   }
   const inventoryOptions = normalizeInventoryOptions(options);
   const key = JSON.stringify(inventoryOptions);
-  let variants = modelCache.get(allFiles);
+  const sortingIdentity = getNavigationSortingService() ?? noSortingService;
+  let sortingVariants = modelCache.get(allFiles);
+  if (!sortingVariants) {
+    sortingVariants = /* @__PURE__ */ new Map();
+    modelCache.set(allFiles, sortingVariants);
+  }
+  let variants = sortingVariants.get(sortingIdentity);
   if (!variants) {
     variants = /* @__PURE__ */ new Map();
-    modelCache.set(allFiles, variants);
+    sortingVariants.set(sortingIdentity, variants);
   }
   const cached = variants.get(key);
   if (cached) return cached;
@@ -4422,6 +4479,6 @@ lucide-preact/dist/esm/lucide-preact.mjs:
    *)
 */
 
-export { RootIndexPanels_default as RootIndexPanels, RootIndexPanelsPage, RootIndexSidebar_default as RootIndexSidebar };
+export { NAVIGATION_SORTING_SERVICE_SYMBOL, RootIndexPanels_default as RootIndexPanels, RootIndexPanelsPage, RootIndexSidebar_default as RootIndexSidebar, getNavigationSortingService, sortWithNavigationService };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

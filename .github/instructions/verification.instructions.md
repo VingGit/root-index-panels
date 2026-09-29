@@ -66,6 +66,9 @@ Prove:
   accessible names are exact; and
 - every sort combination is deterministic, stable, and preserves all entries while leaving the
   latest preview untouched.
+- optional Custom File Explorer Sorting service ordering and hiding at the root, book, and nested
+  folder levels; unchanged standalone behavior when the service is absent, unmatched, invalid, or
+  throws; and cache separation by service identity;
 
 ## Server-rendered sidebar component
 
