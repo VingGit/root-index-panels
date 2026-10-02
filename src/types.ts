@@ -19,14 +19,10 @@ export interface RootIndexPanelsOptions {
   excludeDirs?: string[]
   /** Description used when the selected book index has none. Default: `""`. */
   descriptionFallback?: string
-  /** Built-in or custom icon alias used when a book does not resolve one. Default: `book-open`. */
+  /** Portable Lucide icon used when a book does not resolve one. Default: `lucide:book-open`. */
   defaultIcon?: string
-  /** TypeScript-only custom SVG icon aliases. */
-  icons?: Record<string, PanelIconComponent>
-  /** Theme, named, or direct accent used when a book does not resolve one. */
+  /** Theme or direct six-digit hex accent used when a book does not resolve one. */
   defaultAccent?: string
-  /** YAML-safe named accent registry. */
-  accents?: Record<string, string>
   /** Replace only the stock Explorer beside RootIndexSidebar. Default: `true`. */
   replaceExplorer?: boolean
 }

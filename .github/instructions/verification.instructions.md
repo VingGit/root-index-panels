@@ -29,9 +29,9 @@ Retain parameterized cards/list coverage for:
   malformed, leading/trailing/doubled/dot/backslash slug cases;
 - exact runtime normalization for every option, shallow maps, own properties, accessors, inherited
   entries, revoked/throwing proxies, and soft failure;
-- icon alias/built-in precedence, generated-registry synchronization, direct `lucide:<name>` validation
-  and version-pinned CDN URL construction, all accepted accent forms, invalid/injection forms, no raw
-  values in hooks, no cross-book appearance leakage, and theme-neutral defaults;
+- portable `lucide:<name>` validation and version-pinned CDN URL construction, direct six-digit hex
+  accents, invalid/injection forms, no raw values in hooks, no cross-book appearance leakage, and
+  theme-neutral defaults;
 - per-render `en-US`, `fi-FI`, and unsupported-locale fallback; and
 - large synthetic input that detects repeated full scans without timing-sensitive benchmarks.
 
@@ -137,9 +137,8 @@ Assert:
   `["@quartz-community/folder-page"]` in source and the packed artifact;
 - no manifest entry registers `RootIndexPanels`, but built root, `./components`, and `./types` expose
   every documented runtime/type export;
-- validators, declarations, source maps, side effects/resources, dependency graph, notices, CI, the
-  generated built-in icon registry/README contract, package allowlist, and committed `dist/` cover
-  every changed output;
+- validators, declarations, source maps, side effects/resources, dependency graph, notices, CI,
+  portable appearance tests, package allowlist, and committed `dist/` cover every changed output;
 - every generated JavaScript entry has only intended externals, no accidentally bundled singleton,
   no unexpected bare runtime import, and no dependency source resolved from an ancestor; and
 - `npm pack --dry-run` plus a temporary consumer import prove shipped resources and public types work

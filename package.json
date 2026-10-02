@@ -1,6 +1,6 @@
 {
   "name": "@vinggit/root-index-panels",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Quartz 5 multi-book landing page and route-aware sidebar for first-level content directories.",
   "type": "module",
   "license": "MIT",
@@ -57,12 +57,9 @@
     "test:integration": "node test/integration/parent-build.mjs",
     "test:watch-integration": "node test/integration/watch-build.mjs",
     "typecheck": "tsc --noEmit",
-    "icons:generate": "node scripts/generate-icons.mjs",
-    "icons:check": "node scripts/generate-icons.mjs --check",
-    "icon:add": "node scripts/add-icon.mjs",
     "verify:dist": "node scripts/check-dist-externals.mjs",
     "verify:package": "node scripts/check-packed-package.mjs",
-    "check": "npm run icons:check && npm run typecheck && npm run lint && npm run format && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run format && npm run test"
   },
   "peerDependencies": {
     "preact": "^10.27.2"
@@ -121,7 +118,7 @@
       "pageType",
       "component"
     ],
-    "version": "0.8.0",
+    "version": "0.9.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [
       "@quartz-community/folder-page"
@@ -137,9 +134,8 @@
       "sort": "alphabetical",
       "excludeDirs": [],
       "descriptionFallback": "",
-      "defaultIcon": "book-open",
+      "defaultIcon": "lucide:book-open",
       "defaultAccent": "theme",
-      "accents": {},
       "replaceExplorer": true
     },
     "configSchema": {
@@ -191,7 +187,7 @@
         "name": "RootIndexSidebar",
         "displayName": "Root Index Sidebar",
         "description": "Book switcher and route-scoped left navigation.",
-        "version": "0.8.0",
+        "version": "0.9.0",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
         "homepage": "https://github.com/VingGit/root-index-panels",

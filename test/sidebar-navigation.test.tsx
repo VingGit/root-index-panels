@@ -59,7 +59,7 @@ function fixture(): PluginFile[] {
     physicalFile("java", { title: "Java root note" }),
     physicalFile("java/index", {
       title: "Java",
-      panel: { icon: "coffee", accent: "ocean" },
+      panel: { icon: "lucide:coffee", accent: "#0f766e" },
     }),
     physicalFile("java/topic", { title: "Java Topic" }),
     physicalFile("java/setup/index", { title: "Setup" }),
@@ -506,8 +506,7 @@ describe("RootIndexSidebar SSR", () => {
 
   it("renders only the current book tree with canonical links and active ancestors", () => {
     const html = renderSidebar("java/setup/install", fixture(), {
-      accents: { ocean: "#0f766e" },
-      defaultAccent: "theme",
+      defaultAccent: "#0f766e",
     })
     const menu = switcherMenu(html)
     const scope = sidebarScope(html)
@@ -519,8 +518,8 @@ describe("RootIndexSidebar SSR", () => {
     )
     expect(menu).toContain('class="rip-sidebar-selected-check"')
     expect(menu).toContain(", selected book</span>")
-    expect(html).toContain('data-rip-icon="coffee"')
-    expect(html).toContain('data-rip-accent="ocean"')
+    expect(html).toContain('data-rip-icon="lucide:coffee"')
+    expect(html).toContain('data-rip-accent="direct"')
     expect(html).toContain("--rip-sidebar-accent: #0f766e")
     expect(scope).toMatch(
       /class="rip-sidebar-folder" data-rip-state="ancestor"[^>]*data-rip-open="true"/,
@@ -659,10 +658,8 @@ describe("RootIndexSidebar SSR", () => {
       physicalFile("safe/topic", { title: "Topic" }),
     ]
     const html = renderSidebar("safe/topic", files, {
-      defaultIcon: "constructor",
+      defaultIcon: "lucide:book-open",
       defaultAccent: "#fff;display:none",
-      icons: Object.create({ constructor: () => null }) as RootIndexSidebarOptions["icons"],
-      accents: Object.create({ constructor: "#fff" }) as RootIndexSidebarOptions["accents"],
     })
 
     expect(html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;>")

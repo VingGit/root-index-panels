@@ -64,6 +64,18 @@ unrelated history solely to change old identity metadata.
 - Inspect status, staged diff, generated artifacts, ignored files, secrets,
   branch name, and remote target immediately before committing and pushing.
 
+## Root Books ecosystem
+
+- Release this project in exact semantic-version lockstep with
+  `VingGit/root-books-workspace` and
+  `VingGit/custom-file-explorer-sorting-support`.
+- Use release tags equal to the version without a leading `v`.
+- Keep the shared book frontmatter contract limited to
+  `panel.icon: "lucide:<kebab-name>"` and direct six-digit
+  `panel.accent: "#rrggbb"`.
+- Never put contributor machine paths, vault contents, account data, or
+  credentials in instructions, fixtures, or documentation.
+
 ## Prompt and instruction maintenance
 
 - Create and edit `.github/prompts/*.prompt.md`,

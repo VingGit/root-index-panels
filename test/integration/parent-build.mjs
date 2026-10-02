@@ -197,7 +197,7 @@ const hostRequire = createRequire(${JSON.stringify(path.join(quartzRoot, "packag
 const renderModule = hostRequire("preact-render-to-string")
 const render = renderModule.default ?? renderModule
 const { RootIndexPanels } = await import(${JSON.stringify(pathToFileURL(path.join(mixedPluginRoot, "dist", "index.js")).href)})
-const Component = RootIndexPanels({ defaultIcon: "book-open" })
+const Component = RootIndexPanels({ defaultIcon: "lucide:book-open" })
 const html = render(Component({
   ctx: {},
   externalResources: { css: [], js: [], additionalHead: [] },
@@ -210,8 +210,8 @@ const html = render(Component({
     { slug: "java/note", filePath: "java/note.md", frontmatter: {} },
   ],
 }))
-if (!html.includes("data-rip-icon=\\"book-open\\"") || !html.includes("<svg")) {
-  throw new Error("hook-free built-in icon did not render through the host renderer")
+if (!html.includes("data-rip-icon=\\"lucide:book-open\\"") || !html.includes("data-rip-lucide-icon")) {
+  throw new Error("portable Lucide icon did not render through the host renderer")
 }
 `,
   )
@@ -407,7 +407,7 @@ function writeConfig({ locale, enableSPA, rootSource, rootOptions, includeFolder
 
 function writeQuartzEntry(useTypeScriptOverride) {
   const override = useTypeScriptOverride
-    ? `import { createElement, type JSX } from "preact"\nimport * as ExternalPlugin from "./.quartz/plugins/index"\n\nconst IntegrationIcon = (props: JSX.SVGAttributes<SVGSVGElement>) =>\n  createElement("svg", { ...props, "data-rip-test-icon": "ts-custom", viewBox: "0 0 24 24" },\n    createElement("path", { d: "M4 12h16" }),\n  )\n\nExternalPlugin.RootIndexPanelsPage({\n  defaultIcon: "custom-mark",\n  icons: { "custom-mark": IntegrationIcon },\n  defaultAccent: "#abc",\n})\n\n`
+    ? `import * as ExternalPlugin from "./.quartz/plugins/index"\n\nExternalPlugin.RootIndexPanelsPage({\n  defaultIcon: "lucide:circle-dot",\n  defaultAccent: "#abcdef",\n})\n\n`
     : ""
 
   writeWorkspaceFile(
@@ -459,7 +459,11 @@ function runQuartzExpectFailure(args, label, expectedPatterns, timeout = 300_000
 
   const combinedOutput = `${result.stdout ?? ""}\n${result.stderr ?? ""}`
   for (const pattern of expectedPatterns) {
-    assert.match(combinedOutput, pattern, `${label} did not report ${pattern}`)
+    assert.match(
+      combinedOutput,
+      pattern,
+      `${label} did not report ${pattern}\nstdout:\n${result.stdout ?? ""}\nstderr:\n${result.stderr ?? ""}`,
+    )
   }
 
   process.stdout.write(`✓ ${label}\n`)
@@ -618,8 +622,8 @@ description: Java authored description
 tags: [jvm, language, trimmed]
 modified: 2026-07-18
 panel:
-  icon: coffee
-  accent: ocean
+  icon: "lucide:coffee"
+  accent: "#0f766e"
 ---
 # Java index body
 `,
@@ -693,14 +697,14 @@ title: Dotted directory guide
   "content/custom/index.md": `---
 title: Custom Book
 panel:
-  icon: custom-mark
+  icon: "lucide:circle-dot"
 ---
 # Custom icon book
 `,
   "content/safe/index.md": `---
 title: Safe Direct
 panel:
-  accent: "#1234"
+  accent: "#112233"
 ---
 # Safe direct accent
 `,
@@ -1306,11 +1310,11 @@ function assertCommonRoot(outputRoot, expectedCountText, expectedUpdated, expect
   assert.match(rootMeta[0], /<span>[^<]*\d+[^<]*<\/span>/, "root reading time disappeared")
   assert.doesNotMatch(rootHtml, /\.\/tags\/|\.\/hidden-only\/|\.\/loose\//)
   assert.doesNotMatch(rootHtml, /#fff;outline:none/)
-  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-icon="coffee"/)
-  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-accent="ocean"/)
+  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-icon="lucide:coffee"/)
+  assert.match(itemForHref(rootHtml, "./java/"), /data-rip-accent="direct"/)
   assert.match(itemForHref(rootHtml, "./java/"), /--rip-panel-accent: #0f766e/)
   assert.match(itemForHref(rootHtml, "./safe/"), /data-rip-accent="direct"/)
-  assert.match(itemForHref(rootHtml, "./safe/"), /--rip-panel-accent: #1234/)
+  assert.match(itemForHref(rootHtml, "./safe/"), /--rip-panel-accent: #112233/)
   if (classCount(rootHtml, "rip--cards") === 1) {
     const libraryHtml = librarySectionHtml(rootHtml)
     assert.equal(classCount(rootHtml, "rip-grid"), 2, "latest and complete card grids must render")
@@ -1657,9 +1661,8 @@ function runIntegration() {
       sort: "alphabetical",
       excludeDirs: [],
       descriptionFallback: "YAML fallback",
-      defaultIcon: "book-open",
-      defaultAccent: "ocean",
-      accents: { ocean: "#0f766e" },
+      defaultIcon: "lucide:book-open",
+      defaultAccent: "#0f766e",
     },
     assertVariant(outputRoot) {
       const rootHtml = assertCommonRoot(
@@ -1678,9 +1681,12 @@ function runIntegration() {
           exploreLibrary: "Explore library",
         },
       )
-      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
-      assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
-      assert.match(itemForHref(rootHtml, "./unsafe/"), /data-rip-accent="ocean"/)
+      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="lucide:circle-dot"/)
+      assert.match(
+        sidebarBookAnchorForHref(rootHtml, "./custom/"),
+        /data-rip-icon="lucide:circle-dot"/,
+      )
+      assert.match(itemForHref(rootHtml, "./unsafe/"), /data-rip-accent="direct"/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)
     },
   })
@@ -1699,9 +1705,8 @@ function runIntegration() {
       sort: "alphabetical",
       excludeDirs: [],
       descriptionFallback: "YAML fallback",
-      defaultIcon: "terminal",
+      defaultIcon: "lucide:terminal",
       defaultAccent: "theme",
-      accents: { ocean: "#0f766e" },
     },
     assertVariant(outputRoot) {
       const rootHtml = assertCommonRoot(
@@ -1721,16 +1726,14 @@ function runIntegration() {
         },
       )
       const custom = itemForHref(rootHtml, "./custom/")
-      assert.match(custom, /data-rip-icon="custom-mark"/)
-      assert.match(custom, /data-rip-test-icon="ts-custom"/)
+      assert.match(custom, /data-rip-icon="lucide:circle-dot"/)
       assert.match(custom, /data-rip-accent="direct"/)
-      assert.match(custom, /--rip-panel-accent: #abc/)
+      assert.match(custom, /--rip-panel-accent: #abcdef/)
       const customSidebar = sidebarBookAnchorForHref(rootHtml, "./custom/")
-      assert.match(customSidebar, /data-rip-icon="custom-mark"/)
-      assert.match(customSidebar, /data-rip-test-icon="ts-custom"/)
+      assert.match(customSidebar, /data-rip-icon="lucide:circle-dot"/)
       assert.match(customSidebar, /data-rip-accent="direct"/)
-      assert.match(customSidebar, /--rip-sidebar-accent: #abc/)
-      assert.match(itemForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abc/)
+      assert.match(customSidebar, /--rip-sidebar-accent: #abcdef/)
+      assert.match(itemForHref(rootHtml, "./unsafe/"), /--rip-panel-accent: #abcdef/)
       const scripts = emittedJavaScript(outputRoot)
       assert.doesNotMatch(scripts, /route-announcer/)
       assert.match(scripts, /location\.assign/)
@@ -1751,9 +1754,8 @@ function runIntegration() {
       sort: "alphabetical",
       excludeDirs: [],
       descriptionFallback: "YAML fallback",
-      defaultIcon: "",
+      defaultIcon: "lucide:book-open",
       defaultAccent: "theme",
-      accents: { ocean: "#0f766e" },
     },
     assertVariant(outputRoot) {
       const rootHtml = assertCommonRoot(
@@ -1772,8 +1774,11 @@ function runIntegration() {
           exploreLibrary: "Explore library",
         },
       )
-      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
-      assert.match(sidebarBookAnchorForHref(rootHtml, "./custom/"), /data-rip-icon="book-open"/)
+      assert.match(itemForHref(rootHtml, "./custom/"), /data-rip-icon="lucide:circle-dot"/)
+      assert.match(
+        sidebarBookAnchorForHref(rootHtml, "./custom/"),
+        /data-rip-icon="lucide:circle-dot"/,
+      )
       const unsafe = itemForHref(rootHtml, "./unsafe/")
       assert.doesNotMatch(unsafe, /data-rip-accent=|--rip-panel-accent/)
       assert.match(emittedJavaScript(outputRoot), /route-announcer/)

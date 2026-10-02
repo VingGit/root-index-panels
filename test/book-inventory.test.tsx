@@ -102,13 +102,13 @@ describe.each(layouts)("book inventory and routing (%s)", (layout) => {
 
     const html = renderPanels(
       [physicalFile("accessor/index", frontmatter), physicalFile("accessor/note")],
-      { layout, defaultIcon: "coffee", descriptionFallback: "Safe fallback" },
+      { layout, defaultIcon: "lucide:coffee", descriptionFallback: "Safe fallback" },
     )
 
     expect(accessorReads).toBe(0)
     expect(html).toContain("Accessor")
     expect(html).toContain("Safe fallback")
-    expect(html).toContain('data-rip-icon="coffee"')
+    expect(html).toContain('data-rip-icon="lucide:coffee"')
   })
 
   it("ignores revoked frontmatter and option proxies", () => {

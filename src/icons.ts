@@ -10,12 +10,7 @@ import {
 } from "lucide-preact"
 import { createElement, type JSX, type VNode } from "preact"
 
-import {
-  builtInIconNames,
-  builtInLucideIcons,
-  lucidePackageVersion,
-  type BuiltInIconName,
-} from "./built-in-icons.generated"
+import packageJson from "../package.json" with { type: "json" }
 import { lucideIconNameFromIdentifier, normalizePanelIconIdentifier } from "./options"
 import type { PanelIconComponent, RootIndexPanelsOptions } from "./types"
 
@@ -80,12 +75,7 @@ export const sidebarIcons = Object.freeze({
   note: adaptLucideIcon(FileText),
 })
 
-const builtInIcons = Object.freeze(
-  Object.fromEntries(
-    builtInIconNames.map((name) => [name, adaptLucideIcon(builtInLucideIcons[name])]),
-  ) as Record<BuiltInIconName, PanelIconComponent>,
-)
-
+const lucidePackageVersion = packageJson.dependencies["lucide-preact"]
 const lucideStaticBaseUrl = `https://cdn.jsdelivr.net/npm/lucide-static@${lucidePackageVersion}/icons`
 const remoteLucideIcons = new Map<string, PanelIconComponent>()
 
@@ -123,7 +113,7 @@ function remoteLucideIcon(iconName: string): PanelIconComponent {
   return component
 }
 
-type IconResolutionOptions = Pick<RootIndexPanelsOptions, "defaultIcon" | "icons">
+type IconResolutionOptions = Pick<RootIndexPanelsOptions, "defaultIcon">
 
 interface ResolvedPanelIcon {
   name: string
@@ -141,35 +131,18 @@ function ownDataValue(value: unknown, key: string): unknown {
   }
 }
 
-function resolveCustomIcon(value: unknown, name: string): PanelIconComponent | undefined {
-  const component = ownDataValue(value, name)
-  return typeof component === "function" ? (component as PanelIconComponent) : undefined
-}
-
-function resolveBuiltInIcon(name: string): PanelIconComponent | undefined {
-  if (!Object.hasOwn(builtInIcons, name)) return undefined
-  return builtInIcons[name as BuiltInIconName]
-}
-
-function resolveIconName(value: unknown, icons: unknown): ResolvedPanelIcon | undefined {
+function resolveIconName(value: unknown): ResolvedPanelIcon | undefined {
   const name = normalizePanelIconIdentifier(value)
   if (!name) return undefined
 
   const lucideName = lucideIconNameFromIdentifier(name)
-  if (lucideName) return { name, component: remoteLucideIcon(lucideName) }
-
-  const component = resolveCustomIcon(icons, name) ?? resolveBuiltInIcon(name)
-  return component ? { name, component } : undefined
+  return lucideName ? { name, component: remoteLucideIcon(lucideName) } : undefined
 }
 
-/** Resolves a safe custom, built-in, or direct Lucide decorative icon for one panel. */
+/** Resolves a validated `lucide:<kebab-name>` decorative icon for one panel. */
 export function resolvePanelIcon(
   panelIcon: unknown,
   options?: IconResolutionOptions | null,
 ): ResolvedPanelIcon | undefined {
-  const icons = ownDataValue(options, "icons")
-  return (
-    resolveIconName(panelIcon, icons) ??
-    resolveIconName(ownDataValue(options, "defaultIcon"), icons)
-  )
+  return resolveIconName(panelIcon) ?? resolveIconName(ownDataValue(options, "defaultIcon"))
 }

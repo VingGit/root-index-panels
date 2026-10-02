@@ -27,13 +27,13 @@ intentional fixture change.
 title: JavaScript Basics
 description: JavaScript notes and Markdown compatibility specimens.
 panel:
-  icon: code-2
+  icon: "lucide:code-2"
   accent: "#2563eb"
 ---
 ```
 
 Git Practice and SQL Pocketbook use the same structure with their values from the table. These are
-built-in icon names; TypeScript custom components never appear in frontmatter.
+portable Lucide icon specifiers; aliases and TypeScript custom components never appear in frontmatter.
 
 ## Required feature coverage
 
