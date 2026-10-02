@@ -238,11 +238,11 @@ describe("manifest and runtime public surface", () => {
     const defaults = manifest.defaultOptions
     const schema = manifest.configSchema
 
-    expect(defaults.defaultIcon).toBe("book-open")
+    expect(defaults.defaultIcon).toBe("lucide:book-open")
     expect(defaults.defaultAccent).toBe("theme")
-    expect(defaults.accents).toEqual({})
     expect(defaults.replaceExplorer).toBe(true)
     expect(defaults).not.toHaveProperty("icons")
+    expect(defaults).not.toHaveProperty("accents")
     expect(schema.defaultIcon).toEqual({ type: "string" })
     expect(schema.defaultAccent).toEqual({ type: "string" })
     expect(schema.replaceExplorer).toEqual({ type: "boolean" })

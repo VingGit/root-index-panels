@@ -40,9 +40,9 @@ export function validateManifest(): void {
         errors.push(`quartz.configSchema.${option} is required`)
       }
     }
-    if ("icons" in quartz.configSchema) {
+    if ("icons" in quartz.configSchema || "accents" in quartz.configSchema) {
       errors.push(
-        "quartz.configSchema.icons must be omitted because components are TypeScript-only",
+        "quartz.configSchema must omit icon and accent registries because book metadata is portable",
       )
     }
   }

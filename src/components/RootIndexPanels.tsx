@@ -105,12 +105,7 @@ function hasRootContent(tree: unknown): boolean {
 function panelAttributes(entry: RenderEntry): Record<string, string | undefined> {
   return {
     "data-rip-icon": entry.icon?.name,
-    "data-rip-accent":
-      entry.accent.kind === "named"
-        ? entry.accent.name
-        : entry.accent.kind === "direct"
-          ? "direct"
-          : undefined,
+    "data-rip-accent": entry.accent.kind === "direct" ? "direct" : undefined,
     "data-rip-title": entry.title,
     "data-rip-date": Number.isFinite(entry.date) ? String(entry.date) : "",
     style: entry.accent.kind === "theme" ? undefined : `--rip-panel-accent: ${entry.accent.value}`,

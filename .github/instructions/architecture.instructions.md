@@ -227,29 +227,22 @@ Normalize public options defensively because direct TypeScript calls bypass mani
 - display flags and `replaceExplorer`: only booleans, else `true`;
 - `tagCount`: floor finite values and clamp at zero, else `3`;
 - `excludeDirs`: trimmed non-empty strings, first-occurrence deduplication, case-sensitive;
-- `descriptionFallback`: preserve any string, including whitespace, else `""`; and
-- registry maps: own data properties only; ignore accessors, inherited entries, invalid keys/values,
-  and normalized duplicates.
+- `descriptionFallback`: preserve any string, including whitespace, else `""`;
+- `defaultIcon`: only `lucide:<lowercase-kebab-name>`, else `lucide:book-open`; and
+- `defaultAccent`: only `theme` or direct `#rrggbb`, else `theme`.
 
-Registry names match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. `theme` is reserved for accent behavior. Direct
-Lucide icon specifiers match `lucide:<lowercase-kebab-name>` and are intentionally outside the custom
-alias registry. Construct their remote SVG URL only from that validated name and the exact
-`lucide-preact` version generated from `package.json`; never accept an authored URL or arbitrary CSS
-value. Custom own aliases win built-in collisions. The normalized `defaultIcon` is `book-open`,
-including when a configuration omits it or supplies an empty string, and may explicitly be a valid
-direct Lucide specifier. Unknown or malformed authored icons fall back once to that default; an
-explicitly configured unresolved plain registry default still renders no icon.
+Book frontmatter shares exactly two portable values with Root Books Workspace:
+`panel.icon` accepts only `lucide:<lowercase-kebab-name>` and `panel.accent` accepts only direct
+six-digit hexadecimal color. Do not add named registries, unprefixed built-ins, custom component
+aliases, CSS variables, short hex, or alpha hex. Construct the remote SVG URL only from a validated
+Lucide name and the exact `lucide-preact` version in `package.json`; never accept an authored URL or
+arbitrary CSS value. Unknown or malformed authored icons and accents fall back once to the
+normalized defaults. Raw colors never enter selectors, classes, IDs, or data attributes.
 
-Accept accents only as `theme`, a valid own registry name whose value passes the direct grammar,
-`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, or exact `var(--name)`. Reject keywords, arbitrary
-functions, fallbacks, URLs, gradients, declarations, braces, controls, and extra tokens. Raw colors
-never enter selectors, classes, IDs, or data attributes.
-
-Icons are inert, `aria-hidden`, non-interactive content with non-focusable SVG. Direct Lucide icons
+Icons are inert, `aria-hidden`, non-interactive content with non-focusable SVG. Lucide icons
 render as fixed-origin CSS masks backed by a version-pinned `lucide-static` SVG on jsDelivr so they
-inherit the surrounding accent without inserting remote markup into the DOM. Custom components must
-not introduce links, controls, focusable descendants, or accessible-name noise. Each card/list row
-has one whole-panel anchor.
+inherit the surrounding accent without inserting remote markup into the DOM. Each card/list row has
+one whole-panel anchor.
 
 ## Localization and accessibility
 
@@ -274,12 +267,6 @@ Public exports are:
 
 Do not export internal inventory, navigation-model, normalization, comparator, or resolver types only
 for tests.
-
-`src/built-in-icons.json` is the single source of truth for bundled book icons.
-`scripts/generate-icons.mjs` deterministically generates static Lucide imports plus the README list,
-and `npm run icons:check` must fail on drift. `npm run icon:add -- <name> [ExportName]` verifies the
-installed pinned Lucide export and runs generation, formatting, package checks, build, and package
-verification.
 
 `tsup` produces ESM, declarations, and source maps for the root, `./types`, and `./components`. SCSS
 and `.inline.ts` files become component resource strings. Normalize source-map embedded text to LF

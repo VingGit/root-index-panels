@@ -1,347 +1,128 @@
-# root-index-panels
+# Root Index Panels
 
-A Quartz 5 plugin for organizing a knowledge base as a collection of books. Eligible first-level
-content directories appear on the root page as cards or list items. A route-aware left sidebar lets
-readers return to the current book landing page, switch books, and browse that book's hierarchy.
+Root Index Panels is a Quartz 5 plugin for vaults organized as first-level
+books. It provides a root library page and a route-aware left sidebar without
+changing Quartz's content model.
 
-## Requirements
-
-Your Quartz site must:
-
-- contain `content/index.md`; and
-- have `@quartz-community/folder-page` installed and enabled.
-
-FolderPage is a required Quartz-plugin prerequisite. Quartz ContentPage intentionally excludes every
-slug ending in `/index`; FolderPage is the Page Type that emits book and nested-folder landing pages.
-A physical `content/<book>/index.md` supplies authored content and book metadata, but it still needs
-FolderPage to become a published landing page. When no physical index exists, FolderPage may generate
-the logical `<book>/index` route from the folder's listed contents.
-
-A first-level directory becomes a book when it contains at least one listed Markdown page and has a
-FolderPage-backed landing route. Nested folders use the same emitter. Their `index` notes remain hidden
-from the visible navigation tree while the folder row opens the emitted landing page.
+Each book is a first-level content directory with an `index.md` folder note:
 
 ```text
 content/
 ├── index.md
-├── java/
+├── research/
 │   ├── index.md
-│   ├── collections.md
-│   └── language/
-│       ├── index.md
-│       └── generics.md
-└── git/
+│   └── methods.md
+└── writing/
     ├── index.md
-    └── branching.md
+    └── outline.md
 ```
 
-Root-level notes, empty directories, `tags`, excluded directories, and unlisted pages do not create
-books. A book's count includes its listed Markdown descendants but not its own `index.md`.
+The root page shows library statistics, recently edited books, authored root
+content, and the full book collection. The sidebar switches between root and
+book scopes and renders ordinary, accessible links for notes, folders, Canvas,
+and Bases pages.
 
 ## Installation
 
+Install the required Folder Page plugin and this plugin with the normal Quartz
+plugin manager:
+
 ```bash
 npx quartz plugin add @quartz-community/folder-page
-npx quartz plugin enable folder-page
-npx quartz plugin add @vinggit/root-index-panels
-npx quartz plugin enable root-index-panels
+npx quartz plugin add github:VingGit/root-index-panels
 ```
 
-The root-index-panels manifest declares FolderPage as a dependency. Quartz stops configuration loading
-and prints the required `plugin add` command when FolderPage is absent. Quartz currently emits only a
-warning when a configured dependency is disabled, so keep the FolderPage entry explicitly enabled.
-
-The installer adds one component, `RootIndexSidebar`, to the left layout at priority `40`. The root
-page body is supplied separately by the plugin's Page Type; do not add `RootIndexPanels` to a layout
-slot.
-
-To update an npm installation to the latest published release:
-
-```bash
-npm install @vinggit/root-index-panels@latest
-```
-
-Git-source installs remain supported for development and testing, but npm is the canonical release channel.
-
-To disable, re-enable, or remove it:
-
-```bash
-npx quartz plugin disable root-index-panels
-npx quartz plugin enable root-index-panels
-npx quartz plugin remove root-index-panels
-```
-
-## Configuration
-
-Edit the generated entry in `quartz.config.yaml`:
-
-```yaml
-plugins:
-  - source: "@quartz-community/folder-page"
-    enabled: true
-
-  - source: "@vinggit/root-index-panels"
-    enabled: true
-    options:
-      layout: cards
-      sort: alphabetical
-      showDescription: true
-      showDocCount: true
-      showTags: true
-      tagCount: 3
-      excludeDirs:
-        - archive
-      descriptionFallback: ""
-      defaultIcon: book-open
-      defaultAccent: theme
-      accents:
-        ocean: "var(--secondary)"
-        warning: "#b45309"
-      replaceExplorer: true
-    layout:
-      position: left
-      priority: 40
-```
-
-| Option                | Default        | Purpose                                                                |
-| --------------------- | -------------- | ---------------------------------------------------------------------- |
-| `layout`              | `cards`        | Use `cards` or `list`.                                                 |
-| `sort`                | `alphabetical` | Initial complete-library order: `alphabetical`, `docCount`, or `date`. |
-| `showDescription`     | `true`         | Show the book-index description.                                       |
-| `showDocCount`        | `true`         | Show the number of listed Markdown descendants.                        |
-| `showTags`            | `true`         | Show book-index tags in card layout.                                   |
-| `tagCount`            | `3`            | Maximum number of displayed tags.                                      |
-| `excludeDirs`         | `[]`           | First-level directories to omit; matching is case-sensitive.           |
-| `descriptionFallback` | `""`           | Text used when a book index has no description.                        |
-| `defaultIcon`         | `book-open`    | Built-in, direct Lucide, or TypeScript-registered fallback icon.       |
-| `defaultAccent`       | `theme`        | `theme`, a named accent, or an allowed direct color.                   |
-| `accents`             | `{}`           | Named accent values available to book frontmatter.                     |
-| `replaceExplorer`     | `true`         | Replace stock Explorer beside this sidebar. Set `false` to show both.  |
-
-### Custom File Explorer Sorting compatibility
-
-When [Custom File Explorer Sorting Support for Quartz](https://github.com/VingGit/custom-file-explorer-sorting-support) is enabled, the book switcher follows the root `index.md` sorting specification and each scoped folder follows its own applicable specification. Hidden rules remove items from this navigation only; they do not unpublish pages.
-
-The integration is optional. Without the sorting plugin, Root Index Panels keeps the `sort` option and its normal folder-first, title-based sidebar order.
-
-The reader can reorder the complete library by newest edit, oldest edit, ascending title, or
-descending title. This does not change the separate latest-three preview.
-
-Books without authored icon metadata use a theme-colored open-book mark in the root library and
-book switcher. Set `defaultIcon` to another built-in, a direct `lucide:<name>` icon, or a TypeScript-registered alias to override it.
-
-`accents` works in YAML, although Quartz's current schema-driven editor cannot represent arbitrary
-maps. Later configuration surfaces replace the entire `accents` or `icons` map rather than merging
-individual entries.
-
-## Book metadata
-
-Put title, description, tags, icon, and accent on the physical book index:
-
-```yaml
----
-title: Linux
-description: Kernel, networking, and command-line notes.
-tags:
-  - kernel
-  - networking
-panel:
-  icon: terminal
-  accent: ocean
----
-```
-
-The plugin preserves an authored title exactly. If no title exists, it derives one from the
-directory name.
-
-Built-in icons:
-
-<!-- built-in-icons:start -->
-
-```text
-book-open  calendar-1  code-2  coffee  container  cpu  database  file-code-2
-file-question-mark  git-branch  globe  layers  network  notebook-pen  shield  terminal
-user-group
-```
-
-<!-- built-in-icons:end -->
-
-### Use any Lucide icon without changing the plugin
-
-Use this form when the icon is not in the built-in list and you do not need an offline, bundled icon.
-No merge request, registry change, or plugin release is required.
-
-Browse the [Lucide icon gallery](https://lucide.dev/icons/), copy the kebab-case name from the end of
-the icon page URL, and prefix it with `lucide:` in book frontmatter. For example,
-`https://lucide.dev/icons/refresh-cw` becomes `lucide:refresh-cw`:
-
-```yaml
-panel:
-  icon: "lucide:refresh-cw"
-```
-
-The `lucide:` prefix is required. An unprefixed value such as `refresh-cw` is interpreted only as a
-built-in icon or a TypeScript-registered alias; if neither exists, the plugin falls back to the
-configured default icon.
-
-At build time, the plugin emits a decorative, color-inheriting CSS mask that references the selected
-SVG from jsDelivr at the exact Lucide version pinned by the plugin. The reader's browser fetches that
-SVG when it renders the page, so the site's Content Security Policy must allow image requests to
-`cdn.jsdelivr.net`. Built-in icons and TypeScript custom icons are self-contained and make no
-external request. The repository checks npm daily and advances the exact Lucide pin to the newest
-release only after the package checks and Quartz integration suites pass. Each successful Lucide
-update advances the plugin's minor version, tags that release, publishes it to npm, and creates the
-matching GitHub release. If a newly released icon is unavailable in your checkout, update the plugin
-before treating the icon as missing.
-
-You can also use the direct form as the plugin fallback:
-
-```yaml
-options:
-  defaultIcon: "lucide:library-big"
-```
-
-### Adding another built-in icon
-
-Built-ins are still useful when an icon should work offline, under a restrictive CSP, or as a
-curated default. The bundled icons come from [Lucide](https://lucide.dev/icons/) through the exact
-`lucide-preact` version in `package.json`. The plugin intentionally follows the current Lucide
-Preact icon-data representation rather than retaining compatibility shims for older Lucide internals.
-
-From a repository checkout with dependencies installed, adding the normal case is one command:
-
-```bash
-npm run icon:add -- book-copy
-```
-
-The command infers `BookCopy`, verifies that export exists in the installed pinned
-`lucide-preact`, updates the single source of truth in `src/built-in-icons.json`, regenerates the
-static imports and this README list, formats them, then runs `check`, `build`, `verify:dist`, and
-`verify:package`. The generated TypeScript registry and exhaustive generated-registry test no
-longer require manual editing. If the export is missing locally, the helper compares the pinned
-Lucide version with npm's latest release; when the checkout is stale it reports both versions and
-prints the update command before suggesting that the icon name itself may be wrong.
-
-When the frontmatter alias and Lucide export do not map mechanically, pass the export explicitly:
-
-```bash
-npm run icon:add -- code-2 CodeXml
-```
-
-The icon can then be used without the `lucide:` prefix because it is a bundled built-in:
-
-```yaml
-panel:
-  icon: book-copy
-```
-
-An accent can be:
-
-- `theme`, which uses normal Quartz theme behavior;
-- a name from the configured `accents` map;
-- `#rgb`, `#rgba`, `#rrggbb`, or `#rrggbbaa`; or
-- an exact CSS custom property such as `var(--secondary)`.
-
-Other CSS expressions, URLs, gradients, declarations, and `var()` fallbacks are rejected.
-
-## TypeScript custom icons
-
-Custom SVG icon components can be registered in `quartz.ts` before loading the Quartz config:
+Enable the folder-page emitter and the `RootIndexPanelsPage` page type, then add
+`RootIndexSidebar` to the left layout. The plugin manifest exposes the sidebar
+component; the page type is configured in `quartz.ts`.
 
 ```ts
-import { createElement } from "preact"
-import type { PanelIconComponent } from "./.quartz/plugins/root-index-panels"
-import * as ExternalPlugin from "./.quartz/plugins"
-import { loadQuartzConfig, loadQuartzLayout } from "./quartz/plugins/loader/config-loader"
+import * as RootIndexPanels from "@vinggit/root-index-panels"
 
-const ShellIcon: PanelIconComponent = (props) =>
-  createElement(
-    "svg",
-    { ...props, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
-    createElement("path", { d: "m5 7 4 5-4 5m6 0h8" }),
-  )
-
-ExternalPlugin.RootIndexPanelsPage({
-  icons: { "shell-notes": ShellIcon },
-  defaultIcon: "shell-notes",
-})
-
-const config = await loadQuartzConfig()
-export default config
-export const layout = await loadQuartzLayout()
+export default {
+  plugins: {
+    emitters: [
+      // ...
+      RootIndexPanels.RootIndexPanelsPage(),
+    ],
+  },
+}
 ```
 
-Custom icons must contain decorative SVG only. Do not put links, controls, or focusable elements
-inside them.
+## Portable book appearance
 
-## Reader behavior
+Root Index Panels shares one deliberately small frontmatter contract with
+[Root Books Workspace](https://github.com/VingGit/root-books-workspace):
 
-The root body displays, in order:
+```yaml
+panel:
+  icon: "lucide:book-open"
+  accent: "#0ea5e9"
+```
 
-1. book count, total note count, last edit, and a primary link to the complete library;
-2. the three most recently edited books, newest first;
-3. authored Markdown from `content/index.md`; and
-4. the complete card or list library with reader-controlled sorting.
+- `panel.icon` accepts only `lucide:<lowercase-kebab-name>`.
+- `panel.accent` accepts only a direct six-digit hexadecimal color.
+- Invalid or missing values fall back to the configured defaults.
 
-Each book card shows its latest accepted edit date when one is available.
+Browse the [Lucide icon gallery](https://lucide.dev/icons/), copy the icon's
+kebab-case name, and prefix it with `lucide:`. Direct Lucide icons render as a
+version-pinned CSS mask so they inherit the book accent and remain decorative.
 
-The sidebar separates navigation from switching:
+Named color registries, CSS variables, short/alpha hex colors, unprefixed icon
+aliases, and custom TypeScript icon registries are intentionally unsupported.
+This keeps Obsidian and Quartz metadata identical and portable.
 
-- the compact root or book mark opens the active landing page;
-- the adjacent selector changes the active book and remains directly visible at every screen width;
-- Explorer has its own disclosure instead of being wrapped with the selector;
-- a book's own `index.md` is not repeated as the first Explorer item;
-- a folder row opens that folder's real `index` route; and
-- the adjacent chevron only expands or collapses children.
+## Options
 
-At widths up to `800px`, every ordinary non-landing page starts with Explorer closed after navigation,
-including pages reached through content links or Backlinks. A book or root landing page starts with it
-open, and the reader can explicitly reopen it anywhere. Wider screens and Canvas navigation leave
-Explorer open. Navigation never changes the page scroll position. All links and the book selector
-remain available without JavaScript.
+```ts
+RootIndexPanels.RootIndexPanelsPage({
+  layout: "cards",
+  sort: "alphabetical",
+  showDescription: true,
+  showDocCount: true,
+  showTags: true,
+  tagCount: 3,
+  excludeDirs: ["private", "templates"],
+  descriptionFallback: "",
+  defaultIcon: "lucide:book-open",
+  defaultAccent: "theme",
+})
+```
 
-Collapsing a folder that contains the selected note does not navigate away. Its closed chevron and
-surface retain a muted book-accent cue so the hidden active path remains discoverable. Selected book
-notes and folders use that book's configured or derived accent. Root notes use the host site's normal
-accent.
+| Option                | Default            | Description                                     |
+| --------------------- | ------------------ | ----------------------------------------------- |
+| `layout`              | `cards`            | `cards` or `list`.                              |
+| `sort`                | `alphabetical`     | `alphabetical`, `docCount`, or `date`.          |
+| `showDescription`     | `true`             | Show the book-index description.                |
+| `showDocCount`        | `true`             | Show listed descendant counts.                  |
+| `showTags`            | `true`             | Show book-index tags in card layout.            |
+| `tagCount`            | `3`                | Maximum tags per card.                          |
+| `excludeDirs`         | `[]`               | Case-sensitive first-level directories to omit. |
+| `descriptionFallback` | `""`               | Text used when a book has no description.       |
+| `defaultIcon`         | `lucide:book-open` | Portable fallback icon.                         |
+| `defaultAccent`       | `theme`            | `theme` or a six-digit hex fallback.            |
+| `replaceExplorer`     | `true`             | Hide only the adjacent stock Explorer.          |
 
-Canvas and Bases routes may appear as distinct sidebar leaves when Quartz generates valid,
-non-unlisted `.canvas` and `.base` pages. They never create a book or change its Markdown-page count.
+`RootIndexSidebar` accepts the same options. Its book inventory and appearance
+match the root page, while its Explorer model stays independent.
 
-`replaceExplorer: true` hides only the stock Explorer immediately beside this plugin in Quartz's
-default and Canvas frames. It does not hide Search, PageTitle, Graph, Table of Contents, Backlinks,
-or other layout components. On ordinary pages, Graph remains a normal right-layout component.
-CanvasPage uses its own fullscreen frame and has no ordinary right slot unless the site changes that
-frame.
+## Custom File Explorer Sorting
 
-Book breadcrumbs begin at Quartz's existing book-root link instead of repeating Home. Root routes
-retain normal Quartz breadcrumbs. The site title and compact home mark still provide true-root
-access.
+When [Custom File Explorer Sorting Support](https://github.com/VingGit/custom-file-explorer-sorting-support)
+is present at the matching ecosystem version, the sidebar consumes its optional
+version-1 service. Sorting specifications may reorder or hide root books, root
+notes, and nested folder entries. Root Index Panels remains dependency-free and
+keeps its standalone ordering if the service is absent, invalid, or throws.
 
-All plugin links use Quartz's relative path utilities, including sites hosted below a subdirectory.
-Core links remain usable without JavaScript.
+## Accessibility and hosting
 
-## FolderPage prerequisite and hosting diagnostics
+The root collection and sidebar are fully linked server-rendered HTML. Client
+JavaScript adds keyboard movement, sorting controls, disclosure behavior, and
+mobile close behavior without replacing the underlying navigation. Decorative
+icons are inert and never become a second accessible name.
 
-FolderPage is required for every book and nested-folder landing route, including routes backed by a
-physical `index.md`. The ordinary ContentPage plugin deliberately does not emit `/index` slugs. Do not
-disable or remove FolderPage while root-index-panels is enabled.
-
-A missing FolderPage configuration entry is rejected by Quartz dependency validation. A configured but
-disabled FolderPage currently produces a Quartz warning rather than a hard failure and can leave the
-library pointing to landing pages that were never emitted.
-
-If every non-root URL returns 404, inspect the generated Pages artifact first. If the expected
-`.html` files exist, verify that Quartz's configured public URL and base path match the deployed URL.
-In particular, a custom domain served at its root should not retain a project subpath such as
-`/quartz-for-gitlab` in `data-basepath`, canonical URLs, assets, or the 404-page home link. Either use
-the custom-domain root consistently or deploy under the project path consistently; do not combine
-the two URL models.
-
-## Known limitation
-
-During `npx quartz build --serve`, changes to nested notes can leave root counts, dates, or sidebar
-contents stale. Run a clean/full build before deployment; full builds are authoritative.
+All destinations use Quartz path helpers, so project subpaths and custom domains
+work when the host's generated base path matches its final public URL.
 
 ## Development
 
@@ -351,13 +132,16 @@ npm run check
 npm run build
 npm run verify:dist
 npm run verify:package
-npm run test:integration
-npm run test:watch-integration
-npm pack --dry-run
 ```
 
-`dist/` is committed so Git-source installs can consume the prebuilt package; npm releases ship the same built output.
+`dist/` is committed installation output and must be rebuilt from source.
+
+## Ecosystem versions
+
+Root Index Panels, Root Books Workspace, and Custom File Explorer Sorting
+Support release with the same semantic version. Version `0.9.0` introduces the
+portable direct-hex and `lucide:` metadata contract.
 
 ## License
 
-MIT. Bundled dependency notices are in `THIRD_PARTY_NOTICES.md`.
+[MIT](LICENSE)

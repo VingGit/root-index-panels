@@ -128,10 +128,8 @@ try {
 
       declare const icon: PanelIconComponent
       const options = {
-        defaultIcon: "custom",
-        icons: { custom: icon },
-        defaultAccent: "brand",
-        accents: { brand: "var(--brand)" },
+        defaultIcon: "lucide:book-open",
+        defaultAccent: "#123456",
       } satisfies RootIndexPanelsOptions
       const pageOptions: RootIndexPanelsPageOptions = options
       const sidebarOptions: RootIndexSidebarOptions = options

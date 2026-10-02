@@ -1,5 +1,4 @@
 import type {
-  PanelIconComponent as ComponentPanelIcon,
   RootIndexPanelsOptions as ComponentOptions,
   RootIndexSidebarOptions as ComponentSidebarOptions,
 } from "../src/components"
@@ -17,7 +16,6 @@ import type {
 } from "../src/types"
 
 const Icon: PackagePanelIcon = (props) => <svg {...props} data-consumer-icon="true" />
-const componentIcon: ComponentPanelIcon = Icon
 const typesIcon: TypesPanelIcon = Icon
 
 const options = {
@@ -29,10 +27,8 @@ const options = {
   sort: "alphabetical",
   excludeDirs: ["archive"],
   descriptionFallback: "No description",
-  defaultIcon: "custom",
-  icons: { custom: Icon },
-  defaultAccent: "brand",
-  accents: { brand: "var(--brand)" },
+  defaultIcon: "lucide:book-open",
+  defaultAccent: "#123456",
   replaceExplorer: true,
 } satisfies PackageOptions
 
@@ -45,7 +41,6 @@ const packageSidebarOptions: PackageSidebarOptions = options
 const typesSidebarOptions: TypesSidebarOptions = options
 
 export {
-  componentIcon,
   componentOptions,
   componentSidebarOptions,
   Icon,

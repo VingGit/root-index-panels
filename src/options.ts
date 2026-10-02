@@ -1,9 +1,5 @@
-import type { PanelIconComponent } from "./types"
-
-const registryIdentifierPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const lucideIconSpecifierPattern = /^lucide:([a-z0-9]+(?:-[a-z0-9]+)*)$/
-const hexAccentPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
-const customPropertyAccentPattern = /^var\(--[A-Za-z_][A-Za-z0-9_-]*\)$/
+const hexAccentPattern = /^#[0-9a-fA-F]{6}$/
 
 export interface NormalizedRootIndexPanelsOptions {
   layout: "cards" | "list"
@@ -15,9 +11,7 @@ export interface NormalizedRootIndexPanelsOptions {
   excludeDirs: string[]
   descriptionFallback: string
   defaultIcon: string
-  icons: Record<string, PanelIconComponent>
   defaultAccent: string
-  accents: Record<string, string>
   replaceExplorer: boolean
 }
 
@@ -40,37 +34,10 @@ function ownDataValue(value: unknown, key: string): unknown {
   }
 }
 
-function ownDataEntries(value: unknown): Array<[string, unknown]> {
-  if (!isObjectRecord(value)) return []
-
-  try {
-    const entries: Array<[string, unknown]> = []
-    for (const key of Object.keys(value)) {
-      const descriptor = Object.getOwnPropertyDescriptor(value, key)
-      if (descriptor && "value" in descriptor) entries.push([key, descriptor.value])
-    }
-    return entries
-  } catch {
-    return []
-  }
-}
-
-export function isRegistryIdentifier(value: string): boolean {
-  return registryIdentifierPattern.test(value)
-}
-
-export function normalizeRegistryIdentifier(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined
-  const normalized = value.trim()
-  return isRegistryIdentifier(normalized) ? normalized : undefined
-}
-
 export function normalizePanelIconIdentifier(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined
   const normalized = value.trim()
-  return isRegistryIdentifier(normalized) || lucideIconSpecifierPattern.test(normalized)
-    ? normalized
-    : undefined
+  return lucideIconSpecifierPattern.test(normalized) ? normalized : undefined
 }
 
 export function lucideIconNameFromIdentifier(value: string): string | undefined {
@@ -78,49 +45,20 @@ export function lucideIconNameFromIdentifier(value: string): string | undefined 
 }
 
 export function isDirectAccent(value: string): boolean {
-  return hexAccentPattern.test(value) || customPropertyAccentPattern.test(value)
+  return hexAccentPattern.test(value)
 }
 
 export function normalizeDirectAccent(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined
   const normalized = value.trim()
-  return isDirectAccent(normalized) ? normalized : undefined
+  return isDirectAccent(normalized) ? normalized.toLowerCase() : undefined
 }
 
-function normalizeIconRegistry(value: unknown): Record<string, PanelIconComponent> {
-  const icons = Object.create(null) as Record<string, PanelIconComponent>
-
-  for (const [rawName, component] of ownDataEntries(value)) {
-    const name = normalizeRegistryIdentifier(rawName)
-    if (!name || typeof component !== "function" || Object.hasOwn(icons, name)) continue
-    icons[name] = component as PanelIconComponent
-  }
-
-  return icons
-}
-
-function normalizeAccentRegistry(value: unknown): Record<string, string> {
-  const accents = Object.create(null) as Record<string, string>
-
-  for (const [rawName, rawAccent] of ownDataEntries(value)) {
-    const name = normalizeRegistryIdentifier(rawName)
-    const accent = normalizeDirectAccent(rawAccent)
-    if (!name || name === "theme" || !accent || Object.hasOwn(accents, name)) continue
-    accents[name] = accent
-  }
-
-  return accents
-}
-
-function normalizeDefaultAccent(value: unknown, accents: Record<string, string>): string {
+function normalizeDefaultAccent(value: unknown): string {
   if (typeof value !== "string") return "theme"
 
   const normalized = value.trim()
   if (normalized === "theme") return normalized
-
-  const name = normalizeRegistryIdentifier(normalized)
-  if (name && Object.hasOwn(accents, name)) return name
-
   return normalizeDirectAccent(normalized) ?? "theme"
 }
 
@@ -163,9 +101,7 @@ export function normalizeRootIndexPanelsOptions(
   const showDocCount = ownDataValue(options, "showDocCount")
   const showTags = ownDataValue(options, "showTags")
   const defaultIcon =
-    normalizePanelIconIdentifier(ownDataValue(options, "defaultIcon")) ?? "book-open"
-  const icons = normalizeIconRegistry(ownDataValue(options, "icons"))
-  const accents = normalizeAccentRegistry(ownDataValue(options, "accents"))
+    normalizePanelIconIdentifier(ownDataValue(options, "defaultIcon")) ?? "lucide:book-open"
   const replaceExplorer = ownDataValue(options, "replaceExplorer")
 
   return {
@@ -181,9 +117,7 @@ export function normalizeRootIndexPanelsOptions(
     excludeDirs: normalizeExcludeDirs(ownDataValue(options, "excludeDirs")),
     descriptionFallback: typeof descriptionFallback === "string" ? descriptionFallback : "",
     defaultIcon,
-    icons,
-    defaultAccent: normalizeDefaultAccent(ownDataValue(options, "defaultAccent"), accents),
-    accents,
+    defaultAccent: normalizeDefaultAccent(ownDataValue(options, "defaultAccent")),
     replaceExplorer: typeof replaceExplorer === "boolean" ? replaceExplorer : true,
   }
 }

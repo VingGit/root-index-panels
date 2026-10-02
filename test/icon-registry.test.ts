@@ -1,16 +1,14 @@
+import { readFileSync } from "node:fs"
 import { createElement } from "preact"
 import renderToString from "preact-render-to-string"
 import { describe, expect, it } from "vitest"
 
-import { builtInIconNames, lucidePackageVersion } from "../src/built-in-icons.generated"
 import { resolvePanelIcon } from "../src/icons"
 import { normalizeRootIndexPanelsOptions } from "../src/options"
 
-describe("generated built-in icon registry", () => {
-  it.each(builtInIconNames)("resolves %s", (name) => {
-    expect(resolvePanelIcon(name)?.name).toBe(name)
-  })
-})
+const packageJson = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+) as { dependencies: { "lucide-preact": string } }
 
 describe("direct Lucide icon specifiers", () => {
   it("renders a version-pinned, color-inheriting CDN mask", () => {
@@ -26,28 +24,30 @@ describe("direct Lucide icon specifiers", () => {
       }),
     )
 
-    expect(html).toContain(`lucide-static@${lucidePackageVersion}/icons/book-copy.svg`)
+    expect(html).toContain(
+      `lucide-static@${packageJson.dependencies["lucide-preact"]}/icons/book-copy.svg`,
+    )
     expect(html).toContain("width:20px")
     expect(html).toContain("height:18px")
     expect(html).toContain("background:currentColor")
     expect(html).toContain("mask:url(")
-    expect(html).toContain('data-rip-lucide-icon="book-copy"')
   })
 
-  it("accepts a direct Lucide icon as the configured default", () => {
+  it("normalizes a direct Lucide default and rejects every alternate syntax", () => {
     const options = normalizeRootIndexPanelsOptions({ defaultIcon: " lucide:book-copy " })
     expect(options.defaultIcon).toBe("lucide:book-copy")
     expect(resolvePanelIcon(undefined, options)?.name).toBe("lucide:book-copy")
-  })
 
-  it.each([
-    "lucide:",
-    "lucide:BookCopy",
-    "lucide:book_copy",
-    "lucide:book copy",
-    "lucide:../book-copy",
-    "lucide:https://example.com/icon.svg",
-  ])("rejects malformed direct Lucide specifier %s", (name) => {
-    expect(resolvePanelIcon(name, { defaultIcon: "coffee" })?.name).toBe("coffee")
+    for (const name of [
+      "book-copy",
+      "lucide:",
+      "lucide:BookCopy",
+      "lucide:book_copy",
+      "lucide:book copy",
+      "lucide:../book-copy",
+      "lucide:https://example.com/icon.svg",
+    ]) {
+      expect(resolvePanelIcon(name, { defaultIcon: "lucide:coffee" })?.name).toBe("lucide:coffee")
+    }
   })
 })

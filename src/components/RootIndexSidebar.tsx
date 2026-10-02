@@ -66,8 +66,7 @@ function panelAttributes(
 ): Record<string, string | undefined> {
   const accent = resolvePanelAccent(ownDataValue(panel, "accent"), options)
   return {
-    "data-rip-accent":
-      accent.kind === "named" ? accent.name : accent.kind === "direct" ? "direct" : undefined,
+    "data-rip-accent": accent.kind === "direct" ? "direct" : undefined,
     style: accent.kind === "theme" ? undefined : `--rip-sidebar-accent: ${accent.value}`,
   }
 }
