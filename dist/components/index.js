@@ -4032,7 +4032,7 @@ lucide-preact/dist/esm/icons/table-properties.mjs:
 lucide-preact/dist/esm/icons/workflow.mjs:
 lucide-preact/dist/esm/lucide-preact.mjs:
   (**
-   * @license lucide-preact v1.48.0 - ISC
+   * @license lucide-preact v1.49.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
