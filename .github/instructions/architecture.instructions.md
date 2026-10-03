@@ -231,7 +231,7 @@ Normalize public options defensively because direct TypeScript calls bypass mani
 - `defaultIcon`: only `lucide:<lowercase-kebab-name>`, else `lucide:book-open`; and
 - `defaultAccent`: only `theme` or direct `#rrggbb`, else `theme`.
 
-Book frontmatter shares exactly two portable values with Root Books Workspace:
+Book frontmatter shares exactly two portable values with Root Books Toolkit:
 `panel.icon` accepts only `lucide:<lowercase-kebab-name>` and `panel.accent` accepts only direct
 six-digit hexadecimal color. Do not add named registries, unprefixed built-ins, custom component
 aliases, CSS variables, short hex, or alpha hex. Construct the remote SVG URL only from a validated
