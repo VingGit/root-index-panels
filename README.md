@@ -52,7 +52,7 @@ export default {
 ## Portable book appearance
 
 Root Index Panels shares one deliberately small frontmatter contract with
-[Root Books Workspace](https://github.com/VingGit/obsidian-root-books-workspace):
+[Root Books Toolkit](https://github.com/VingGit/obsidian-root-books-workspace):
 
 ```yaml
 panel:
@@ -138,7 +138,7 @@ npm run verify:package
 
 ## Ecosystem versions
 
-Root Index Panels, Root Books Workspace, and Custom File Explorer Sorting
+Root Index Panels, Root Books Toolkit, and Custom File Explorer Sorting
 Support release with the same semantic version. Version `0.9.0` introduces the
 portable direct-hex and `lucide:` metadata contract.
 
