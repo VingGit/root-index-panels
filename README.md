@@ -52,7 +52,7 @@ export default {
 ## Portable book appearance
 
 Root Index Panels shares one deliberately small frontmatter contract with
-[Root Books Workspace](https://github.com/VingGit/root-books-workspace):
+[Root Books Workspace](https://github.com/VingGit/obsidian-root-books-workspace):
 
 ```yaml
 panel:

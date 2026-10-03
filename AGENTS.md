@@ -67,7 +67,7 @@ unrelated history solely to change old identity metadata.
 ## Root Books ecosystem
 
 - Release this project in exact semantic-version lockstep with
-  `VingGit/root-books-workspace` and
+  `VingGit/obsidian-root-books-workspace` and
   `VingGit/custom-file-explorer-sorting-support`.
 - Use release tags equal to the version without a leading `v`.
 - Keep the shared book frontmatter contract limited to
