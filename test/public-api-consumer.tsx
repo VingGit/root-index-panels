@@ -25,7 +25,6 @@ const options = {
   showTags: true,
   tagCount: 3,
   sort: "alphabetical",
-  excludeDirs: ["archive"],
   descriptionFallback: "No description",
   defaultIcon: "lucide:book-open",
   defaultAccent: "#123456",

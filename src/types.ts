@@ -15,8 +15,6 @@ export interface RootIndexPanelsOptions {
   tagCount?: number
   /** Book ordering. Default: `alphabetical`. */
   sort?: "alphabetical" | "docCount" | "date"
-  /** Case-sensitive first-segment names to omit. Default: `[]`. */
-  excludeDirs?: string[]
   /** Description used when the selected book index has none. Default: `""`. */
   descriptionFallback?: string
   /** Portable Lucide icon used when a book does not resolve one. Default: `lucide:book-open`. */

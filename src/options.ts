@@ -8,7 +8,6 @@ export interface NormalizedRootIndexPanelsOptions {
   showTags: boolean
   tagCount: number
   sort: "alphabetical" | "docCount" | "date"
-  excludeDirs: string[]
   descriptionFallback: string
   defaultIcon: string
   defaultAccent: string
@@ -62,30 +61,6 @@ function normalizeDefaultAccent(value: unknown): string {
   return normalizeDirectAccent(normalized) ?? "theme"
 }
 
-function normalizeExcludeDirs(value: unknown): string[] {
-  const directories: string[] = []
-  try {
-    if (!Array.isArray(value)) return directories
-    const seen = new Set<string>()
-    for (let index = 0; index < value.length; index += 1) {
-      let item: unknown
-      try {
-        item = value[index]
-      } catch {
-        continue
-      }
-      if (typeof item !== "string") continue
-      const directory = item.trim()
-      if (directory.length === 0 || seen.has(directory)) continue
-      seen.add(directory)
-      directories.push(directory)
-    }
-  } catch {
-    return directories
-  }
-  return directories
-}
-
 /**
  * Defensively normalizes the runtime plugin boundary. Quartz discovery metadata
  * describes configuration but does not validate values passed from TypeScript.
@@ -114,7 +89,6 @@ export function normalizeRootIndexPanelsOptions(
         ? Math.max(0, Math.floor(tagCount))
         : 3,
     sort: sort === "alphabetical" || sort === "docCount" || sort === "date" ? sort : "alphabetical",
-    excludeDirs: normalizeExcludeDirs(ownDataValue(options, "excludeDirs")),
     descriptionFallback: typeof descriptionFallback === "string" ? descriptionFallback : "",
     defaultIcon,
     defaultAccent: normalizeDefaultAccent(ownDataValue(options, "defaultAccent")),

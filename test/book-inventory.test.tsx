@@ -163,22 +163,22 @@ describe.each(layouts)("book inventory and routing (%s)", (layout) => {
     expect(html).toContain("2 notes")
   })
 
-  it("handles reserved, excluded, index-only, virtual-only, and case-sensitive names", () => {
+  it("handles reserved, index-only, virtual-only, and case-sensitive names", () => {
     const html = renderPanels(
       [
         physicalFile("tags/page"),
         physicalFile("tags/index", { title: "Reserved Tags" }),
-        physicalFile("archive/index", { title: "Excluded archive" }),
+        physicalFile("archive/index", { title: "Archive" }),
         physicalFile("Archive/index", { title: "Case-sensitive Archive" }),
         physicalFile("index/index", { title: "Index directory book" }),
         physicalFile("empty/index", { title: "Index-only book" }),
         virtualFile("virtual-only/index", { title: "Virtual-only book" }),
       ],
-      { layout, excludeDirs: [" archive ", "archive", ""] },
+      { layout },
     )
 
     expect(html).not.toContain("Reserved Tags")
-    expect(html).not.toContain("Excluded archive")
+    expect(html).toContain("Archive")
     expect(html).toContain("Case-sensitive Archive")
     expect(html).toContain("Index directory book")
     expect(html).toContain('href="./index/"')
@@ -355,7 +355,7 @@ describe("book ordering", () => {
 })
 
 describe("runtime option normalization", () => {
-  it("applies every invalid fallback and preserves case-sensitive normalized excludes", () => {
+  it("applies every invalid fallback", () => {
     const normalized = normalizeRootIndexPanelsOptions({
       layout: "grid",
       sort: "newest",
@@ -364,7 +364,6 @@ describe("runtime option normalization", () => {
       showTags: 0,
       replaceExplorer: "false",
       tagCount: Number.POSITIVE_INFINITY,
-      excludeDirs: [" alpha ", "alpha", "", 7, "Alpha", " beta"],
       descriptionFallback: 42,
     })
 
@@ -375,7 +374,6 @@ describe("runtime option normalization", () => {
     expect(normalized.showTags).toBe(true)
     expect(normalized.replaceExplorer).toBe(true)
     expect(normalized.tagCount).toBe(3)
-    expect(normalized.excludeDirs).toEqual(["alpha", "Alpha", "beta"])
     expect(normalized.descriptionFallback).toBe("")
   })
 

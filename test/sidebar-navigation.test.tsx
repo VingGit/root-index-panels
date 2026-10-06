@@ -87,7 +87,7 @@ function renderSidebar(
 
 describe("sidebar navigation model", () => {
   it("separates root notes from alphabetized book-scoped hierarchies", () => {
-    const model = buildSidebarNavigationModel(fixture(), { excludeDirs: [] })
+    const model = buildSidebarNavigationModel(fixture())
 
     expect(model.rootNotes.map((note) => [note.title, note.slug])).toEqual([
       ["Java root note", "java"],
@@ -303,24 +303,23 @@ describe("sidebar navigation model", () => {
     )
   })
 
-  it("caches by allFiles identity without conflating option variants", () => {
+  it("caches by allFiles identity without conflating supported option variants", () => {
     const files = fixture()
-    const first = getSidebarNavigationModel(files, { excludeDirs: [] })
-    const second = getSidebarNavigationModel(files, { excludeDirs: [] })
-    const excluded = getSidebarNavigationModel(files, { excludeDirs: ["java"] })
-    const byCount = getSidebarNavigationModel(files, { excludeDirs: [], sort: "docCount" })
+    const first = getSidebarNavigationModel(files)
+    const second = getSidebarNavigationModel(files)
+    const byCount = getSidebarNavigationModel(files, { sort: "docCount" })
 
     expect(second).toBe(first)
-    expect(excluded).not.toBe(first)
     expect(byCount).not.toBe(first)
-    expect(excluded.books.map((book) => book.segment)).toEqual(["git"])
     expect(byCount.books.map((book) => book.segment)).toEqual(["java", "git"])
 
     files.push(physicalFile("new/index", { title: "New" }))
-    expect(getSidebarNavigationModel(files, { excludeDirs: [] })).toBe(first)
-    expect(
-      getSidebarNavigationModel([...files], { excludeDirs: [] }).books.map((book) => book.segment),
-    ).toEqual(["git", "java", "new"])
+    expect(getSidebarNavigationModel(files)).toBe(first)
+    expect(getSidebarNavigationModel([...files]).books.map((book) => book.segment)).toEqual([
+      "git",
+      "java",
+      "new",
+    ])
   })
 
   it("keeps the book switcher in the configured panel order", () => {
@@ -446,11 +445,7 @@ describe("sidebar navigation model", () => {
       physicalFile("safe/topic", { title: "Duplicate" }),
     ]
 
-    expect(() =>
-      buildSidebarNavigationModel(files, {
-        excludeDirs: ["", "safe/nested", "safe\\nested", 1, "missing"],
-      }),
-    ).not.toThrow()
+    expect(() => buildSidebarNavigationModel(files)).not.toThrow()
     const model = buildSidebarNavigationModel(files)
     expect(model.books.map((book) => book.segment)).toEqual(["safe"])
     expect(model.books[0]?.children.map((node) => node.title)).toEqual(["First"])

@@ -498,7 +498,6 @@ function exerciseFreshLocalInstall() {
     showTags: true,
     tagCount: 3,
     sort: "alphabetical",
-    excludeDirs: [],
     descriptionFallback: "",
   }
   writeConfig({
@@ -1659,7 +1658,6 @@ function runIntegration() {
       showTags: true,
       tagCount: 2,
       sort: "alphabetical",
-      excludeDirs: [],
       descriptionFallback: "YAML fallback",
       defaultIcon: "lucide:book-open",
       defaultAccent: "#0f766e",
@@ -1703,7 +1701,6 @@ function runIntegration() {
       showTags: true,
       tagCount: 2,
       sort: "alphabetical",
-      excludeDirs: [],
       descriptionFallback: "YAML fallback",
       defaultIcon: "lucide:terminal",
       defaultAccent: "theme",
@@ -1752,7 +1749,6 @@ function runIntegration() {
       showTags: true,
       tagCount: 2,
       sort: "alphabetical",
-      excludeDirs: [],
       descriptionFallback: "YAML fallback",
       defaultIcon: "lucide:book-open",
       defaultAccent: "theme",

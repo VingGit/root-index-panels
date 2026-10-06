@@ -272,7 +272,6 @@ function writeConfig(rootSource) {
           showTags: false,
           tagCount: 0,
           sort: "alphabetical",
-          excludeDirs: [],
           descriptionFallback: "",
           defaultIcon: "lucide:book-open",
           defaultAccent: "theme",

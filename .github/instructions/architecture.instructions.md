@@ -40,8 +40,9 @@ and `text` remain available to independent Quartz components and emitters.
 `src/books.ts` collects books in one pass over `allFiles`:
 
 1. Parse a canonical slug with at least two non-empty segments. Reject leading, trailing, doubled,
-   dot-segment, slash/backslash, and other canonical-path anomalies. Reject `tags` and case-sensitive
-   `excludeDirs`; `index` is a valid first-level directory name.
+   dot-segment, slash/backslash, and other canonical-path anomalies. Reject `tags`; `index` is a
+   valid first-level directory name. Content omitted by Quartz `ignorePatterns` never reaches the
+   inventory.
 2. A candidate requires a listed physical descendant: `filePath` must exist and top-level
    `unlisted !== true`. Deduplicate full physical slugs; first eligible occurrence wins.
 3. A listed physical or FolderPage-generated `<segment>/index` may prove the logical destination.
@@ -125,7 +126,7 @@ only when listeners were installed.
   results.
 
 Cache the immutable model in a `WeakMap` by `allFiles` identity, sorting-service identity, and
-normalized `excludeDirs`, `descriptionFallback`, `sort`, and `tagCount`. A clean build/new
+normalized `descriptionFallback`, `sort`, and `tagCount`. A clean build/new
 `allFiles` identity or a changed sorting-service instance is the invalidation boundary.
 
 ## Sidebar rendering and interaction
@@ -226,7 +227,6 @@ Normalize public options defensively because direct TypeScript calls bypass mani
 - `sort`: only `alphabetical`, `docCount`, or `date`, else `alphabetical`;
 - display flags and `replaceExplorer`: only booleans, else `true`;
 - `tagCount`: floor finite values and clamp at zero, else `3`;
-- `excludeDirs`: trimmed non-empty strings, first-occurrence deduplication, case-sensitive;
 - `descriptionFallback`: preserve any string, including whitespace, else `""`;
 - `defaultIcon`: only `lucide:<lowercase-kebab-name>`, else `lucide:book-open`; and
 - `defaultAccent`: only `theme` or direct `#rrggbb`, else `theme`.
