@@ -6,7 +6,6 @@ type PluginFile = QuartzPluginData & Record<string, unknown>
 
 export interface BookInventoryOptions {
   descriptionFallback: string
-  excludeDirs: readonly string[]
   sort: "alphabetical" | "docCount" | "date"
   tagCount: number
 }
@@ -150,7 +149,6 @@ function compareTitle(a: BookEntry, b: BookEntry): number {
  * Virtual entries are consulted only as proof that a landing destination exists.
  */
 export function collectBooks(allFiles: PluginFile[], options: BookInventoryOptions): BookEntry[] {
-  const excluded = new Set(options.excludeDirs)
   const destinations = new Set<string>()
   const physicalSlugs = new Set<string>()
   const books = new Map<string, BookAccumulator>()
@@ -162,7 +160,7 @@ export function collectBooks(allFiles: PluginFile[], options: BookInventoryOptio
     if (parts.length < 2) continue
 
     const segment = parts[0]
-    if (!segment || segment === "tags" || excluded.has(segment)) continue
+    if (!segment || segment === "tags") continue
 
     const physical = isPhysical(file)
     const listed = ownValue(file, "unlisted") !== true

@@ -9,7 +9,6 @@ import { getNavigationSortingService, sortWithNavigationService } from "./sortin
 type PluginFile = QuartzPluginData & Record<string, unknown>
 
 export interface SidebarNavigationOptions {
-  excludeDirs?: unknown
   descriptionFallback?: unknown
   sort?: unknown
   tagCount?: unknown
@@ -108,7 +107,6 @@ function normalizeInventoryOptions(options: unknown) {
     const normalized = normalizeRootIndexPanelsOptions(options)
     return {
       descriptionFallback: normalized.descriptionFallback,
-      excludeDirs: normalized.excludeDirs,
       sort: normalized.sort,
       tagCount: normalized.tagCount,
     }
@@ -116,7 +114,6 @@ function normalizeInventoryOptions(options: unknown) {
     const normalized = normalizeRootIndexPanelsOptions()
     return {
       descriptionFallback: normalized.descriptionFallback,
-      excludeDirs: normalized.excludeDirs,
       sort: normalized.sort,
       tagCount: normalized.tagCount,
     }

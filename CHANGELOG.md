@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove the `excludeDirs` option. Configure Markdown visibility through Quartz
+  `ignorePatterns` so the root panels and other navigation surfaces share one
+  content policy.
+
 ## [0.9.3] - 2026-10-04
 
 ### Changed

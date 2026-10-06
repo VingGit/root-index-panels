@@ -82,29 +82,31 @@ RootIndexPanels.RootIndexPanelsPage({
   showDocCount: true,
   showTags: true,
   tagCount: 3,
-  excludeDirs: ["private", "templates"],
   descriptionFallback: "",
   defaultIcon: "lucide:book-open",
   defaultAccent: "theme",
 })
 ```
 
-| Option                | Default            | Description                                     |
-| --------------------- | ------------------ | ----------------------------------------------- |
-| `layout`              | `cards`            | `cards` or `list`.                              |
-| `sort`                | `alphabetical`     | `alphabetical`, `docCount`, or `date`.          |
-| `showDescription`     | `true`             | Show the book-index description.                |
-| `showDocCount`        | `true`             | Show listed descendant counts.                  |
-| `showTags`            | `true`             | Show book-index tags in card layout.            |
-| `tagCount`            | `3`                | Maximum tags per card.                          |
-| `excludeDirs`         | `[]`               | Case-sensitive first-level directories to omit. |
-| `descriptionFallback` | `""`               | Text used when a book has no description.       |
-| `defaultIcon`         | `lucide:book-open` | Portable fallback icon.                         |
-| `defaultAccent`       | `theme`            | `theme` or a six-digit hex fallback.            |
-| `replaceExplorer`     | `true`             | Hide only the adjacent stock Explorer.          |
+| Option                | Default            | Description                               |
+| --------------------- | ------------------ | ----------------------------------------- |
+| `layout`              | `cards`            | `cards` or `list`.                        |
+| `sort`                | `alphabetical`     | `alphabetical`, `docCount`, or `date`.    |
+| `showDescription`     | `true`             | Show the book-index description.          |
+| `showDocCount`        | `true`             | Show listed descendant counts.            |
+| `showTags`            | `true`             | Show book-index tags in card layout.      |
+| `tagCount`            | `3`                | Maximum tags per card.                    |
+| `descriptionFallback` | `""`               | Text used when a book has no description. |
+| `defaultIcon`         | `lucide:book-open` | Portable fallback icon.                   |
+| `defaultAccent`       | `theme`            | `theme` or a six-digit hex fallback.      |
+| `replaceExplorer`     | `true`             | Hide only the adjacent stock Explorer.    |
 
 `RootIndexSidebar` accepts the same options. Its book inventory and appearance
 match the root page, while its Explorer model stays independent.
+
+Use Quartz `ignorePatterns` when a directory's Markdown should not become site
+content. This keeps content visibility policy in Quartz instead of maintaining a
+second plugin-specific exclusion list.
 
 ## Custom File Explorer Sorting
 

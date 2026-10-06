@@ -306,7 +306,6 @@ export default ((userOptions?: RootIndexSidebarOptions) => {
     const current = currentSlug(ownDataValue(props.fileData, "slug"))
     const model = getSidebarNavigationModel(props.allFiles, {
       descriptionFallback: options.descriptionFallback,
-      excludeDirs: options.excludeDirs,
       sort: options.sort,
       tagCount: options.tagCount,
     })

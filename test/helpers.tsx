@@ -90,14 +90,12 @@ export function countOccurrences(value: string, needle: string): number {
 export function inventoryOptions(
   overrides: Partial<{
     descriptionFallback: string
-    excludeDirs: string[]
     sort: "alphabetical" | "docCount" | "date"
     tagCount: number
   }> = {},
 ) {
   return {
     descriptionFallback: "",
-    excludeDirs: [],
     sort: "alphabetical" as const,
     tagCount: 3,
     ...overrides,

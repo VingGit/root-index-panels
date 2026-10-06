@@ -2235,29 +2235,6 @@ function normalizeDefaultAccent(value) {
   if (normalized === "theme") return normalized;
   return normalizeDirectAccent(normalized) ?? "theme";
 }
-function normalizeExcludeDirs(value) {
-  const directories = [];
-  try {
-    if (!Array.isArray(value)) return directories;
-    const seen = /* @__PURE__ */ new Set();
-    for (let index2 = 0; index2 < value.length; index2 += 1) {
-      let item;
-      try {
-        item = value[index2];
-      } catch {
-        continue;
-      }
-      if (typeof item !== "string") continue;
-      const directory = item.trim();
-      if (directory.length === 0 || seen.has(directory)) continue;
-      seen.add(directory);
-      directories.push(directory);
-    }
-  } catch {
-    return directories;
-  }
-  return directories;
-}
 function normalizeRootIndexPanelsOptions(options = void 0) {
   const layout = ownDataValue(options, "layout");
   const sort = ownDataValue(options, "sort");
@@ -2275,7 +2252,6 @@ function normalizeRootIndexPanelsOptions(options = void 0) {
     showTags: typeof showTags === "boolean" ? showTags : true,
     tagCount: typeof tagCount === "number" && Number.isFinite(tagCount) ? Math.max(0, Math.floor(tagCount)) : 3,
     sort: sort === "alphabetical" || sort === "docCount" || sort === "date" ? sort : "alphabetical",
-    excludeDirs: normalizeExcludeDirs(ownDataValue(options, "excludeDirs")),
     descriptionFallback: typeof descriptionFallback === "string" ? descriptionFallback : "",
     defaultIcon,
     defaultAccent: normalizeDefaultAccent(ownDataValue(options, "defaultAccent")),
@@ -2422,7 +2398,6 @@ function compareTitle(a, b) {
   return a.segment < b.segment ? -1 : a.segment > b.segment ? 1 : 0;
 }
 function collectBooks(allFiles, options) {
-  const excluded = new Set(options.excludeDirs);
   const destinations = /* @__PURE__ */ new Set();
   const physicalSlugs = /* @__PURE__ */ new Set();
   const books = /* @__PURE__ */ new Map();
@@ -2432,7 +2407,7 @@ function collectBooks(allFiles, options) {
     const { slug: slug2, parts } = parsed;
     if (parts.length < 2) continue;
     const segment = parts[0];
-    if (!segment || segment === "tags" || excluded.has(segment)) continue;
+    if (!segment || segment === "tags") continue;
     const physical = isPhysical(file);
     const listed = ownValue(file, "unlisted") !== true;
     const isBookIndex = parts.length === 2 && parts[1] === "index";
@@ -3310,7 +3285,6 @@ function normalizeInventoryOptions(options) {
     const normalized = normalizeRootIndexPanelsOptions(options);
     return {
       descriptionFallback: normalized.descriptionFallback,
-      excludeDirs: normalized.excludeDirs,
       sort: normalized.sort,
       tagCount: normalized.tagCount
     };
@@ -3318,7 +3292,6 @@ function normalizeInventoryOptions(options) {
     const normalized = normalizeRootIndexPanelsOptions();
     return {
       descriptionFallback: normalized.descriptionFallback,
-      excludeDirs: normalized.excludeDirs,
       sort: normalized.sort,
       tagCount: normalized.tagCount
     };
@@ -3906,7 +3879,6 @@ var RootIndexSidebar_default = ((userOptions) => {
     const current = currentSlug(ownDataValue6(props.fileData, "slug"));
     const model = getSidebarNavigationModel(props.allFiles, {
       descriptionFallback: options.descriptionFallback,
-      excludeDirs: options.excludeDirs,
       sort: options.sort,
       tagCount: options.tagCount
     });
