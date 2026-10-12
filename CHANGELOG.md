@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-12
+
 ### Removed
 
 - Remove the `excludeDirs` option. Configure Markdown visibility through Quartz
@@ -202,7 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/0.9.3...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/0.10.0...HEAD
+[0.10.0]: https://github.com/VingGit/root-index-panels/compare/0.9.3...0.10.0
 [0.9.3]: https://github.com/VingGit/root-index-panels/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/VingGit/root-index-panels/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/VingGit/root-index-panels/compare/0.9.0...0.9.1
