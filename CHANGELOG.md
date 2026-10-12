@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-12
+
+### Changed
+
+- Coordinate the `0.11.0` ecosystem release with Root Books Toolkit's new
+  plugin-health dashboard and declarative selected-setting watches. Root Index
+  Panels behavior and the portable book appearance contract are unchanged.
+
 ## [0.10.0] - 2026-10-12
 
 ### Removed
