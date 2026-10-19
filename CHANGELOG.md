@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-19
+
+### Changed
+
+- Coordinate the `0.13.0` ecosystem release with Custom File Explorer Sorting
+  Support's intentional-backlink preservation, native Quartz previews, and
+  Finnish article-navigation labels. Root Index Panels behavior and the shared
+  sorting-service contract are unchanged.
+
 ## [0.12.0] - 2026-10-18
 
 ### Changed
@@ -220,7 +229,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/0.12.0...HEAD
+[unreleased]: https://github.com/VingGit/root-index-panels/compare/0.13.0...HEAD
+[0.13.0]: https://github.com/VingGit/root-index-panels/compare/0.12.0...0.13.0
 [0.12.0]: https://github.com/VingGit/root-index-panels/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/VingGit/root-index-panels/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/VingGit/root-index-panels/compare/0.9.3...0.10.0
