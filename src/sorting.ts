@@ -1,5 +1,4 @@
-export const NAVIGATION_SORTING_SERVICE_SYMBOL =
-  "@vinggit/custom-file-explorer-sorting-support/service/v1"
+export const NAVIGATION_SORTING_SERVICE_SYMBOL = "obsidian-material-plugins/navigation-sorting/v1"
 
 export interface NavigationSortInput<T> {
   value: T
@@ -24,9 +23,8 @@ export interface NavigationSortingService {
 /** Resolve the optional service at use time so plugin load order does not matter. */
 export function getNavigationSortingService(): NavigationSortingService | undefined {
   try {
-    const candidate = (globalThis as unknown as Record<symbol, unknown>)[
-      Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)
-    ]
+    const services = globalThis as unknown as Record<symbol, unknown>
+    const candidate = services[Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)]
     if (typeof candidate !== "object" || candidate === null) return undefined
     const service = candidate as Partial<NavigationSortingService>
     return service.apiVersion === 1 && typeof service.sort === "function"

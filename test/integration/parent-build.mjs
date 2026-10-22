@@ -7,8 +7,8 @@ import path from "node:path"
 import { createRequire } from "node:module"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
-const PLUGIN_NAME = "root-index-panels"
-const WORKSPACE_PREFIX = "root-index-panels-integration-"
+const PLUGIN_NAME = "quartz-root-books-workspace"
+const WORKSPACE_PREFIX = "quartz-root-books-workspace-integration-"
 const KEEP_WORKSPACE = process.env.RIP_KEEP_INTEGRATION === "1"
 const BASE_PATH = "/group/project"
 const BASE_URL = "gitlab.example/group/project"
@@ -132,7 +132,10 @@ function copyQuartzSource() {
 }
 
 function stageHost() {
-  assert.equal(readJson(path.join(pluginRoot, "package.json")).name, "@vinggit/root-index-panels")
+  assert.equal(
+    readJson(path.join(pluginRoot, "package.json")).name,
+    "@obsidian-material-plugins/quartz-root-books-workspace",
+  )
   assert.ok(
     fs.existsSync(path.join(pluginRoot, "dist", "index.js")),
     "build plugin dist/ before integration",
@@ -268,8 +271,7 @@ const theme = {
 
 function communityPlugin(name, extra = {}) {
   return {
-    source:
-      name === "folder-page" ? "@quartz-community/folder-page" : `github:quartz-community/${name}`,
+    source: `@quartz-community/${name}`,
     enabled: true,
     ...extra,
   }
@@ -481,7 +483,7 @@ function sourceName(source) {
 function assertRootSidebarLayoutConfig(expectedEnabled, label) {
   const parsed = YAML.parse(fs.readFileSync(path.join(workspace, "quartz.config.yaml"), "utf8"))
   const rootEntries = parsed.plugins.filter((entry) => sourceName(entry.source) === PLUGIN_NAME)
-  assert.equal(rootEntries.length, 1, `${label} must retain exactly one root-index-panels entry`)
+  assert.equal(rootEntries.length, 1, `${label} must retain exactly one ${PLUGIN_NAME} entry`)
   assert.equal(rootEntries[0].enabled, expectedEnabled, `${label} plugin enabled state drifted`)
   assert.deepEqual(
     rootEntries[0].layout,
@@ -503,7 +505,7 @@ function exerciseFreshLocalInstall() {
   writeConfig({
     locale: "en-US",
     enableSPA: true,
-    rootSource: "github:VingGit/root-index-panels",
+    rootSource: "github:obsidian-material-plugins/quartz-root-books-workspace",
     rootOptions: remoteOptions,
   })
   writeQuartzEntry(false)

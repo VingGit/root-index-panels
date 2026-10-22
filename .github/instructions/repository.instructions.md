@@ -8,7 +8,8 @@ applyTo: "**"
 
 ## Purpose and ownership
 
-This is the external Quartz 5 plugin `@vinggit/root-index-panels`. It owns every file in
+This is the external Quartz 5 plugin
+`@obsidian-material-plugins/quartz-root-books-workspace`. It owns every file in
 this plugin repository, including generated `dist/` output. Keep its Git history, status, commits,
 and pushes separate from any parent Quartz repository.
 

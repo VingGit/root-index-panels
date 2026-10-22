@@ -7,7 +7,7 @@ import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-const WORKSPACE_PREFIX = "root-index-panels-watch-"
+const WORKSPACE_PREFIX = "quartz-root-books-workspace-watch-"
 const MARKER_NAME = ".rip-watch-workspace"
 const WAIT_TIMEOUT_MS = 90_000
 const KEEP_WORKSPACE = process.env.RIP_KEEP_INTEGRATION === "1"
@@ -128,7 +128,10 @@ function copyCurrentPluginPackage(destination) {
 }
 
 function stageHost() {
-  assert.equal(readJson(path.join(pluginRoot, "package.json")).name, "@vinggit/root-index-panels")
+  assert.equal(
+    readJson(path.join(pluginRoot, "package.json")).name,
+    "@obsidian-material-plugins/quartz-root-books-workspace",
+  )
   assert.ok(
     fs.existsSync(path.join(pluginRoot, "dist", "index.js")),
     "build plugin dist/ before running the watch diagnostic",
@@ -142,7 +145,7 @@ function stageHost() {
     if (fs.existsSync(source)) fs.copyFileSync(source, path.join(workspace, fileName))
   }
 
-  localPluginSource = path.join(workspace, ".rip-plugin-source", "root-index-panels")
+  localPluginSource = path.join(workspace, ".rip-plugin-source", "quartz-root-books-workspace")
   copyCurrentPluginPackage(localPluginSource)
 
   const parentPlugins = path.join(quartzRoot, ".quartz", "plugins")
@@ -154,9 +157,12 @@ function stageHost() {
     linkDirectory(path.join(parentPlugins, entry.name), path.join(stagedPlugins, entry.name))
   }
 
-  linkDirectory(localPluginSource, path.join(stagedPlugins, "root-index-panels"))
+  linkDirectory(localPluginSource, path.join(stagedPlugins, "quartz-root-books-workspace"))
   assert.equal(
-    fs.readFileSync(path.join(stagedPlugins, "root-index-panels", "dist", "index.js"), "utf8"),
+    fs.readFileSync(
+      path.join(stagedPlugins, "quartz-root-books-workspace", "dist", "index.js"),
+      "utf8",
+    ),
     fs.readFileSync(path.join(pluginRoot, "dist", "index.js"), "utf8"),
     "staged plugin output must match the current worktree dist",
   )
@@ -167,7 +173,7 @@ function stageHost() {
   const lock = readJson(path.join(quartzRoot, "quartz.lock.json"))
   lock.plugins = Object.fromEntries(
     Object.entries(lock.plugins).filter(
-      ([name]) => HOST_PLUGIN_NAMES.has(name) || name === "root-index-panels",
+      ([name]) => HOST_PLUGIN_NAMES.has(name) || name === "quartz-root-books-workspace",
     ),
   )
   writeWorkspaceFile("quartz.lock.json", `${JSON.stringify(lock, null, 2)}\n`)
@@ -311,17 +317,20 @@ function runQuartz(args, label, timeout = 120_000) {
 }
 
 function exerciseFreshLocalInstall() {
-  runQuartz(["plugin", "remove", "root-index-panels", "--concurrency", "1"], "fresh plugin remove")
+  runQuartz(
+    ["plugin", "remove", "quartz-root-books-workspace", "--concurrency", "1"],
+    "fresh plugin remove",
+  )
   runQuartz(["plugin", "add", localPluginSource, "--concurrency", "1"], "fresh local plugin add")
 
   const lock = readJson(path.join(workspace, "quartz.lock.json"))
-  assert.equal(lock.plugins["root-index-panels"]?.commit, "local")
+  assert.equal(lock.plugins["quartz-root-books-workspace"]?.commit, "local")
   assert.equal(
-    fs.realpathSync(lock.plugins["root-index-panels"].resolved),
+    fs.realpathSync(lock.plugins["quartz-root-books-workspace"].resolved),
     fs.realpathSync(localPluginSource),
   )
   assert.equal(
-    fs.realpathSync(path.join(workspace, ".quartz", "plugins", "root-index-panels")),
+    fs.realpathSync(path.join(workspace, ".quartz", "plugins", "quartz-root-books-workspace")),
     fs.realpathSync(localPluginSource),
   )
   process.stdout.write("✓ public plugin remove/add installed the temporary local package\n")
@@ -482,7 +491,7 @@ async function runDiagnostic() {
   fs.writeFileSync(path.join(workspace, MARKER_NAME), workspaceMarker)
 
   stageHost()
-  writeConfig("github:VingGit/root-index-panels")
+  writeConfig("github:obsidian-material-plugins/quartz-root-books-workspace")
   exerciseFreshLocalInstall()
   writeConfig(localPluginSource.replaceAll("\\", "/"))
   writeFixture()

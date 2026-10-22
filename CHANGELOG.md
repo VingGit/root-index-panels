@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-22
+
+### Changed
+
+- Moved to the `obsidian-material-plugins` organization as
+  `@obsidian-material-plugins/quartz-root-books-workspace`.
+- Replaced package-version lockstep with explicit `book-structure/v1`,
+  `book-appearance/v1`, and optional `navigation-sorting/v1` declarations.
+- Use only the provider-neutral `navigation-sorting/v1` service symbol.
+- Exercise host integration against the published Quartz Community packages instead of rebuilding their Git repositories during each fixture run.
+
 ## [0.13.1] - 2026-10-19
 
 ### Changed
@@ -237,24 +248,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Book landing page panels.
 - Canvas and Bases navigation integration.
 
-[unreleased]: https://github.com/VingGit/root-index-panels/compare/0.13.1...HEAD
-[0.13.1]: https://github.com/VingGit/root-index-panels/compare/0.13.0...0.13.1
-[0.13.0]: https://github.com/VingGit/root-index-panels/compare/0.12.0...0.13.0
-[0.12.0]: https://github.com/VingGit/root-index-panels/compare/0.11.0...0.12.0
-[0.11.0]: https://github.com/VingGit/root-index-panels/compare/0.10.0...0.11.0
-[0.10.0]: https://github.com/VingGit/root-index-panels/compare/0.9.3...0.10.0
-[0.9.3]: https://github.com/VingGit/root-index-panels/compare/0.9.2...0.9.3
-[0.9.2]: https://github.com/VingGit/root-index-panels/compare/0.9.1...0.9.2
-[0.9.1]: https://github.com/VingGit/root-index-panels/compare/0.9.0...0.9.1
-[0.9.0]: https://github.com/VingGit/root-index-panels/compare/v0.8.0...0.9.0
-[0.8.0]: https://github.com/VingGit/root-index-panels/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/VingGit/root-index-panels/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/VingGit/root-index-panels/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/VingGit/root-index-panels/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/VingGit/root-index-panels/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/VingGit/root-index-panels/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/VingGit/root-index-panels/compare/v0.2.2...v0.3.0
-[0.2.2]: https://github.com/VingGit/root-index-panels/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/VingGit/root-index-panels/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/VingGit/root-index-panels/releases/tag/v0.2.0
-[0.1.1]: https://github.com/VingGit/root-index-panels/releases/tag/v0.1.1
+[unreleased]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.14.0...HEAD
+[0.14.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.13.1...0.14.0
+[0.13.1]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.13.0...0.13.1
+[0.13.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.12.0...0.13.0
+[0.12.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.11.0...0.12.0
+[0.11.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.10.0...0.11.0
+[0.10.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.9.3...0.10.0
+[0.9.3]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.9.2...0.9.3
+[0.9.2]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.9.1...0.9.2
+[0.9.1]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/0.9.0...0.9.1
+[0.9.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.8.0...0.9.0
+[0.8.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/releases/tag/v0.2.0
+[0.1.1]: https://github.com/obsidian-material-plugins/quartz-root-books-workspace/releases/tag/v0.1.1

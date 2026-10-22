@@ -7,7 +7,7 @@ import 'preact';
 
 declare const RootIndexPanelsPage: QuartzPageTypePlugin<RootIndexPanelsPageOptions>;
 
-declare const NAVIGATION_SORTING_SERVICE_SYMBOL = "@vinggit/custom-file-explorer-sorting-support/service/v1";
+declare const NAVIGATION_SORTING_SERVICE_SYMBOL = "obsidian-material-plugins/navigation-sorting/v1";
 interface NavigationSortInput<T> {
     value: T;
     path: string;
