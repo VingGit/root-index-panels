@@ -64,15 +64,15 @@ unrelated history solely to change old identity metadata.
 - Inspect status, staged diff, generated artifacts, ignored files, secrets,
   branch name, and remote target immediately before committing and pushing.
 
-## Root Books ecosystem
+## Root Books contracts
 
-- Release this project in exact semantic-version lockstep with
-  `VingGit/obsidian-root-books-workspace` and
-  `VingGit/custom-file-explorer-sorting-support`.
+- Implement `book-structure/v1`, `book-appearance/v1`, and the optional
+  `navigation-sorting/v1` capability from
+  `obsidian-material-plugins/plugin-contracts`.
+- Release independently from the Obsidian counterpart and sorting provider.
 - Use release tags equal to the version without a leading `v`.
-- Keep the shared book frontmatter contract limited to
-  `panel.icon: "lucide:<kebab-name>"` and direct six-digit
-  `panel.accent: "#rrggbb"`.
+- Keep the portable appearance contract limited to `panel.icon` in
+  `lucide:<kebab-name>` form and direct six-digit `panel.accent` values.
 - Never put contributor machine paths, vault contents, account data, or
   credentials in instructions, fixtures, or documentation.
 

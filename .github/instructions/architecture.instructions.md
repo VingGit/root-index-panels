@@ -6,7 +6,8 @@ applyTo: "{src,test,scripts,types,dist}/**,package.json,package-lock.json,tsup.c
 
 # Plugin architecture
 
-This is the single technical contract for `@vinggit/root-index-panels`. Do not restate it
+This is the single technical contract for
+`@obsidian-material-plugins/quartz-root-books-workspace`. Do not restate it
 in task prompts; link here and update this file when the contract changes.
 
 ## Package topology

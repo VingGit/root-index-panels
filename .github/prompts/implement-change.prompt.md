@@ -1,6 +1,6 @@
 ---
 name: implement-change
-description: Implement a scoped root-index-panels feature or fix
+description: Implement a scoped Quartz Root Books Workspace feature or fix
 agent: agent
 argument-hint: "Describe the feature, fix, or refactor"
 ---

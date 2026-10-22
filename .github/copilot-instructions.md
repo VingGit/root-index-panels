@@ -1,4 +1,4 @@
-# root-index-panels repository instructions
+# Quartz Root Books Workspace repository instructions
 
 Read the root [`AGENTS.md`](../AGENTS.md) first. It defines the repository-wide
 branch, identity, validation, documentation, and maintenance rules.

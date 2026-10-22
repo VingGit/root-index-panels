@@ -4,7 +4,7 @@ import path from "node:path"
 import { execFileSync } from "node:child_process"
 
 const packageRoot = process.cwd()
-const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "root-index-panels-pack-"))
+const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "quartz-root-books-workspace-pack-"))
 const resolvedTemporaryParent = fs.realpathSync(os.tmpdir())
 
 function junction(target, destination) {
@@ -51,15 +51,21 @@ try {
   })
 
   const modulesRoot = path.join(temporaryRoot, "node_modules")
-  const installedPackage = path.join(modulesRoot, "@vinggit", "root-index-panels")
+  const installedPackage = path.join(
+    modulesRoot,
+    "@obsidian-material-plugins",
+    "quartz-root-books-workspace",
+  )
   fs.mkdirSync(path.dirname(installedPackage), { recursive: true })
   fs.renameSync(path.join(extractionRoot, "package"), installedPackage)
 
   const packedPackageJson = JSON.parse(
     fs.readFileSync(path.join(installedPackage, "package.json"), "utf8"),
   )
-  if (packedPackageJson.name !== "@vinggit/root-index-panels") {
-    throw new Error("packed package name must equal @vinggit/root-index-panels")
+  if (packedPackageJson.name !== "@obsidian-material-plugins/quartz-root-books-workspace") {
+    throw new Error(
+      "packed package name must equal @obsidian-material-plugins/quartz-root-books-workspace",
+    )
   }
   const expectedPluginDependencies = ["@quartz-community/folder-page"]
   if (
@@ -81,9 +87,9 @@ try {
   fs.writeFileSync(
     runtimeConsumer,
     `
-      const root = await import("@vinggit/root-index-panels")
-      const components = await import("@vinggit/root-index-panels/components")
-      await import("@vinggit/root-index-panels/types")
+      const root = await import("@obsidian-material-plugins/quartz-root-books-workspace")
+      const components = await import("@obsidian-material-plugins/quartz-root-books-workspace/components")
+      await import("@obsidian-material-plugins/quartz-root-books-workspace/types")
       if (typeof root.RootIndexPanels !== "function") throw new Error("missing root component")
       if (typeof root.RootIndexPanelsPage !== "function") throw new Error("missing Page Type")
       if (typeof root.RootIndexSidebar !== "function") throw new Error("missing root sidebar")
@@ -114,17 +120,17 @@ try {
         RootIndexPanelsOptions,
         RootIndexPanelsPageOptions,
         RootIndexSidebarOptions,
-      } from "@vinggit/root-index-panels"
+      } from "@obsidian-material-plugins/quartz-root-books-workspace"
       import type {
         PanelIconComponent as ComponentIcon,
         RootIndexPanelsOptions as ComponentOptions,
         RootIndexSidebarOptions as ComponentSidebarOptions,
-      } from "@vinggit/root-index-panels/components"
+      } from "@obsidian-material-plugins/quartz-root-books-workspace/components"
       import type {
         PanelIconComponent as TypesIcon,
         RootIndexPanelsOptions as TypesOptions,
         RootIndexSidebarOptions as TypesSidebarOptions,
-      } from "@vinggit/root-index-panels/types"
+      } from "@obsidian-material-plugins/quartz-root-books-workspace/types"
 
       declare const icon: PanelIconComponent
       const options = {

@@ -22,7 +22,7 @@
 all other `/index` slugs, so `@quartz-community/folder-page` is required to emit every book and
 nested-folder landing page. This remains true when a physical `index.md` provides the page content and
 metadata. The plugin manifest declares that exact dependency source; sites must configure and enable
-it before root-index-panels.
+it before Quartz Root Books Workspace.
 
 Ordinary non-index notes remain ContentPage routes. When diagnosing 404s, distinguish a missing or
 disabled FolderPage prerequisite from a deployment-base mismatch by inspecting the built `public/`

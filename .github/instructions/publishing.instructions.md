@@ -135,7 +135,8 @@ tag, GitHub release, npm publication, marketplace submission, or push to the
 parent Quartz repository. Those actions always require separate user
 authorization.
 
-Root Index Panels releases only in exact semantic-version lockstep with Root
-Books Workspace and Custom File Explorer Sorting Support. Coordinated release
-tags equal the version without a leading `v`. Never let dependency automation
-bump or release this repository independently.
+Quartz Root Books Workspace releases independently. Compatibility with its
+Obsidian counterpart and optional sorting provider follows the declared
+`book-structure/v1`, `book-appearance/v1`, and `navigation-sorting/v1`
+contracts rather than matching package versions. Release tags equal the package
+version without a leading `v`.

@@ -1,14 +1,19 @@
 {
-  "name": "@vinggit/root-index-panels",
-  "version": "0.13.1",
+  "name": "@obsidian-material-plugins/quartz-root-books-workspace",
+  "version": "0.14.0",
   "description": "Quartz 5 multi-book landing page and route-aware sidebar for first-level content directories.",
   "type": "module",
   "license": "MIT",
   "author": "VingGit",
-  "homepage": "https://github.com/VingGit/root-index-panels",
+  "homepage": "https://github.com/obsidian-material-plugins/quartz-root-books-workspace",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/VingGit/root-index-panels.git"
+    "url": "git+https://github.com/obsidian-material-plugins/quartz-root-books-workspace.git"
+  },
+  "pluginContracts": {
+    "book-structure": 1,
+    "book-appearance": 1,
+    "navigation-sorting": 1
   },
   "keywords": [
     "quartz",
@@ -96,11 +101,11 @@
     "esbuild": "^0.28.1"
   },
   "quartz": {
-    "name": "root-index-panels",
-    "displayName": "Root Index Panels",
+    "name": "quartz-root-books-workspace",
+    "displayName": "Root Books Workspace",
     "description": "Renders first-level content books on the root page and scopes left navigation to the current book.",
     "author": "VingGit",
-    "homepage": "https://github.com/VingGit/root-index-panels",
+    "homepage": "https://github.com/obsidian-material-plugins/quartz-root-books-workspace",
     "keywords": [
       "quartz",
       "quartz-plugin",
@@ -118,7 +123,7 @@
       "pageType",
       "component"
     ],
-    "version": "0.13.1",
+    "version": "0.14.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [
       "@quartz-community/folder-page"
@@ -181,12 +186,12 @@
     "components": {
       "RootIndexSidebar": {
         "name": "RootIndexSidebar",
-        "displayName": "Root Index Sidebar",
+        "displayName": "Root Books Sidebar",
         "description": "Book switcher and route-scoped left navigation.",
-        "version": "0.13.1",
+        "version": "0.14.0",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
-        "homepage": "https://github.com/VingGit/root-index-panels",
+        "homepage": "https://github.com/obsidian-material-plugins/quartz-root-books-workspace",
         "defaultPosition": "left",
         "defaultPriority": 40
       }

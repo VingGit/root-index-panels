@@ -1,6 +1,6 @@
-# Root Index Panels
+# Root Books Workspace for Quartz
 
-Root Index Panels is a Quartz 5 plugin for vaults organized as first-level
+Root Books Workspace is a Quartz 5 plugin for vaults organized as first-level
 books. It provides a root library page and a route-aware left sidebar without
 changing Quartz's content model.
 
@@ -29,7 +29,7 @@ plugin manager:
 
 ```bash
 npx quartz plugin add @quartz-community/folder-page
-npx quartz plugin add github:VingGit/root-index-panels
+npx quartz plugin add github:obsidian-material-plugins/quartz-root-books-workspace
 ```
 
 Enable the folder-page emitter and the `RootIndexPanelsPage` page type, then add
@@ -37,13 +37,13 @@ Enable the folder-page emitter and the `RootIndexPanelsPage` page type, then add
 component; the page type is configured in `quartz.ts`.
 
 ```ts
-import * as RootIndexPanels from "@vinggit/root-index-panels"
+import * as RootBooks from "@obsidian-material-plugins/quartz-root-books-workspace"
 
 export default {
   plugins: {
     emitters: [
       // ...
-      RootIndexPanels.RootIndexPanelsPage(),
+      RootBooks.RootIndexPanelsPage(),
     ],
   },
 }
@@ -51,8 +51,11 @@ export default {
 
 ## Portable book appearance
 
-Root Index Panels shares one deliberately small frontmatter contract with
-[Root Books Toolkit](https://github.com/VingGit/obsidian-root-books-workspace):
+Root Books Workspace implements `book-structure/v1` and `book-appearance/v1`
+from the
+[plugin contract catalog](https://github.com/obsidian-material-plugins/plugin-contracts)
+alongside
+[Root Books Toolkit](https://github.com/obsidian-material-plugins/obsidian-root-books-workspace):
 
 ```yaml
 panel:
@@ -110,10 +113,11 @@ second plugin-specific exclusion list.
 
 ## Custom File Explorer Sorting
 
-When [Custom File Explorer Sorting Support](https://github.com/VingGit/custom-file-explorer-sorting-support)
-is present at the matching ecosystem version, the sidebar consumes its optional
-version-1 service. Sorting specifications may reorder or hide root books, root
-notes, and nested folder entries. Root Index Panels remains dependency-free and
+When
+[Custom File Explorer Sorting for Quartz](https://github.com/obsidian-material-plugins/quartz-custom-file-explorer-sorting)
+is present, the sidebar consumes its optional `navigation-sorting/v1`
+capability. Sorting specifications may reorder or hide root books, root notes,
+and nested folder entries. Root Books Workspace remains dependency-free and
 keeps its standalone ordering if the service is absent, invalid, or throws.
 
 ## Accessibility and hosting
@@ -138,11 +142,11 @@ npm run verify:package
 
 `dist/` is committed installation output and must be rebuilt from source.
 
-## Ecosystem versions
+## Contract compatibility
 
-Root Index Panels, Root Books Toolkit, and Custom File Explorer Sorting
-Support release with the same semantic version. Version `0.9.0` introduces the
-portable direct-hex and `lucide:` metadata contract.
+This package releases independently. Compatibility with other plugins follows
+its declared `book-structure/v1`, `book-appearance/v1`, and optional
+`navigation-sorting/v1` support rather than matching package versions.
 
 ## License
 

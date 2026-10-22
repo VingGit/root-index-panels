@@ -3225,10 +3225,11 @@ function classNames(...classes) {
 }
 
 // src/sorting.ts
-var NAVIGATION_SORTING_SERVICE_SYMBOL = "@vinggit/custom-file-explorer-sorting-support/service/v1";
+var NAVIGATION_SORTING_SERVICE_SYMBOL = "obsidian-material-plugins/navigation-sorting/v1";
 function getNavigationSortingService() {
   try {
-    const candidate = globalThis[Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)];
+    const services = globalThis;
+    const candidate = services[Symbol.for(NAVIGATION_SORTING_SERVICE_SYMBOL)];
     if (typeof candidate !== "object" || candidate === null) return void 0;
     const service = candidate;
     return service.apiVersion === 1 && typeof service.sort === "function" ? service : void 0;
