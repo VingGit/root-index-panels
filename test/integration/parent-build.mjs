@@ -8,6 +8,7 @@ import { createRequire } from "node:module"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
 const PLUGIN_NAME = "quartz-root-books-workspace"
+const RETIRED_PLUGIN_NAME = "root-index-panels"
 const WORKSPACE_PREFIX = "quartz-root-books-workspace-integration-"
 const KEEP_WORKSPACE = process.env.RIP_KEEP_INTEGRATION === "1"
 const BASE_PATH = "/group/project"
@@ -510,6 +511,10 @@ function exerciseFreshLocalInstall() {
   })
   writeQuartzEntry(false)
 
+  runQuartz(
+    ["plugin", "remove", RETIRED_PLUGIN_NAME, "--concurrency", "1"],
+    "retired plugin remove",
+  )
   runQuartz(["plugin", "remove", PLUGIN_NAME, "--concurrency", "1"], "fresh plugin remove")
   runQuartz(["plugin", "add", pluginRoot, "--concurrency", "1"], "fresh local plugin add")
 
@@ -537,6 +542,11 @@ function exerciseFreshLocalInstall() {
   )
 
   const lock = readJson(path.join(workspace, "quartz.lock.json"))
+  assert.equal(
+    lock.plugins[RETIRED_PLUGIN_NAME],
+    undefined,
+    "fresh add must not retain the retired plugin lock entry",
+  )
   assert.equal(
     lock.plugins[PLUGIN_NAME]?.commit,
     "local",
