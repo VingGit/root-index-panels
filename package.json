@@ -1,6 +1,6 @@
 {
   "name": "@obsidian-material-plugins/quartz-root-books-workspace",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Quartz 5 multi-book landing page and route-aware sidebar for first-level content directories.",
   "type": "module",
   "license": "MIT",
@@ -123,7 +123,7 @@
       "pageType",
       "component"
     ],
-    "version": "0.14.0",
+    "version": "0.14.1",
     "quartzVersion": ">=5.0.0",
     "dependencies": [
       "@quartz-community/folder-page"
@@ -188,7 +188,7 @@
         "name": "RootIndexSidebar",
         "displayName": "Root Books Sidebar",
         "description": "Book switcher and route-scoped left navigation.",
-        "version": "0.14.0",
+        "version": "0.14.1",
         "quartzVersion": ">=5.0.0",
         "author": "VingGit",
         "homepage": "https://github.com/obsidian-material-plugins/quartz-root-books-workspace",
